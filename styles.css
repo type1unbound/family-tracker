@@ -603,3 +603,314 @@ button[onclick*="openSpecificTracker"]:hover {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* ========================================
+   MODAL STYLES
+   ======================================== */
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 16px;
+    color: #1a202c;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modal-btn.primary {
+    background: #6366f1;
+    color: white;
+}
+
+.modal-btn.primary:hover {
+    background: #4f46e5;
+}
+
+.modal-btn.secondary {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.modal-btn.secondary:hover {
+    background: #d1d5db;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #374151;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #6366f1;
+}
+
+/* Task Edit List */
+.task-edit-list {
+    list-style: none;
+    margin-bottom: 12px;
+}
+
+.task-edit-item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.task-edit-item input {
+    flex: 1;
+}
+
+.edit-input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 2px solid #6366f1;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.edit-input:focus {
+    outline: none;
+    border-color: #4f46e5;
+}
+
+/* Profile Photo Upload */
+.photo-upload-area {
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.photo-upload-area:hover {
+    border-color: #6366f1;
+    background: #f0f9ff;
+}
+
+.photo-preview {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 12px;
+    margin: 12px auto;
+}
+
+.profile-photo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.profile-photo-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Color Palette Selection */
+.color-palette-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.color-palette-option {
+    padding: 16px;
+    border: 3px solid #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.color-palette-option:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.color-palette-option.selected {
+    border-color: #6366f1;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.color-palette-preview {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.color-palette-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.color-palette-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Crop Tool */
+.crop-container {
+    position: relative;
+    max-width: 400px;
+    margin: 0 auto;
+    display: none;
+}
+
+.crop-container.active {
+    display: block;
+}
+
+.crop-image {
+    max-width: 100%;
+    display: block;
+}
+
+.crop-overlay {
+    position: absolute;
+    border: 2px dashed #6366f1;
+    background: rgba(99, 102, 241, 0.1);
+    cursor: move;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+}
+
+.crop-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #6366f1;
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.crop-handle.nw { top: -6px; left: -6px; cursor: nw-resize; }
+.crop-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
+.crop-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
+.crop-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
+.crop-handle.n { top: -6px; left: 50%; margin-left: -6px; cursor: n-resize; }
+.crop-handle.s { bottom: -6px; left: 50%; margin-left: -6px; cursor: s-resize; }
+.crop-handle.w { top: 50%; left: -6px; margin-top: -6px; cursor: w-resize; }
+.crop-handle.e { top: 50%; right: -6px; margin-top: -6px; cursor: e-resize; }
+
+.crop-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    justify-content: center;
+}
+
+.crop-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.crop-btn.primary {
+    background: #6366f1;
+    color: white;
+}
+
+.crop-btn.primary:hover {
+    background: #4f46e5;
+}
+
+.crop-btn.secondary {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.crop-btn.secondary:hover {
+    background: #d1d5db;
+}
+
+/* Tracker Modal - Full Screen on Mobile */
+#med-tracker-modal .modal-content {
+    max-width: 900px;
+    max-height: 90vh;
+}
+
+/* Template Grid */
+#template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
