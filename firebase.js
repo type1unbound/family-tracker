@@ -1,40 +1,3 @@
-// Override photo upload to use Firebase Storage
-// We'll set this up after the page loads to ensure the original function exists
-window.addEventListener('DOMContentLoaded', function() {
-    // Store original if it exists
-    const originalHandlePhotoUpload = window.handlePhotoUpload || function() {};
-    
-    window.handlePhotoUpload = async function(event) {
-        const file = event.target.files[0];
-        if (!file || !currentUser) return;
-        try {
-            // Show loading state
-            document.getElementById('upload-area').innerHTML = '<div style="padding: 40px; text-align: center;">Uploading...</div>';
-            // Upload to Firebase Storage
-            const userId = currentUser.uid;
-            const timestamp = Date.now();
-            const storageRef = storage.ref(`users/${userId}/photos/${timestamp}_${file.name}`); // ← Fixed: added ( after .ref
-            
-            await storageRef.put(file);
-            const downloadURL = await storageRef.getDownloadURL();
-            // Now handle the photo URL
-            state.tempPhoto = downloadURL;
-            
-            // Show preview
-            const photoContainer = document.getElementById('photo-preview-container');
-            photoContainer.innerHTML = `<img src="${downloadURL}" class="photo-preview">`;
-            document.getElementById('remove-photo-btn').style.display = 'inline-block';
-            document.getElementById('upload-area').style.display = 'none';
-        } catch (error) {
-            console.error('Error uploading photo:', error);
-            alert('Failed to upload photo: ' + error.message);
-            document.getElementById('upload-area').innerHTML = `
-                <div style="font-size: 48px; margin-bottom: 8px;">📷</div>
-                <div style="color: #6b7280; font-size: 14px;">Click to upload photo</div>
-            `;
-        }
-    };
-});
 // ========================================
 // FIREBASE INTEGRATION
 // ========================================
@@ -109,30 +72,30 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('✅ Google Sign-In button found, attaching click handler');
     
-signInBtn.addEventListener('click', async () => {
-    console.log('🔐 Sign-In button clicked');
-    try {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        console.log('Redirecting to Google sign-in...');
-        await auth.signInWithRedirect(provider);
-    } catch (error) {
-        console.error('❌ Sign in failed:', error);
-        alert('Sign in failed: ' + error.message);
-    }
-    });
-});
-
-// Handle redirect result when user returns
-auth.getRedirectResult()
-    .then((result) => {
-        if (result.user) {
-            console.log('✅ Sign-in successful via redirect:', result.user.email);
+    signInBtn.addEventListener('click', async () => {
+        console.log('🔐 Sign-In button clicked');
+        try {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            console.log('Redirecting to Google sign-in...');
+            await auth.signInWithRedirect(provider);
+        } catch (error) {
+            console.error('❌ Sign in failed:', error);
+            alert('Sign in failed: ' + error.message);
         }
-    })
-    .catch((error) => {
-        console.error('❌ Redirect sign-in error:', error);
-        alert('Sign in failed: ' + error.message);
     });
+
+    // Handle redirect result when user returns
+    auth.getRedirectResult()
+        .then((result) => {
+            if (result.user) {
+                console.log('✅ Sign-in successful via redirect:', result.user.email);
+            }
+        })
+        .catch((error) => {
+            console.error('❌ Redirect sign-in error:', error);
+            alert('Sign in failed: ' + error.message);
+        });
+});
 
 // ========================================
 // FIREBASE DATA OPERATIONS
@@ -244,9 +207,9 @@ loadData = async function() {
                     pointsSpent: 0,
                     medTrackerEnabled: false,
                     days: {},
-                    schedule: JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)),
-                    characterValues: JSON.parse(JSON.stringify(DEFAULT_CHARACTER_VALUES)),
-                    weeklyChores: JSON.parse(JSON.stringify(DEFAULT_WEEKLY_CHORES))
+                    schedule: JSON.parse(JSON.stringify(CONFIG.DEFAULT_SCHEDULE)),
+                    characterValues: JSON.parse(JSON.stringify(CONFIG.DEFAULT_CHARACTER_VALUES)),
+                    weeklyChores: JSON.parse(JSON.stringify(CONFIG.DEFAULT_WEEKLY_CHORES))
                 };
             }
         }
@@ -261,41 +224,46 @@ loadData = async function() {
 };
 
 // Override photo upload to use Firebase Storage
-const originalHandlePhotoUpload = handlePhotoUpload;
-handlePhotoUpload = async function(event) {
-    const file = event.target.files[0];
-    if (!file || !currentUser) return;
+// We'll set this up after the page loads to ensure the original function exists
+window.addEventListener('DOMContentLoaded', function() {
+    // Store original if it exists
+    const originalHandlePhotoUpload = window.handlePhotoUpload || function() {};
+    
+    window.handlePhotoUpload = async function(event) {
+        const file = event.target.files[0];
+        if (!file || !currentUser) return;
 
-    try {
-        // Show loading state
-        document.getElementById('upload-area').innerHTML = '<div style="padding: 40px; text-align: center;">Uploading...</div>';
+        try {
+            // Show loading state
+            document.getElementById('upload-area').innerHTML = '<div style="padding: 40px; text-align: center;">Uploading...</div>';
 
-        // Upload to Firebase Storage
-        const userId = currentUser.uid;
-        const timestamp = Date.now();
-        const storageRef = storage.ref(`users/${userId}/photos/${timestamp}_${file.name}`);
-        
-        await storageRef.put(file);
-        const downloadURL = await storageRef.getDownloadURL();
+            // Upload to Firebase Storage
+            const userId = currentUser.uid;
+            const timestamp = Date.now();
+            const storageRef = storage.ref(`users/${userId}/photos/${timestamp}_${file.name}`);
+            
+            await storageRef.put(file);
+            const downloadURL = await storageRef.getDownloadURL();
 
-        // Now handle the photo URL
-        state.tempPhoto = downloadURL;
-        
-        // Show preview
-        const photoContainer = document.getElementById('photo-preview-container');
-        photoContainer.innerHTML = `<img src="${downloadURL}" class="photo-preview">`;
-        document.getElementById('remove-photo-btn').style.display = 'inline-block';
-        document.getElementById('upload-area').style.display = 'none';
+            // Now handle the photo URL
+            state.tempPhoto = downloadURL;
+            
+            // Show preview
+            const photoContainer = document.getElementById('photo-preview-container');
+            photoContainer.innerHTML = `<img src="${downloadURL}" class="photo-preview">`;
+            document.getElementById('remove-photo-btn').style.display = 'inline-block';
+            document.getElementById('upload-area').style.display = 'none';
 
-    } catch (error) {
-        console.error('Error uploading photo:', error);
-        alert('Failed to upload photo: ' + error.message);
-        document.getElementById('upload-area').innerHTML = `
-            <div style="font-size: 48px; margin-bottom: 8px;">📷</div>
-            <div style="color: #6b7280; font-size: 14px;">Click to upload photo</div>
-        `;
-    }
-};
+        } catch (error) {
+            console.error('Error uploading photo:', error);
+            alert('Failed to upload photo: ' + error.message);
+            document.getElementById('upload-area').innerHTML = `
+                <div style="font-size: 48px; margin-bottom: 8px;">📷</div>
+                <div style="color: #6b7280; font-size: 14px;">Click to upload photo</div>
+            `;
+        }
+    };
+});
 
 // ========================================
 // UI HELPER FUNCTIONS
