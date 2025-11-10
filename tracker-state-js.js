@@ -231,5 +231,12 @@ function loadData() {
 // Make state available globally
 window.state = StateManager.state;
 window.StateManager = StateManager;
+window.getDayData = StateManager.getDayData.bind(StateManager);
+window.getSchedule = StateManager.getSchedule.bind(StateManager);
+window.getCharacterValues = StateManager.getCharacterValues.bind(StateManager);
+window.getWeeklyChores = StateManager.getWeeklyChores.bind(StateManager);
+window.getWeekDates = StateManager.getWeekDates.bind(StateManager);
+window.getWeekRangeDisplay = StateManager.getWeekRangeDisplay.bind(StateManager);
+window.convertTimeToMinutes = StateManager.convertTimeToMinutes.bind(StateManager);
 window.saveData = saveData;
 window.loadData = loadData;
