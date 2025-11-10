@@ -72,19 +72,29 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('✅ Google Sign-In button found, attaching click handler');
     
-    signInBtn.addEventListener('click', async () => {
-        console.log('🔐 Sign-In button clicked');
-        try {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            console.log('Opening Google sign-in popup...');
-            await auth.signInWithPopup(provider);
-            console.log('✅ Sign-in successful');
-        } catch (error) {
-            console.error('❌ Sign in failed:', error);
-            alert('Sign in failed: ' + error.message);
-        }
-    });
+signInBtn.addEventListener('click', async () => {
+    console.log('🔐 Sign-In button clicked');
+    try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        console.log('Redirecting to Google sign-in...');
+        await auth.signInWithRedirect(provider);
+    } catch (error) {
+        console.error('❌ Sign in failed:', error);
+        alert('Sign in failed: ' + error.message);
+    }
 });
+
+// Handle redirect result when user returns
+auth.getRedirectResult()
+    .then((result) => {
+        if (result.user) {
+            console.log('✅ Sign-in successful via redirect:', result.user.email);
+        }
+    })
+    .catch((error) => {
+        console.error('❌ Redirect sign-in error:', error);
+        alert('Sign in failed: ' + error.message);
+    });
 
 // ========================================
 // FIREBASE DATA OPERATIONS
