@@ -1,4 +1,44 @@
-// ========================================
+// Override photo upload to use Firebase Storage
+// We'll set this up after the page loads to ensure the original function exists
+window.addEventListener('DOMContentLoaded', function() {
+    // Store original if it exists
+    const originalHandlePhotoUpload = window.handlePhotoUpload || function() {};
+    
+    window.handlePhotoUpload = async function(event) {
+        const file = event.target.files[0];
+        if (!file || !currentUser) return;
+
+        try {
+            // Show loading state
+            document.getElementById('upload-area').innerHTML = '<div style="padding: 40px; text-align: center;">Uploading...</div>';
+
+            // Upload to Firebase Storage
+            const userId = currentUser.uid;
+            const timestamp = Date.now();
+            const storageRef = storage.ref(`users/${userId}/photos/${timestamp}_${file.name}`);
+            
+            await storageRef.put(file);
+            const downloadURL = await storageRef.getDownloadURL();
+
+            // Now handle the photo URL
+            state.tempPhoto = downloadURL;
+            
+            // Show preview
+            const photoContainer = document.getElementById('photo-preview-container');
+            photoContainer.innerHTML = `<img src="${downloadURL}" class="photo-preview">`;
+            document.getElementById('remove-photo-btn').style.display = 'inline-block';
+            document.getElementById('upload-area').style.display = 'none';
+
+        } catch (error) {
+            console.error('Error uploading photo:', error);
+            alert('Failed to upload photo: ' + error.message);
+            document.getElementById('upload-area').innerHTML = `
+                <div style="font-size: 48px; margin-bottom: 8px;">📷</div>
+                <div style="color: #6b7280; font-size: 14px;">Click to upload photo</div>
+            `;
+        }
+    };
+});// ========================================
 // FIREBASE INTEGRATION
 // ========================================
 // This module handles all Firebase operations including:
