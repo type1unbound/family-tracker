@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Routine & Values Tracker</title>
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <!-- Login Overlay -->
+    <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+        <div style="background: white; border-radius: 20px; padding: 40px; max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center;">
+            <h1 style="font-size: 28px; margin-bottom: 8px; color: #1a202c;">Family Routine Tracker</h1>
+            <p style="color: #6b7280; margin-bottom: 32px;">Track routines, earn points, grow together</p>
+            
+            <div id="login-content">
+                <button id="google-signin-btn" style="width: 100%; padding: 14px 24px; background: white; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; font-weight: 600; color: #1a202c; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: all 0.2s;">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Sign in with Google
+                </button>
+                
+                <div style="margin-top: 24px; font-size: 14px; color: #6b7280;">
+                    <p>🔒 Secure authentication</p>
+                    <p style="margin-top: 8px;">☁️ Your data syncs across devices</p>
+                    <p style="margin-top: 8px;">👨‍👩‍👧‍👦 Each user has their own family</p>
+                </div>
+            </div>
+            
+            <div id="loading-content" style="display: none;">
+                <div style="width: 50px; height: 50px; border: 4px solid #e5e7eb; border-top-color: #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                <p style="margin-top: 20px; color: #6b7280;">Loading your family data...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="card">
+            <h1>Family Routine & Values Tracker</h1>
+            <p class="subtitle">Building healthy habits and strong character together</p>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- LEFT COLUMN -->
+            <div class="left-column">
+                <!-- Child Selector and Date -->
+                <div class="grid grid-2">
+                    <div class="card">
+                        <label>Select Family Member</label>
+                        <div id="child-buttons-container"></div>
+                        <div style="text-align: center; margin-top: 12px;">
+                            <button class="profile-edit-btn" onclick="ProfileModule.openProfileModal()">✏️ Edit Profile</button>
+                            <button class="profile-edit-btn" onclick="ProfileModule.addNewChild()" style="margin-left: 8px; display: none;" id="add-child-btn">➕ Add Member</button>
+                        </div>
+                        <div id="tracker-buttons-container" style="text-align: center; margin-top: 8px;"></div>
+                    </div>
+
+                    <div class="card">
+                        <label>Select Date</label>
+                        <input type="date" id="date-picker" onchange="UICore.selectDate(this.value)">
+                        <div id="date-display" style="margin-top: 12px; color: #4b5563; font-size: 14px;"></div>
+                    </div>
+                </div>
+
+                <!-- Points Overview -->
+                <div class="grid grid-4" style="margin-bottom: 20px;">
+                    <div class="stat-card">
+                        <div class="stat-label">Point Balance</div>
+                        <div class="stat-value" id="base-points">0</div>
+                        <div class="stat-sublabel" id="balance-sublabel"></div>
+                        <button onclick="PointsModule.openSpendPointsModal()" style="margin-top: 12px; padding: 8px 16px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); border-radius: 8px; color: white; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.2s;">💸 Spend Points</button>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Growth Goal Bonus</div>
+                        <div class="stat-value" id="multiplier">1.0x</div>
+                        <div class="stat-sublabel" id="multiplier-label">Standard</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Weekly Goals Bonus</div>
+                        <div class="stat-value" id="chores-multiplier">1.0x</div>
+                        <div class="stat-sublabel" id="chores-label">Complete all for 5x</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Daily Total</div>
+                        <div class="stat-value" id="total-points">0</div>
+                        <div class="stat-sublabel" id="daily-goal-label">Goal: 0</div>
+                    </div>
+                </div>
+
+                <!-- Weekly Total -->
+                <div class="grid" style="grid-template-columns: 1fr; margin-bottom: 20px;">
+                    <div class="stat-card">
+                        <div class="stat-label">Weekly Total</div>
+                        <div class="stat-value" id="weekly-points">0</div>
+                        <div class="stat-sublabel" id="weekly-goal-label">Goal: 0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- RIGHT COLUMN -->
+            <div class="right-column">
+                <!-- Progress Bars -->
+                <div class="card">
+                    <div class="progress-bar-container">
+                        <div class="progress-header">
+                            <span style="font-weight: 600; color: #374151;">Daily Progress</span>
+                            <span id="daily-percent" style="color: #6b7280;">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="daily-progress" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="progress-bar-container">
+                        <div class="progress-header">
+                            <span style="font-weight: 600; color: #374151;">Weekly Progress</span>
+                            <span id="weekly-percent" style="color: #6b7280;">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill weekly" id="weekly-progress" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div id="streak-container"></div>
+                </div>
+
+                <!-- Schedule and Character sections -->
+                <div class="schedule-character-row">
+                    <div class="card">
+                        <h2><span>📅</span> Daily Routine & Expectations</h2>
+                        <div class="schedule-list" id="schedule-list"></div>
+                    </div>
+
+                    <div>
+                        <div class="card" style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <h2 style="margin: 0;"><span>🎯</span> Weekly Goals</h2>
+                                <div id="week-range" style="font-size: 13px; color: #6b7280; font-weight: 600;"></div>
+                            </div>
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 12px; font-style: italic;">
+                                ℹ️ Goals reset each week (Monday-Sunday). Complete all to unlock 5x weekly bonus!
+                            </div>
+                            <div id="chores-completion-badge"></div>
+                            <div id="weekly-chores-list"></div>
+                        </div>
+
+                        <div class="card">
+                            <h2><span>⭐</span> Personal Growth Areas</h2>
+                            <div class="scrollable" id="character-sections"></div>
+                        </div>
+
+                        <div class="card">
+                            <h2><span>📝</span> Daily Notes & Reflection</h2>
+                            <textarea id="daily-notes" rows="6" placeholder="General notes about the day, celebrations, challenges, or things to work on..." onchange="CharacterModule.updateNotes(this.value)"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Mode Toggle -->
+    <button class="edit-mode-toggle" id="edit-mode-toggle" onclick="UICore.toggleEditMode()">
+        <span id="edit-mode-text">✏️ Edit Mode</span>
+    </button>
+    
+    <!-- Modals (imported from modals.html via JS) -->
+    <div id="modals-container"></div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
+
+    <!-- JavaScript Modules (order matters!) -->
+    <script src="js/config.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/points.js"></script>
+    <script src="js/schedule.js"></script>
+    <script src="js/character.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/tracker-templates.js"></script>
+    <script src="js/tracker-module.js"></script>
+    <script src="js/ui-core.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
