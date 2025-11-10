@@ -150,8 +150,6 @@ DEFAULT_WEEKLY_CHORES: [
     { id: 'garbage', name: 'Taking out garbage/recycling' },
     { id: 'shoes', name: 'Cleaning up shoe/backpack area' }
 ]
-
-]
 };
 
 // Make CONFIG available globally
