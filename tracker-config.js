@@ -149,7 +149,7 @@ DEFAULT_WEEKLY_CHORES: [
     { id: 'basement', name: 'Cleaning basement' },
     { id: 'garbage', name: 'Taking out garbage/recycling' },
     { id: 'shoes', name: 'Cleaning up shoe/backpack area' }
-];
+]
 
 ]
 };
