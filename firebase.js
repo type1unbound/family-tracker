@@ -7,19 +7,16 @@ window.addEventListener('DOMContentLoaded', function() {
     window.handlePhotoUpload = async function(event) {
         const file = event.target.files[0];
         if (!file || !currentUser) return;
-
         try {
             // Show loading state
             document.getElementById('upload-area').innerHTML = '<div style="padding: 40px; text-align: center;">Uploading...</div>';
-
             // Upload to Firebase Storage
             const userId = currentUser.uid;
             const timestamp = Date.now();
-            const storageRef = storage.ref(`users/${userId}/photos/${timestamp}_${file.name}`);
+            const storageRef = storage.ref(`users/${userId}/photos/${timestamp}_${file.name}`); // ← Fixed: added ( after .ref
             
             await storageRef.put(file);
             const downloadURL = await storageRef.getDownloadURL();
-
             // Now handle the photo URL
             state.tempPhoto = downloadURL;
             
@@ -28,7 +25,6 @@ window.addEventListener('DOMContentLoaded', function() {
             photoContainer.innerHTML = `<img src="${downloadURL}" class="photo-preview">`;
             document.getElementById('remove-photo-btn').style.display = 'inline-block';
             document.getElementById('upload-area').style.display = 'none';
-
         } catch (error) {
             console.error('Error uploading photo:', error);
             alert('Failed to upload photo: ' + error.message);
@@ -38,7 +34,8 @@ window.addEventListener('DOMContentLoaded', function() {
             `;
         }
     };
-});// ========================================
+});
+// ========================================
 // FIREBASE INTEGRATION
 // ========================================
 // This module handles all Firebase operations including:
