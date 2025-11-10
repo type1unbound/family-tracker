@@ -82,6 +82,7 @@ signInBtn.addEventListener('click', async () => {
         console.error('❌ Sign in failed:', error);
         alert('Sign in failed: ' + error.message);
     }
+    });
 });
 
 // Handle redirect result when user returns
