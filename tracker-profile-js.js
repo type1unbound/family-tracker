@@ -57,36 +57,45 @@ const ProfileModule = {
      * Save profile
      */
     saveProfile() {
-        const name = document.getElementById('modal-profile-name').value;
-        
-        if (!name) {
-            alert('Please enter a name');
-            return;
-        }
-        
-        const child = StateManager.getCurrentChild();
-        child.name = name;
-        
-        if (StateManager.state.tempPhoto !== undefined) {
-            child.photo = StateManager.state.tempPhoto;
-        }
-        
-        if (StateManager.state.tempPalette) {
-            child.colorPalette = StateManager.state.tempPalette;
-        }
-        
-        // Clean up temp values
-        delete StateManager.state.tempPhoto;
-        delete StateManager.state.tempPalette;
-        
-        saveData();
-        this.closeModal();
-        this.updateChildButtons();
-        this.updateTrackerButtons();
-        if (window.UICore) {
-            UICore.applyColorPalette();
-        }
-    },
+    const name = document.getElementById('modal-profile-name').value;
+    
+    if (!name) {
+        alert('Please enter a name');
+        return;
+    }
+    
+    const child = StateManager.getCurrentChild();
+    child.name = name;
+    
+    // Save photo - check for both undefined AND null
+    if (StateManager.state.tempPhoto !== undefined && StateManager.state.tempPhoto !== null) {
+        child.photo = StateManager.state.tempPhoto;
+        console.log('✅ Photo saved to child:', child.photo.substring(0, 50));
+    } else {
+        console.log('⚠️ No tempPhoto to save');
+    }
+    
+    if (StateManager.state.tempPalette) {
+        child.colorPalette = StateManager.state.tempPalette;
+    }
+    
+    // Clean up temp values
+    delete StateManager.state.tempPhoto;
+    delete StateManager.state.tempPalette;
+    
+    // Save to Firestore
+    if (window.saveData) {
+        window.saveData();
+    }
+    
+    this.closeModal();
+    this.updateChildButtons();
+    this.updateTrackerButtons();
+    if (window.UICore) {
+        UICore.applyColorPalette();
+        UICore.updateUI();
+    }
+}
 
     /**
      * Select color palette
