@@ -256,13 +256,6 @@ const PointsModule = {
 
 // Make module available globally
 window.PointsModule = PointsModule;
-window.calculatePoints = calculatePoints;
-window.calculateWeeklyTotal = calculateWeeklyTotal;
-window.calculateStreak = calculateStreak;
-window.calculateChoresCompletion = calculateChoresCompletion;
-window.getDailyGoal = getDailyGoal;
-window.getWeeklyGoal = getWeeklyGoal;
-window.getWeeklyChoresData = getWeeklyChoresData;
 window.calculatePoints = PointsModule.calculatePoints.bind(PointsModule);
 window.calculateWeeklyTotal = PointsModule.calculateWeeklyTotal.bind(PointsModule);
 window.calculateStreak = PointsModule.calculateStreak.bind(PointsModule);
