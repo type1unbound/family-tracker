@@ -612,4 +612,7 @@ function switchMedTab(tab) {
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = MedicationTracker;
+    window.MedicationTracker = MedicationTracker;
+    window.TrackerModule = MedicationTracker; // Alias for compatibility
+    window.switchMedTab = switchMedTab;
 }
