@@ -609,10 +609,14 @@ function switchMedTab(tab) {
 
 // ========================================
 
-// Export for use in other modules
+// Export for Node.js (if needed)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = MedicationTracker;
+}
+
+// Always export for browser
 window.MedicationTracker = MedicationTracker;
 window.TrackerModule = MedicationTracker; // Create alias for HTML compatibility
 window.switchMedTab = switchMedTab;
-}
+
+console.log('✅ TrackerModule exported globally');
