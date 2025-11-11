@@ -101,11 +101,16 @@ document.addEventListener('DOMContentLoaded', function() {
 // FIREBASE DATA OPERATIONS
 // ========================================
 
-// Override saveData to use Firestore
-const originalSaveData = saveData;
-saveData = async function() {
+// Create a new saveData function for Firebase
+async function saveDataToFirebase() {
     if (!currentUser) {
         console.log('⏸️ No user logged in, skipping save to Firestore');
+        return;
+    }
+
+    // Check if Firestore is available
+    if (!firebase || !firebase.firestore) {
+        console.error('❌ Firebase Firestore not available');
         return;
     }
 
@@ -118,13 +123,13 @@ saveData = async function() {
         await userRef.set({
             email: currentUser.email,
             displayName: currentUser.displayName,
-            children: state.children,
+            children: StateManager.state.children,
             lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
 
         // Save each family member
-        for (const childId of state.children) {
-            const memberData = state.data[childId];
+        for (const childId of StateManager.state.children) {
+            const memberData = StateManager.state.data[childId];
             
             // Separate days data (it can get large)
             const { days, ...memberInfo } = memberData;
@@ -144,7 +149,10 @@ saveData = async function() {
         console.error('❌ Error saving data to Firestore:', error);
         alert('Failed to save data: ' + error.message);
     }
-};
+}
+
+// Make saveDataToFirebase available globally as saveData
+window.saveData = saveDataToFirebase;
 
 // Override loadData to use Firestore
 const originalLoadData = loadData;
@@ -172,6 +180,82 @@ loadData = async function() {
             state.children = ['child1', 'child2'];
             await saveData();
         }
+
+        // Create a new loadData function for Firebase
+async function loadDataFromFirebase() {
+    if (!currentUser) {
+        console.log('⏸️ No user logged in, skipping load from Firestore');
+        return;
+    }
+
+    try {
+        console.log('📥 Loading data from Firestore for user:', currentUser.email);
+        showLoading();
+        const userId = currentUser.uid;
+        const userRef = db.collection('users').doc(userId);
+
+        // Load user metadata
+        const userDoc = await userRef.get();
+        if (userDoc.exists) {
+            const userData = userDoc.data();
+            StateManager.state.children = userData.children || ['child1', 'child2'];
+            console.log('  Found existing user data with', StateManager.state.children.length, 'family members');
+        } else {
+            // New user - initialize with defaults
+            console.log('  New user - initializing with default data');
+            StateManager.state.children = ['child1', 'child2'];
+            
+            // Initialize default children
+            StateManager.state.children.forEach(childId => {
+                if (!StateManager.state.data[childId]) {
+                    StateManager.createChild(childId);
+                }
+            });
+            
+            await saveDataToFirebase();
+        }
+
+        // Load each family member
+        for (const childId of StateManager.state.children) {
+            const memberDoc = await userRef.collection('familyMembers').doc(childId).get();
+            
+            if (memberDoc.exists) {
+                StateManager.state.data[childId] = memberDoc.data();
+                
+                // Ensure trackers array exists
+                if (!StateManager.state.data[childId].trackers) {
+                    StateManager.state.data[childId].trackers = [];
+                }
+                
+                console.log('  Loaded member:', StateManager.state.data[childId].name);
+                
+                // Load days data
+                const daysSnapshot = await userRef.collection('familyMembers').doc(childId)
+                    .collection('days').get();
+                
+                StateManager.state.data[childId].days = {};
+                daysSnapshot.forEach(doc => {
+                    StateManager.state.data[childId].days[doc.id] = doc.data();
+                });
+                console.log('  Loaded', daysSnapshot.size, 'days of data for', StateManager.state.data[childId].name);
+            } else if (!StateManager.state.data[childId]) {
+                // Initialize new member with defaults
+                console.log('  Initializing new member:', childId);
+                StateManager.createChild(childId);
+            }
+        }
+
+        console.log('✅ Data loaded from Firestore successfully');
+        hideLoading();
+    } catch (error) {
+        console.error('❌ Error loading data from Firestore:', error);
+        hideLoading();
+        alert('Failed to load data: ' + error.message);
+    }
+}
+
+// Make loadDataFromFirebase available globally as loadData
+window.loadData = loadDataFromFirebase;
 
         // Load each family member
         for (const childId of state.children) {
