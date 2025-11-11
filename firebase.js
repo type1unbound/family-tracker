@@ -1,15 +1,6 @@
 // ========================================
 // FIREBASE INTEGRATION
 // ========================================
-// This module handles all Firebase operations including:
-// - Authentication (Google Sign-In)
-// - Firestore database operations
-// - Firebase Storage for photos
-// - Real-time data sync
-
-// ========================================
-// FIREBASE CONFIGURATION
-// ========================================
 
 // Wait for Firebase SDK to load
 if (typeof firebase === 'undefined') {
@@ -19,7 +10,7 @@ if (typeof firebase === 'undefined') {
     console.log('✅ Firebase SDK loaded');
 }
 
-// Firebase configuration for Type1Unbound Family Tracker
+// Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyCJzB673MruQvNpX_1wuGoHUFSk6leErFg",
     authDomain: "family-tracker-37025.firebaseapp.com",
@@ -42,9 +33,6 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-// IMPORTANT: Disable localStorage - we use Firebase only
-const FIREBASE_MODE = true;
-
 // Enable offline persistence
 db.enablePersistence()
     .catch((err) => {
@@ -56,11 +44,8 @@ db.enablePersistence()
 // ========================================
 
 let currentUser = null;
-let isLoading = false;
 
-// Login overlay already exists in HTML (no need to create it)
-// Just set up the Google Sign-In button handler
-// Wait for DOM to be ready before attaching event listener
+// Setup Google Sign-In button
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, setting up Google Sign-In button');
     
@@ -84,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Handle redirect result when user returns
+    // Handle redirect result
     auth.getRedirectResult()
         .then((result) => {
             if (result.user) {
@@ -101,16 +86,19 @@ document.addEventListener('DOMContentLoaded', function() {
 // FIREBASE DATA OPERATIONS
 // ========================================
 
-// Create a new saveData function for Firebase
 async function saveDataToFirebase() {
     if (!currentUser) {
         console.log('⏸️ No user logged in, skipping save to Firestore');
         return;
     }
 
-    // Check if Firestore is available
     if (!firebase || !firebase.firestore) {
         console.error('❌ Firebase Firestore not available');
+        return;
+    }
+
+    if (!StateManager || !StateManager.state) {
+        console.error('❌ StateManager not available');
         return;
     }
 
@@ -131,13 +119,15 @@ async function saveDataToFirebase() {
         for (const childId of StateManager.state.children) {
             const memberData = StateManager.state.data[childId];
             
-            // Separate days data (it can get large)
+            if (!memberData) continue;
+            
+            // Separate days data
             const { days, ...memberInfo } = memberData;
             
             // Save member info
             await userRef.collection('familyMembers').doc(childId).set(memberInfo, { merge: true });
             
-            // Save days data in subcollection (only recent days to avoid size limits)
+            // Save days data in subcollection
             for (const [date, dayData] of Object.entries(days || {})) {
                 await userRef.collection('familyMembers').doc(childId)
                     .collection('days').doc(date).set(dayData, { merge: true });
@@ -147,17 +137,20 @@ async function saveDataToFirebase() {
         console.log('✅ Data saved to Firestore successfully');
     } catch (error) {
         console.error('❌ Error saving data to Firestore:', error);
-        alert('Failed to save data: ' + error.message);
+        console.error('Error details:', error);
     }
 }
 
-// Make saveDataToFirebase available globally as saveData
 window.saveData = saveDataToFirebase;
 
-// Create a new loadData function for Firebase
 async function loadDataFromFirebase() {
     if (!currentUser) {
         console.log('⏸️ No user logged in, skipping load from Firestore');
+        return;
+    }
+
+    if (!StateManager || !StateManager.state) {
+        console.error('❌ StateManager not available');
         return;
     }
 
@@ -195,9 +188,12 @@ async function loadDataFromFirebase() {
             if (memberDoc.exists) {
                 StateManager.state.data[childId] = memberDoc.data();
                 
-                // Ensure trackers array exists
+                // Ensure required fields exist
                 if (!StateManager.state.data[childId].trackers) {
                     StateManager.state.data[childId].trackers = [];
+                }
+                if (!StateManager.state.data[childId].days) {
+                    StateManager.state.data[childId].days = {};
                 }
                 
                 console.log('  Loaded member:', StateManager.state.data[childId].name);
@@ -206,7 +202,6 @@ async function loadDataFromFirebase() {
                 const daysSnapshot = await userRef.collection('familyMembers').doc(childId)
                     .collection('days').get();
                 
-                StateManager.state.data[childId].days = {};
                 daysSnapshot.forEach(doc => {
                     StateManager.state.data[childId].days[doc.id] = doc.data();
                 });
@@ -227,11 +222,9 @@ async function loadDataFromFirebase() {
     }
 }
 
-// Make loadDataFromFirebase available globally as loadData
 window.loadData = loadDataFromFirebase;
 
 // Override photo upload to use Firebase Storage
-// We'll set this up after the page loads to ensure the original function exists
 window.addEventListener('DOMContentLoaded', function() {
     window.handlePhotoUpload = async function(event) {
         const file = event.target.files[0];
@@ -252,7 +245,7 @@ window.addEventListener('DOMContentLoaded', function() {
             await storageRef.put(file);
             const downloadURL = await storageRef.getDownloadURL();
 
-            // Now handle the photo URL
+            // Handle the photo URL
             StateManager.state.tempPhoto = downloadURL;
             
             // Show preview
@@ -312,7 +305,7 @@ auth.onAuthStateChanged(async (user) => {
         // Load user's data from Firestore
         await loadDataFromFirebase();
         
-        // Initialize UI - use proper module references
+        // Initialize UI
         const datePicker = document.getElementById('date-picker');
         if (datePicker) {
             datePicker.value = StateManager.state.currentDate;
@@ -404,22 +397,3 @@ window.addEventListener('beforeunload', () => {
         saveDataToFirebase();
     }
 });
-
-// ========================================
-// EXPORTS
-// ========================================
-
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        auth,
-        db,
-        storage,
-        currentUser,
-        saveData: saveDataToFirebase,
-        loadData: loadDataFromFirebase,
-        handlePhotoUpload,
-        showLoading,
-        hideLoading,
-        addSignOutButton
-    };
-}
