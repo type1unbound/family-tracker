@@ -491,28 +491,39 @@ applyCrop() {
     /**
      * Edit tracker config
      */
-    editTrackerConfig(trackerId) {
-        this.closeModal();
-        if (window.TrackerModule) {
-            TrackerModule.openSpecificTracker(trackerId);
-        }
-    },
+ editTrackerConfig(trackerId) {
+    this.closeModal();
+    if (window.openSpecificTracker) {
+        openSpecificTracker(trackerId);
+    }
+},
 
     /**
      * Remove tracker prompt
      */
-    removeTrackerPrompt(trackerId) {
-        const child = StateManager.getCurrentChild();
-        const tracker = child.trackers.find(t => t.id === trackerId);
-        
-        if (!tracker) return;
-        
-        if (confirm(`Remove "${tracker.templateName}" tracker?\n\nAll data for this tracker will be permanently deleted. This cannot be undone.`)) {
-            if (window.TrackerModule) {
-                TrackerModule.removeTracker(StateManager.state.currentChild, trackerId);
+removeTrackerPrompt(trackerId) {
+    const child = StateManager.getCurrentChild();
+    const tracker = child.trackers ? child.trackers.find(t => t.id === trackerId) : null;
+    
+    if (!tracker) return;
+    
+    if (confirm(`Remove "${tracker.templateName}" tracker?\n\nAll data for this tracker will be permanently deleted. This cannot be undone.`)) {
+        // Remove the tracker from the child's trackers array
+        const index = child.trackers.findIndex(t => t.id === trackerId);
+        if (index > -1) {
+            child.trackers.splice(index, 1);
+            
+            // Save changes
+            if (window.saveData) {
+                window.saveData();
             }
+            
+            // Refresh the UI
+            this.renderTrackerList(StateManager.state.currentChild);
+            this.updateTrackerButtons();
         }
-    },
+    }
+},
 
     /**
      * Update tracker buttons
@@ -536,7 +547,7 @@ applyCrop() {
             const icon = template ? template.icon : '📊';
             
             html += `
-                <button onclick="TrackerModule.openSpecificTracker('${tracker.id}')" 
+<button onclick="openSpecificTracker('${tracker.id}')">
                         style="padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-align: left; transition: transform 0.2s;"
                         onmouseover="this.style.transform='translateY(-2px)'"
                         onmouseout="this.style.transform='translateY(0)'">
