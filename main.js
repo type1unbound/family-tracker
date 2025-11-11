@@ -9,8 +9,8 @@
 // Open specific tracker by ID
 function openSpecificTracker(trackerId) {
     // Use TrackerModule if available
-    if (window.TrackerModule && typeof TrackerModule.openSpecificTracker === 'function') {
-        TrackerModule.openSpecificTracker(trackerId);
+    if (window.TrackerModule && typeof MedicationTracker.openSpecificTracker === 'function') {
+        MedicationTracker.openSpecificTracker(trackerId);
         return;
     }
     
