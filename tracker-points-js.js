@@ -236,7 +236,10 @@ const PointsModule = {
         }
         child.pointsSpent += amount;
         
-        saveData();
+        // Save data
+        if (window.saveData) {
+            window.saveData();
+        }
         
         // Close modal
         document.querySelectorAll('.modal').forEach(modal => {
@@ -256,6 +259,8 @@ const PointsModule = {
 
 // Make module available globally
 window.PointsModule = PointsModule;
+
+// Make individual functions available globally for backward compatibility
 window.calculatePoints = PointsModule.calculatePoints.bind(PointsModule);
 window.calculateWeeklyTotal = PointsModule.calculateWeeklyTotal.bind(PointsModule);
 window.calculateStreak = PointsModule.calculateStreak.bind(PointsModule);
