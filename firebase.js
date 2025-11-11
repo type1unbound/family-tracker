@@ -154,34 +154,7 @@ async function saveDataToFirebase() {
 // Make saveDataToFirebase available globally as saveData
 window.saveData = saveDataToFirebase;
 
-// Override loadData to use Firestore
-const originalLoadData = loadData;
-loadData = async function() {
-    if (!currentUser) {
-        console.log('⏸️ No user logged in, skipping load from Firestore');
-        return;
-    }
-
-    try {
-        console.log('📥 Loading data from Firestore for user:', currentUser.email);
-        showLoading();
-        const userId = currentUser.uid;
-        const userRef = db.collection('users').doc(userId);
-
-        // Load user metadata
-        const userDoc = await userRef.get();
-        if (userDoc.exists) {
-            const userData = userDoc.data();
-            state.children = userData.children || ['child1', 'child2'];
-            console.log('  Found existing user data with', state.children.length, 'family members');
-        } else {
-            // New user - initialize with defaults
-            console.log('  New user - initializing with default data');
-            state.children = ['child1', 'child2'];
-            await saveData();
-        }
-
-        // Create a new loadData function for Firebase
+// Create a new loadData function for Firebase
 async function loadDataFromFirebase() {
     if (!currentUser) {
         console.log('⏸️ No user logged in, skipping load from Firestore');
@@ -257,69 +230,19 @@ async function loadDataFromFirebase() {
 // Make loadDataFromFirebase available globally as loadData
 window.loadData = loadDataFromFirebase;
 
-        // Load each family member
-        for (const childId of state.children) {
-            const memberDoc = await userRef.collection('familyMembers').doc(childId).get();
-            
-            if (memberDoc.exists) {
-                state.data[childId] = memberDoc.data();
-                
-                // Ensure medTrackerEnabled field exists (for backwards compatibility)
-                if (state.data[childId].medTrackerEnabled === undefined) {
-                    state.data[childId].medTrackerEnabled = false;
-                }
-                
-                console.log('  Loaded member:', state.data[childId].name);
-                
-                // Load days data
-                const daysSnapshot = await userRef.collection('familyMembers').doc(childId)
-                    .collection('days').get();
-                
-                state.data[childId].days = {};
-                daysSnapshot.forEach(doc => {
-                    state.data[childId].days[doc.id] = doc.data();
-                });
-                console.log('  Loaded', daysSnapshot.size, 'days of data for', state.data[childId].name);
-            } else if (!state.data[childId]) {
-                // Initialize new member with defaults
-                console.log('  Initializing new member:', childId);
-                state.data[childId] = {
-                    name: 'Family Member ' + (state.children.indexOf(childId) + 1),
-                    photo: null,
-                    colorPalette: 'lavender',
-                    pointsBalance: 0,
-                    pointsSpent: 0,
-                    medTrackerEnabled: false,
-                    days: {},
-                    schedule: JSON.parse(JSON.stringify(CONFIG.DEFAULT_SCHEDULE)),
-                    characterValues: JSON.parse(JSON.stringify(CONFIG.DEFAULT_CHARACTER_VALUES)),
-                    weeklyChores: JSON.parse(JSON.stringify(CONFIG.DEFAULT_WEEKLY_CHORES))
-                };
-            }
-        }
-
-        console.log('✅ Data loaded from Firestore successfully');
-        hideLoading();
-    } catch (error) {
-        console.error('❌ Error loading data from Firestore:', error);
-        hideLoading();
-        alert('Failed to load data: ' + error.message);
-    }
-};
-
 // Override photo upload to use Firebase Storage
 // We'll set this up after the page loads to ensure the original function exists
 window.addEventListener('DOMContentLoaded', function() {
-    // Store original if it exists
-    const originalHandlePhotoUpload = window.handlePhotoUpload || function() {};
-    
     window.handlePhotoUpload = async function(event) {
         const file = event.target.files[0];
         if (!file || !currentUser) return;
 
         try {
             // Show loading state
-            document.getElementById('upload-area').innerHTML = '<div style="padding: 40px; text-align: center;">Uploading...</div>';
+            const uploadArea = document.getElementById('upload-area');
+            if (uploadArea) {
+                uploadArea.innerHTML = '<div style="padding: 40px; text-align: center;">Uploading...</div>';
+            }
 
             // Upload to Firebase Storage
             const userId = currentUser.uid;
@@ -330,21 +253,33 @@ window.addEventListener('DOMContentLoaded', function() {
             const downloadURL = await storageRef.getDownloadURL();
 
             // Now handle the photo URL
-            state.tempPhoto = downloadURL;
+            StateManager.state.tempPhoto = downloadURL;
             
             // Show preview
             const photoContainer = document.getElementById('photo-preview-container');
-            photoContainer.innerHTML = `<img src="${downloadURL}" class="photo-preview">`;
-            document.getElementById('remove-photo-btn').style.display = 'inline-block';
-            document.getElementById('upload-area').style.display = 'none';
+            if (photoContainer) {
+                photoContainer.innerHTML = `<img src="${downloadURL}" class="photo-preview">`;
+            }
+            
+            const removeBtn = document.getElementById('remove-photo-btn');
+            if (removeBtn) {
+                removeBtn.style.display = 'inline-block';
+            }
+            
+            if (uploadArea) {
+                uploadArea.style.display = 'none';
+            }
 
         } catch (error) {
             console.error('Error uploading photo:', error);
             alert('Failed to upload photo: ' + error.message);
-            document.getElementById('upload-area').innerHTML = `
-                <div style="font-size: 48px; margin-bottom: 8px;">📷</div>
-                <div style="color: #6b7280; font-size: 14px;">Click to upload photo</div>
-            `;
+            const uploadArea = document.getElementById('upload-area');
+            if (uploadArea) {
+                uploadArea.innerHTML = `
+                    <div style="font-size: 48px; margin-bottom: 8px;">📷</div>
+                    <div style="color: #6b7280; font-size: 14px;">Click to upload photo</div>
+                `;
+            }
         }
     };
 });
@@ -354,12 +289,15 @@ window.addEventListener('DOMContentLoaded', function() {
 // ========================================
 
 function showLoading() {
-    document.getElementById('login-content').style.display = 'none';
-    document.getElementById('loading-content').style.display = 'block';
+    const loginContent = document.getElementById('login-content');
+    const loadingContent = document.getElementById('loading-content');
+    if (loginContent) loginContent.style.display = 'none';
+    if (loadingContent) loadingContent.style.display = 'block';
 }
 
 function hideLoading() {
-    document.getElementById('login-overlay').style.display = 'none';
+    const loginOverlay = document.getElementById('login-overlay');
+    if (loginOverlay) loginOverlay.style.display = 'none';
 }
 
 // ========================================
@@ -372,16 +310,27 @@ auth.onAuthStateChanged(async (user) => {
         console.log('User signed in:', user.email);
         
         // Load user's data from Firestore
-        await loadData();
+        await loadDataFromFirebase();
         
-        // Initialize UI
-        document.getElementById('date-picker').value = state.currentDate;
-        renderChildButtons();
-        selectChild(state.currentChild);
-        selectDate(state.currentDate);
-        updateChildButtons();
-        updateTrackerButtons();
-        applyColorPalette();
+        // Initialize UI - use proper module references
+        const datePicker = document.getElementById('date-picker');
+        if (datePicker) {
+            datePicker.value = StateManager.state.currentDate;
+        }
+        
+        // Use ProfileModule if available
+        if (window.ProfileModule) {
+            ProfileModule.renderChildButtons();
+            ProfileModule.updateChildButtons();
+            ProfileModule.updateTrackerButtons();
+        }
+        
+        // Use UICore if available
+        if (window.UICore) {
+            UICore.selectChild(StateManager.state.currentChild);
+            UICore.selectDate(StateManager.state.currentDate);
+            UICore.applyColorPalette();
+        }
         
         // Hide login overlay
         hideLoading();
@@ -393,9 +342,13 @@ auth.onAuthStateChanged(async (user) => {
         console.log('User signed out');
         
         // Show login overlay
-        document.getElementById('login-overlay').style.display = 'flex';
-        document.getElementById('login-content').style.display = 'block';
-        document.getElementById('loading-content').style.display = 'none';
+        const loginOverlay = document.getElementById('login-overlay');
+        const loginContent = document.getElementById('login-content');
+        const loadingContent = document.getElementById('loading-content');
+        
+        if (loginOverlay) loginOverlay.style.display = 'flex';
+        if (loginContent) loginContent.style.display = 'block';
+        if (loadingContent) loadingContent.style.display = 'none';
     }
 });
 
@@ -408,6 +361,8 @@ function addSignOutButton() {
     if (existingBtn) return;
 
     const header = document.querySelector('h1');
+    if (!header) return;
+    
     const signOutBtn = document.createElement('button');
     signOutBtn.id = 'signout-btn';
     signOutBtn.innerHTML = '🚪 Sign Out';
@@ -439,14 +394,14 @@ function addSignOutButton() {
 // Auto-save data periodically (every 30 seconds)
 setInterval(() => {
     if (currentUser) {
-        saveData();
+        saveDataToFirebase();
     }
 }, 30000);
 
 // Save data before page unload
 window.addEventListener('beforeunload', () => {
     if (currentUser) {
-        saveData();
+        saveDataToFirebase();
     }
 });
 
@@ -460,8 +415,8 @@ if (typeof module !== 'undefined' && module.exports) {
         db,
         storage,
         currentUser,
-        saveData,
-        loadData,
+        saveData: saveDataToFirebase,
+        loadData: loadDataFromFirebase,
         handlePhotoUpload,
         showLoading,
         hideLoading,
