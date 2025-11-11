@@ -3485,4 +3485,3 @@ function saveMedEntry() {
 
 // Initialize will be done by Firebase auth state listener
 // Don't initialize here - wait for Firebase authentication
-    </script>
