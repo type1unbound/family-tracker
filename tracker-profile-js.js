@@ -246,42 +246,67 @@ const ProfileModule = {
     },
 
     /**
-     * Apply crop
-     */
-    applyCrop() {
-        const img = document.getElementById('crop-image');
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        const scaleX = img.naturalWidth / img.clientWidth;
-        const scaleY = img.naturalHeight / img.clientHeight;
-        
-        canvas.width = StateManager.state.cropData.width * scaleX;
-        canvas.height = StateManager.state.cropData.height * scaleY;
-        
-        ctx.drawImage(
-            img,
-            StateManager.state.cropData.x * scaleX,
-            StateManager.state.cropData.y * scaleY,
-            StateManager.state.cropData.width * scaleX,
-            StateManager.state.cropData.height * scaleY,
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
-        
-        const croppedImage = canvas.toDataURL('image/jpeg', 0.9);
-        const photoContainer = document.getElementById('photo-preview-container');
-        photoContainer.innerHTML = `<img src="${croppedImage}" class="photo-preview">`;
-        document.getElementById('remove-photo-btn').style.display = 'inline-block';
-        StateManager.state.tempPhoto = croppedImage;
-        
-        document.getElementById('crop-area').style.display = 'none';
-        document.getElementById('upload-area').style.display = 'block';
-        document.getElementById('crop-container').classList.remove('active');
-    },
-
+ * Apply crop
+ */
+applyCrop() {
+    const img = document.getElementById('crop-image');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    const scaleX = img.naturalWidth / img.clientWidth;
+    const scaleY = img.naturalHeight / img.clientHeight;
+    
+    // Calculate cropped dimensions
+    const cropWidth = StateManager.state.cropData.width * scaleX;
+    const cropHeight = StateManager.state.cropData.height * scaleY;
+    
+    // Set max dimensions for compression
+    const MAX_SIZE = 400;
+    let finalWidth = cropWidth;
+    let finalHeight = cropHeight;
+    
+    // Scale down if needed
+    if (cropWidth > MAX_SIZE || cropHeight > MAX_SIZE) {
+        const scale = MAX_SIZE / Math.max(cropWidth, cropHeight);
+        finalWidth = cropWidth * scale;
+        finalHeight = cropHeight * scale;
+    }
+    
+    canvas.width = finalWidth;
+    canvas.height = finalHeight;
+    
+    ctx.drawImage(
+        img,
+        StateManager.state.cropData.x * scaleX,
+        StateManager.state.cropData.y * scaleY,
+        cropWidth,
+        cropHeight,
+        0,
+        0,
+        finalWidth,
+        finalHeight
+    );
+    
+    // Compress to JPEG with 70% quality
+    const croppedImage = canvas.toDataURL('image/jpeg', 0.7);
+    
+    console.log('📸 Cropped image size:', croppedImage.length, 'bytes');
+    
+    // Check if still too large
+    if (croppedImage.length > 900000) {
+        alert('Image is still too large after compression. Please try a smaller crop area or a different photo.');
+        return;
+    }
+    
+    const photoContainer = document.getElementById('photo-preview-container');
+    photoContainer.innerHTML = `<img src="${croppedImage}" class="photo-preview" style="max-width: 200px; border-radius: 50%;">`;
+    document.getElementById('remove-photo-btn').style.display = 'inline-block';
+    StateManager.state.tempPhoto = croppedImage;
+    
+    document.getElementById('crop-area').style.display = 'none';
+    document.getElementById('upload-area').style.display = 'block';
+    document.getElementById('crop-container').classList.remove('active');
+},
     /**
      * Cancel crop
      */
