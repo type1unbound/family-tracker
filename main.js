@@ -1,8 +1,6 @@
 // ========================================
 // MAIN.JS - APPLICATION INITIALIZATION
 // ========================================
-// This module handles app initialization, event listeners,
-// and helper functions that connect all modules together
 
 // ========================================
 // TRACKER HELPER FUNCTIONS
@@ -10,11 +8,26 @@
 
 // Open specific tracker by ID
 function openSpecificTracker(trackerId) {
-    const child = state.data[state.currentChild];
-    const tracker = child.trackers.find(t => t.id === trackerId);
+    // Use TrackerModule if available
+    if (window.TrackerModule && typeof TrackerModule.openSpecificTracker === 'function') {
+        TrackerModule.openSpecificTracker(trackerId);
+        return;
+    }
+    
+    // Fallback implementation
+    const child = StateManager.getCurrentChild();
+    const tracker = child.trackers ? child.trackers.find(t => t.id === trackerId) : null;
     
     if (!tracker) {
         alert('Tracker not found');
+        return;
+    }
+    
+    // Check if modal exists
+    const modal = document.getElementById('med-tracker-modal');
+    if (!modal) {
+        console.error('❌ Medication tracker modal not found in HTML!');
+        alert('Tracker modal not available. Please check your HTML setup.');
         return;
     }
     
@@ -22,7 +35,7 @@ function openSpecificTracker(trackerId) {
     window.currentTrackerId = trackerId;
     
     // Open modal
-    document.getElementById('med-tracker-modal').classList.add('active');
+    modal.classList.add('active');
     
     // Initialize with specific tracker
     initMedicationTrackerWithConfig(trackerId, tracker);
@@ -30,7 +43,7 @@ function openSpecificTracker(trackerId) {
 
 // Initialize tracker with specific config
 function initMedicationTrackerWithConfig(trackerId, tracker) {
-    const child = state.data[state.currentChild];
+    const child = StateManager.getCurrentChild();
     
     console.log('🔷 Init tracker:', tracker.templateName, 'for:', child.name);
     
@@ -41,29 +54,27 @@ function initMedicationTrackerWithConfig(trackerId, tracker) {
             titleEl.textContent = `${child.name} - ${tracker.templateName}`;
         }
         
-        // Initialize MedicationTracker with custom config
-        MedicationTracker.init(state.currentChild, trackerId, tracker.customConfig);
-        
-        // Render period type options from template
-        renderPeriodTypes(tracker.customConfig.periodTypes);
-        
-        // Set date
-        const dateEl = document.getElementById('med-entry-date');
-        if (dateEl) {
-            dateEl.value = new Date().toISOString().split('T')[0];
-            console.log('✅ Date set');
-        } else {
-            console.error('❌ Date input not found!');
+        // Initialize MedicationTracker with custom config if available
+        if (window.MedicationTracker && tracker.customConfig) {
+            MedicationTracker.init(StateManager.state.currentChild, trackerId, tracker.customConfig);
+            
+            // Render period type options from template
+            if (tracker.customConfig.periodTypes) {
+                renderPeriodTypes(tracker.customConfig.periodTypes);
+            }
+            
+            // Set date
+            const dateEl = document.getElementById('med-entry-date');
+            if (dateEl) {
+                dateEl.value = new Date().toISOString().split('T')[0];
+                console.log('✅ Date set');
+            }
+            
+            // Render the entry form
+            console.log('🔷 Rendering entry form...');
+            MedicationTracker.renderEntryForm();
+            console.log('✅ Render complete');
         }
-        
-        // Check container
-        const container = document.getElementById('med-rating-categories');
-        console.log('Container exists:', !!container);
-        
-        // Render the entry form
-        console.log('🔷 Rendering entry form...');
-        MedicationTracker.renderEntryForm();
-        console.log('✅ Render complete');
     }, 150);
 }
 
@@ -88,69 +99,53 @@ function renderPeriodTypes(periodTypes) {
 
 // Close medication tracker
 function closeMedicationTracker() {
-    document.getElementById('med-tracker-modal').classList.remove('active');
+    const modal = document.getElementById('med-tracker-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
 }
 
 // Save entry function
 function saveMedEntry() {
-    MedicationTracker.saveEntry();
+    if (window.MedicationTracker && typeof MedicationTracker.saveEntry === 'function') {
+        MedicationTracker.saveEntry();
+    }
 }
 
 // Switch medication tracker tabs
 function switchMedTab(tab) {
     // Update tab buttons
-    document.getElementById('med-tab-entry').style.borderBottomColor = tab === 'entry' ? '#6366f1' : 'transparent';
-    document.getElementById('med-tab-entry').style.color = tab === 'entry' ? '#6366f1' : '#6b7280';
-    document.getElementById('med-tab-history').style.borderBottomColor = tab === 'history' ? '#6366f1' : 'transparent';
-    document.getElementById('med-tab-history').style.color = tab === 'history' ? '#6366f1' : '#6b7280';
-    document.getElementById('med-tab-analytics').style.borderBottomColor = tab === 'analytics' ? '#6366f1' : 'transparent';
-    document.getElementById('med-tab-analytics').style.color = tab === 'analytics' ? '#6366f1' : '#6b7280';
-    document.getElementById('med-tab-settings').style.borderBottomColor = tab === 'settings' ? '#6366f1' : 'transparent';
-    document.getElementById('med-tab-settings').style.color = tab === 'settings' ? '#6366f1' : '#6b7280';
-    
-    // Update content visibility
-    document.getElementById('med-content-entry').style.display = tab === 'entry' ? 'block' : 'none';
-    document.getElementById('med-content-history').style.display = tab === 'history' ? 'block' : 'none';
-    document.getElementById('med-content-analytics').style.display = tab === 'analytics' ? 'block' : 'none';
-    document.getElementById('med-content-settings').style.display = tab === 'settings' ? 'block' : 'none';
+    const tabs = ['entry', 'history', 'analytics', 'settings'];
+    tabs.forEach(t => {
+        const tabBtn = document.getElementById(`med-tab-${t}`);
+        const content = document.getElementById(`med-content-${t}`);
+        if (tabBtn) {
+            tabBtn.style.borderBottomColor = tab === t ? '#6366f1' : 'transparent';
+            tabBtn.style.color = tab === t ? '#6366f1' : '#6b7280';
+        }
+        if (content) {
+            content.style.display = tab === t ? 'block' : 'none';
+        }
+    });
     
     // Render appropriate content
-    if (tab === 'history') {
-        MedicationTracker.renderHistory();
-    } else if (tab === 'analytics') {
-        MedicationTracker.renderAnalytics();
-    } else if (tab === 'settings') {
-        renderTrackerSettings();
+    if (window.MedicationTracker) {
+        if (tab === 'history') {
+            MedicationTracker.renderHistory();
+        } else if (tab === 'analytics') {
+            MedicationTracker.renderAnalytics();
+        } else if (tab === 'settings') {
+            renderTrackerSettings();
+        }
     }
 }
 
-// ========================================
-// DATE PICKER INITIALIZATION
-// ========================================
-
-// Note: Date picker onchange event is handled inline in HTML
-// The selectDate() function is in ui-core.js
-
-// ========================================
-// INITIALIZATION
-// ========================================
-
-// Initialize will be done by Firebase auth state listener
-// Don't initialize here - wait for Firebase authentication
+// Render tracker settings
+function renderTrackerSettings() {
+    const content = document.getElementById('med-settings-content');
+    if (!content) return;
+    
+    content.innerHTML = '<p>Settings configuration coming soon...</p>';
+}
 
 console.log('✅ Main.js loaded - waiting for Firebase authentication');
-
-// ========================================
-// EXPORTS
-// ========================================
-
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        openSpecificTracker,
-        initMedicationTrackerWithConfig,
-        renderPeriodTypes,
-        closeMedicationTracker,
-        saveMedEntry,
-        switchMedTab
-    };
-}
