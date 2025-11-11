@@ -95,7 +95,7 @@ const ProfileModule = {
         UICore.applyColorPalette();
         UICore.updateUI();
     }
-}
+},
 
     /**
      * Select color palette
