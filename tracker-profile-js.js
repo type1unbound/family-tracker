@@ -547,14 +547,37 @@ removeTrackerPrompt(trackerId) {
             const icon = template ? template.icon : '📊';
             
             html += `
-<button onclick="openSpecificTracker('${tracker.id}')">
-                        style="padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-align: left; transition: transform 0.2s;"
-                        onmouseover="this.style.transform='translateY(-2px)'"
-                        onmouseout="this.style.transform='translateY(0)'">
-                    ${icon} ${tracker.templateName}
-                </button>
-            `;
-        });
+updateTrackerButtons() {
+    const child = StateManager.getCurrentChild();
+    const container = document.getElementById('tracker-buttons-container');
+    
+    if (!container) return;
+    
+    if (!child.trackers || child.trackers.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    let html = '<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">';
+    html += '<label style="font-weight: 600; font-size: 14px; color: #374151;">Health Trackers:</label>';
+    
+    child.trackers.forEach(tracker => {
+        const template = window.TrackerTemplates ? TrackerTemplates.getTemplateList().find(t => t.id === tracker.templateId) : null;
+        const icon = template ? template.icon : '📊';
+        
+        html += `
+            <button onclick="openSpecificTracker('${tracker.id}')" 
+                    style="padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-align: left; transition: transform 0.2s;"
+                    onmouseover="this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.transform='translateY(0)'">
+                ${icon} ${tracker.templateName}
+            </button>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+},
         
         html += '</div>';
         container.innerHTML = html;
