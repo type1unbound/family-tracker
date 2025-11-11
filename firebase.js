@@ -237,31 +237,35 @@ window.addEventListener('DOMContentLoaded', function() {
                 uploadArea.innerHTML = '<div style="padding: 40px; text-align: center;">Uploading...</div>';
             }
 
-            // Upload to Firebase Storage
-            const userId = currentUser.uid;
-            const timestamp = Date.now();
-            const storageRef = storage.ref(`users/${userId}/photos/${timestamp}_${file.name}`);
+            // Convert to base64 instead of using Firebase Storage
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Image = e.target.result;
+                
+                // Store as base64 in Firestore instead of Storage
+                StateManager.state.tempPhoto = base64Image;
+                
+                // Show preview
+                const photoContainer = document.getElementById('photo-preview-container');
+                if (photoContainer) {
+                    photoContainer.innerHTML = `<img src="${base64Image}" class="photo-preview" style="max-width: 200px; border-radius: 50%;">`;
+                }
+                
+                const removeBtn = document.getElementById('remove-photo-btn');
+                if (removeBtn) {
+                    removeBtn.style.display = 'inline-block';
+                }
+                
+                if (uploadArea) {
+                    uploadArea.style.display = 'none';
+                }
+            };
             
-            await storageRef.put(file);
-            const downloadURL = await storageRef.getDownloadURL();
-
-            // Handle the photo URL
-            StateManager.state.tempPhoto = downloadURL;
+            reader.onerror = function(error) {
+                throw new Error('Failed to read file');
+            };
             
-            // Show preview
-            const photoContainer = document.getElementById('photo-preview-container');
-            if (photoContainer) {
-                photoContainer.innerHTML = `<img src="${downloadURL}" class="photo-preview">`;
-            }
-            
-            const removeBtn = document.getElementById('remove-photo-btn');
-            if (removeBtn) {
-                removeBtn.style.display = 'inline-block';
-            }
-            
-            if (uploadArea) {
-                uploadArea.style.display = 'none';
-            }
+            reader.readAsDataURL(file);
 
         } catch (error) {
             console.error('Error uploading photo:', error);
