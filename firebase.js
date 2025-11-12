@@ -107,13 +107,33 @@ document.addEventListener('DOMContentLoaded', function() {
     
     signInBtn.addEventListener('click', async () => {
         console.log('🔐 Sign-In button clicked');
+        console.log('📍 Current URL:', window.location.href);
+        console.log('📍 Current domain:', window.location.hostname);
+        
         try {
             const provider = new firebase.auth.GoogleAuthProvider();
-            console.log('Redirecting to Google sign-in...');
-            await auth.signInWithRedirect(provider);
+            
+            // Force account selection and consent screen
+            provider.setCustomParameters({
+                prompt: 'select_account'
+            });
+            
+            console.log('Attempting sign in with redirect...');
+            
+            // Try popup first (better for debugging)
+            if (confirm('Use popup for sign-in? (Recommended for testing)\nClick OK for popup, Cancel for redirect')) {
+                console.log('Using popup method...');
+                const result = await auth.signInWithPopup(provider);
+                console.log('✅ Popup sign-in successful:', result.user.email);
+            } else {
+                console.log('Using redirect method...');
+                await auth.signInWithRedirect(provider);
+            }
         } catch (error) {
             console.error('❌ Sign in failed:', error);
-            alert('Sign in failed: ' + error.message);
+            console.error('Error code:', error.code);
+            console.error('Error message:', error.message);
+            alert('Sign in failed: ' + error.message + '\n\nError code: ' + error.code);
         }
     });
 });
