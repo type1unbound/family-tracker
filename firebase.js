@@ -45,6 +45,28 @@ db.enablePersistence()
 
 let currentUser = null;
 
+// Handle redirect result FIRST before anything else
+let redirectResultProcessed = false;
+
+// Process redirect result immediately on page load
+(async function() {
+    try {
+        console.log('🔄 Checking for redirect result...');
+        const result = await auth.getRedirectResult();
+        redirectResultProcessed = true;
+        
+        if (result.user) {
+            console.log('✅ Sign-in successful via redirect:', result.user.email);
+        } else {
+            console.log('ℹ️ No redirect result (user may already be signed in or this is first page load)');
+        }
+    } catch (error) {
+        console.error('❌ Redirect sign-in error:', error);
+        alert('Sign in failed: ' + error.message);
+        redirectResultProcessed = true;
+    }
+})();
+
 // Setup Google Sign-In button
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, setting up Google Sign-In button');
@@ -68,18 +90,6 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Sign in failed: ' + error.message);
         }
     });
-
-    // Handle redirect result
-    auth.getRedirectResult()
-        .then((result) => {
-            if (result.user) {
-                console.log('✅ Sign-in successful via redirect:', result.user.email);
-            }
-        })
-        .catch((error) => {
-            console.error('❌ Redirect sign-in error:', error);
-            alert('Sign in failed: ' + error.message);
-        });
 });
 
 // ========================================
@@ -316,6 +326,11 @@ async function initializeDashboard() {
 // ========================================
 
 auth.onAuthStateChanged(async (user) => {
+    // Wait for redirect result to be processed first
+    while (!redirectResultProcessed) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
     console.log('🔐 Auth state changed, user:', user ? user.email : 'none');
     
     if (user) {
