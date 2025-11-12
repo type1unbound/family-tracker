@@ -97,7 +97,7 @@ async function saveDataToFirebase() {
         return;
     }
 
-    if (!StateManager || !StateManager.state) {
+    if (!window.StateManager || !window.StateManager.state) {
         console.error('❌ StateManager not available');
         return;
     }
@@ -111,13 +111,13 @@ async function saveDataToFirebase() {
         await userRef.set({
             email: currentUser.email,
             displayName: currentUser.displayName,
-            children: StateManager.state.children,
+            children: window.StateManager.state.children,
             lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
 
         // Save each family member
-        for (const childId of StateManager.state.children) {
-            const memberData = StateManager.state.data[childId];
+        for (const childId of window.StateManager.state.children) {
+            const memberData = window.StateManager.state.data[childId];
             
             if (!memberData) continue;
             
@@ -149,8 +149,8 @@ async function loadDataFromFirebase() {
         return;
     }
 
-    if (!StateManager || !StateManager.state) {
-        console.error('❌ StateManager not available');
+    if (!window.StateManager || !window.StateManager.state) {
+        console.error('❌ StateManager not available - cannot load data');
         return;
     }
 
@@ -164,17 +164,17 @@ async function loadDataFromFirebase() {
         const userDoc = await userRef.get();
         if (userDoc.exists) {
             const userData = userDoc.data();
-            StateManager.state.children = userData.children || ['child1', 'child2'];
-            console.log('  Found existing user data with', StateManager.state.children.length, 'family members');
+            window.StateManager.state.children = userData.children || ['child1', 'child2'];
+            console.log('  Found existing user data with', window.StateManager.state.children.length, 'family members');
         } else {
             // New user - initialize with defaults
             console.log('  New user - initializing with default data');
-            StateManager.state.children = ['child1', 'child2'];
+            window.StateManager.state.children = ['child1', 'child2'];
             
             // Initialize default children
-            StateManager.state.children.forEach(childId => {
-                if (!StateManager.state.data[childId]) {
-                    StateManager.createChild(childId);
+            window.StateManager.state.children.forEach(childId => {
+                if (!window.StateManager.state.data[childId]) {
+                    window.StateManager.createChild(childId);
                 }
             });
             
@@ -182,43 +182,45 @@ async function loadDataFromFirebase() {
         }
 
         // Load each family member
-        for (const childId of StateManager.state.children) {
+        for (const childId of window.StateManager.state.children) {
             const memberDoc = await userRef.collection('familyMembers').doc(childId).get();
             
             if (memberDoc.exists) {
-                StateManager.state.data[childId] = memberDoc.data();
+                window.StateManager.state.data[childId] = memberDoc.data();
                 
                 // Ensure required fields exist
-                if (!StateManager.state.data[childId].trackers) {
-                    StateManager.state.data[childId].trackers = [];
+                if (!window.StateManager.state.data[childId].trackers) {
+                    window.StateManager.state.data[childId].trackers = [];
                 }
-                if (!StateManager.state.data[childId].days) {
-                    StateManager.state.data[childId].days = {};
+                if (!window.StateManager.state.data[childId].days) {
+                    window.StateManager.state.data[childId].days = {};
                 }
                 
-                console.log('  Loaded member:', StateManager.state.data[childId].name);
+                console.log('  Loaded member:', window.StateManager.state.data[childId].name);
                 
                 // Load days data
                 const daysSnapshot = await userRef.collection('familyMembers').doc(childId)
                     .collection('days').get();
                 
                 daysSnapshot.forEach(doc => {
-                    StateManager.state.data[childId].days[doc.id] = doc.data();
+                    window.StateManager.state.data[childId].days[doc.id] = doc.data();
                 });
-                console.log('  Loaded', daysSnapshot.size, 'days of data for', StateManager.state.data[childId].name);
-            } else if (!StateManager.state.data[childId]) {
+                console.log('  Loaded', daysSnapshot.size, 'days of data for', window.StateManager.state.data[childId].name);
+            } else if (!window.StateManager.state.data[childId]) {
                 // Initialize new member with defaults
                 console.log('  Initializing new member:', childId);
-                StateManager.createChild(childId);
+                window.StateManager.createChild(childId);
             }
         }
 
         console.log('✅ Data loaded from Firestore successfully');
-        hideLoading();
+        return true;
     } catch (error) {
         console.error('❌ Error loading data from Firestore:', error);
-        hideLoading();
         alert('Failed to load data: ' + error.message);
+        return false;
+    } finally {
+        hideLoading();
     }
 }
 
@@ -230,6 +232,7 @@ window.loadData = loadDataFromFirebase;
 // ========================================
 
 function showLoading() {
+    console.log('🔄 Showing loading overlay');
     const loginContent = document.getElementById('login-content');
     const loadingContent = document.getElementById('loading-content');
     if (loginContent) loginContent.style.display = 'none';
@@ -237,8 +240,75 @@ function showLoading() {
 }
 
 function hideLoading() {
+    console.log('✅ Hiding loading overlay');
     const loginOverlay = document.getElementById('login-overlay');
-    if (loginOverlay) loginOverlay.style.display = 'none';
+    if (loginOverlay) {
+        loginOverlay.style.display = 'none';
+        console.log('✅ Login overlay hidden - dashboard should be visible');
+    } else {
+        console.error('❌ Login overlay element not found!');
+    }
+}
+
+// ========================================
+// INITIALIZE DASHBOARD
+// ========================================
+
+async function initializeDashboard() {
+    console.log('🚀 Initializing dashboard...');
+    
+    try {
+        // Check if StateManager exists
+        if (!window.StateManager) {
+            console.error('❌ StateManager not found - cannot initialize dashboard');
+            alert('Error: Application not properly loaded. Please refresh the page.');
+            return false;
+        }
+        
+        console.log('✅ StateManager found');
+        
+        // Load data from Firebase
+        const dataLoaded = await loadDataFromFirebase();
+        if (!dataLoaded) {
+            console.error('❌ Failed to load data from Firebase');
+            return false;
+        }
+        
+        // Initialize date picker
+        const datePicker = document.getElementById('date-picker');
+        if (datePicker && window.StateManager.state) {
+            datePicker.value = window.StateManager.state.currentDate;
+            console.log('✅ Date picker initialized');
+        }
+        
+        // Initialize ProfileModule
+        if (window.ProfileModule) {
+            console.log('✅ ProfileModule found, initializing...');
+            window.ProfileModule.renderChildButtons();
+            window.ProfileModule.updateChildButtons();
+            window.ProfileModule.updateTrackerButtons();
+        } else {
+            console.warn('⚠️ ProfileModule not found');
+        }
+        
+        // Initialize UICore
+        if (window.UICore && window.StateManager.state) {
+            console.log('✅ UICore found, initializing...');
+            window.UICore.selectChild(window.StateManager.state.currentChild);
+            window.UICore.selectDate(window.StateManager.state.currentDate);
+            window.UICore.applyColorPalette();
+        } else {
+            console.warn('⚠️ UICore not found');
+        }
+        
+        console.log('✅ Dashboard initialized successfully');
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Error initializing dashboard:', error);
+        alert('Error initializing dashboard: ' + error.message);
+        return false;
+    }
 }
 
 // ========================================
@@ -246,38 +316,26 @@ function hideLoading() {
 // ========================================
 
 auth.onAuthStateChanged(async (user) => {
+    console.log('🔐 Auth state changed, user:', user ? user.email : 'none');
+    
     if (user) {
         currentUser = user;
-        console.log('User signed in:', user.email);
+        console.log('✅ User signed in:', user.email);
         
-        // Load user's data from Firestore
-        await loadDataFromFirebase();
+        // Wait a bit for other modules to load
+        await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Initialize UI
-        const datePicker = document.getElementById('date-picker');
-        if (datePicker) {
-            datePicker.value = StateManager.state.currentDate;
+        // Initialize the dashboard
+        const success = await initializeDashboard();
+        
+        if (success) {
+            // Add sign out button
+            addSignOutButton();
+            console.log('✅ Login complete - user should see dashboard now');
+        } else {
+            console.error('❌ Dashboard initialization failed');
         }
         
-        // Use ProfileModule if available
-        if (window.ProfileModule) {
-            ProfileModule.renderChildButtons();
-            ProfileModule.updateChildButtons();
-            ProfileModule.updateTrackerButtons();
-        }
-        
-        // Use UICore if available
-        if (window.UICore) {
-            UICore.selectChild(StateManager.state.currentChild);
-            UICore.selectDate(StateManager.state.currentDate);
-            UICore.applyColorPalette();
-        }
-        
-        // Hide login overlay
-        hideLoading();
-        
-        // Add sign out button
-        addSignOutButton();
     } else {
         currentUser = null;
         console.log('User signed out');
