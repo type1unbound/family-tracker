@@ -62,13 +62,18 @@ let authInitialized = false;
 (async function() {
     try {
         console.log('🔄 Checking for redirect result...');
+        console.log('📍 Current URL:', window.location.href);
+        console.log('📍 URL Search Params:', window.location.search);
+        console.log('📍 URL Hash:', window.location.hash);
+        
         const result = await auth.getRedirectResult();
         
         console.log('📋 Redirect result details:', {
             hasUser: !!result.user,
             email: result.user?.email,
             credential: !!result.credential,
-            operationType: result.operationType
+            operationType: result.operationType,
+            additionalUserInfo: result.additionalUserInfo
         });
         
         if (result.user) {
@@ -78,8 +83,19 @@ let authInitialized = false;
                 email: result.user.email,
                 displayName: result.user.displayName
             });
+            
+            // Store a flag that we just completed redirect auth
+            sessionStorage.setItem('justAuthenticated', 'true');
         } else {
-            console.log('ℹ️ No redirect result (user may already be signed in or this is first page load)');
+            console.log('ℹ️ No redirect result');
+            
+            // Check if we just authenticated
+            if (sessionStorage.getItem('justAuthenticated') === 'true') {
+                console.log('⚠️ Just authenticated but no redirect result - checking current user...');
+                const currentUser = auth.currentUser;
+                console.log('Current user:', currentUser?.email);
+                sessionStorage.removeItem('justAuthenticated');
+            }
         }
         
         redirectResultProcessed = true;
@@ -88,7 +104,12 @@ let authInitialized = false;
         console.error('❌ Redirect sign-in error:', error);
         console.error('Error code:', error.code);
         console.error('Error message:', error.message);
-        alert('Sign in failed: ' + error.message);
+        console.error('Full error:', error);
+        
+        // Don't alert for common "no auth event" error
+        if (error.code !== 'auth/no-auth-event') {
+            alert('Sign in failed: ' + error.message);
+        }
         redirectResultProcessed = true;
     }
 })();
@@ -120,19 +141,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log('Attempting sign in with redirect...');
             
-            // Try popup first (better for debugging)
-            if (confirm('Use popup for sign-in? (Recommended for testing)\nClick OK for popup, Cancel for redirect')) {
-                console.log('Using popup method...');
-                const result = await auth.signInWithPopup(provider);
-                console.log('✅ Popup sign-in successful:', result.user.email);
-            } else {
-                console.log('Using redirect method...');
-                await auth.signInWithRedirect(provider);
-            }
+            // Mark that we're about to authenticate
+            sessionStorage.setItem('attemptingAuth', 'true');
+            
+            // Use redirect
+            await auth.signInWithRedirect(provider);
+            console.log('Redirect initiated...');
         } catch (error) {
             console.error('❌ Sign in failed:', error);
             console.error('Error code:', error.code);
             console.error('Error message:', error.message);
+            sessionStorage.removeItem('attemptingAuth');
             alert('Sign in failed: ' + error.message + '\n\nError code: ' + error.code);
         }
     });
@@ -376,6 +395,7 @@ auth.onAuthStateChanged(async (user) => {
     console.log('   - redirectResultProcessed:', redirectResultProcessed);
     console.log('   - authInitialized:', authInitialized);
     console.log('   - user:', user ? user.email : 'none');
+    console.log('   - attemptingAuth flag:', sessionStorage.getItem('attemptingAuth'));
     
     // Wait for redirect result to be processed first
     let waitCount = 0;
@@ -392,6 +412,9 @@ auth.onAuthStateChanged(async (user) => {
     console.log('🔐 Auth state changed, user:', user ? user.email : 'none');
     
     if (user) {
+        // Clear the attempting auth flag
+        sessionStorage.removeItem('attemptingAuth');
+        
         // Prevent duplicate initialization
         if (authInitialized) {
             console.log('ℹ️ Already initialized, skipping...');
@@ -404,7 +427,8 @@ auth.onAuthStateChanged(async (user) => {
         console.log('👤 User details:', {
             uid: user.uid,
             email: user.email,
-            displayName: user.displayName
+            displayName: user.displayName,
+            emailVerified: user.emailVerified
         });
         
         // Check if login overlay exists
@@ -417,6 +441,13 @@ auth.onAuthStateChanged(async (user) => {
         // Wait a bit for other modules to load
         console.log('⏳ Waiting for modules to load...');
         await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Check what modules are available
+        console.log('📦 Available modules:', {
+            StateManager: !!window.StateManager,
+            ProfileModule: !!window.ProfileModule,
+            UICore: !!window.UICore
+        });
         
         // Initialize the dashboard
         console.log('🚀 Starting dashboard initialization...');
@@ -438,7 +469,14 @@ auth.onAuthStateChanged(async (user) => {
     } else {
         authInitialized = false;
         currentUser = null;
-        console.log('👋 User signed out');
+        console.log('👋 User signed out (or not yet signed in)');
+        
+        // Only show login if we're not in the middle of authentication
+        const attemptingAuth = sessionStorage.getItem('attemptingAuth');
+        if (attemptingAuth === 'true') {
+            console.log('⏳ Auth in progress, not showing login screen...');
+            return;
+        }
         
         // Show login overlay
         const loginOverlay = document.getElementById('login-overlay');
