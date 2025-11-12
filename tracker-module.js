@@ -229,7 +229,6 @@ const MedicationTracker = {
     },
     
     // Save entry to Firestore
-   // Save entry to Firestore
     saveEntry: async function() {
         // Validation - check if elements exist first
         const dateEl = document.getElementById('med-entry-date');
@@ -592,6 +591,301 @@ const MedicationTracker = {
         }
         
         container.innerHTML = html;
+    },
+    
+    // Render settings editor
+    renderSettings: function() {
+        const container = document.getElementById('med-settings-content');
+        if (!container) return;
+        
+        const cfg = this.currentConfig;
+        if (!cfg) {
+            container.innerHTML = '<p style="color: red;">Error: Configuration not loaded</p>';
+            return;
+        }
+        
+        let html = `
+            <div style="background: #fef3c7; border: 2px solid #fbbf24; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                <p style="font-size: 14px; color: #92400e; font-weight: 600; margin-bottom: 8px;">⚙️ Tracker Configuration</p>
+                <p style="font-size: 13px; color: #78350f;">Edit the questions and categories for this health tracker. Changes will apply to future entries.</p>
+            </div>
+            
+            <div style="margin-bottom: 32px;">
+                <h3 style="font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 16px;">Section Titles</h3>
+                <div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px;">
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px;">Observer Section Title:</label>
+                        <input type="text" id="settings-observer-title" value="${cfg.observerSectionTitle || 'Observer Ratings'}" class="edit-input" style="width: 100%; padding: 10px; border: 2px solid #d1d5db; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px;">Self-Report Section Title:</label>
+                        <input type="text" id="settings-selfreport-title" value="${cfg.selfReportSectionTitle || 'Self-Report'}" class="edit-input" style="width: 100%; padding: 10px; border: 2px solid #d1d5db; border-radius: 8px;">
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 32px;">
+                <h3 style="font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 16px;">👁️ Observer Categories</h3>
+                <div id="settings-observed-list"></div>
+                <button onclick="MedicationTracker.addObservedCategory()" class="btn btn-secondary" style="width: 100%; margin-top: 12px;">+ Add Category</button>
+            </div>
+            
+            <div style="margin-bottom: 32px;">
+                <h3 style="font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 16px;">🗣️ Self-Report Categories</h3>
+                <div id="settings-selfreport-list"></div>
+                <button onclick="MedicationTracker.addSelfReportCategory()" class="btn btn-secondary" style="width: 100%; margin-top: 12px;">+ Add Category</button>
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button onclick="MedicationTracker.saveSettings()" class="btn btn-primary" style="flex: 1;">💾 Save Settings</button>
+                <button onclick="MedicationTracker.resetToDefaults()" class="btn" style="background: #ef4444; color: white;">🔄 Reset to Defaults</button>
+            </div>
+        `;
+        
+        container.innerHTML = html;
+        
+        // Render category lists
+        this.renderObservedCategoriesList();
+        this.renderSelfReportCategoriesList();
+    },
+    
+    // Render observed categories list for editing
+    renderObservedCategoriesList: function() {
+        const container = document.getElementById('settings-observed-list');
+        if (!container) return;
+        
+        const categories = this.currentConfig.observedCategories;
+        let html = '';
+        
+        categories.forEach((category, catIndex) => {
+            html += `
+                <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <input type="text" value="${category.name}" onchange="MedicationTracker.updateCategoryName('observed', ${catIndex}, this.value)" style="flex: 1; padding: 8px; border: 2px solid #d1d5db; border-radius: 6px; font-weight: 600; margin-right: 12px;">
+                        <button onclick="MedicationTracker.deleteCategory('observed', ${catIndex})" style="padding: 6px 12px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">🗑️</button>
+                    </div>
+                    
+                    <div style="margin-left: 16px;">
+            `;
+            
+            category.items.forEach((item, itemIndex) => {
+                html += `
+                    <div style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #e5e7eb;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; gap: 8px; margin-bottom: 8px;">
+                            <input type="text" value="${item.label}" onchange="MedicationTracker.updateItemLabel('observed', ${catIndex}, ${itemIndex}, this.value)" style="flex: 1; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px;">
+                            <button onclick="MedicationTracker.deleteItem('observed', ${catIndex}, ${itemIndex})" style="padding: 4px 8px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; border-radius: 4px; font-size: 12px; cursor: pointer;">✕</button>
+                        </div>
+                        <textarea onchange="MedicationTracker.updateItemDescription('observed', ${catIndex}, ${itemIndex}, this.value)" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; color: #6b7280; min-height: 50px;">${item.description}</textarea>
+                    </div>
+                `;
+            });
+            
+            html += `
+                        <button onclick="MedicationTracker.addItem('observed', ${catIndex})" class="btn btn-secondary" style="width: 100%; margin-top: 8px; padding: 8px;">+ Add Question</button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    },
+    
+    // Render self-report categories list for editing
+    renderSelfReportCategoriesList: function() {
+        const container = document.getElementById('settings-selfreport-list');
+        if (!container) return;
+        
+        const categories = this.currentConfig.selfReportCategories;
+        let html = '';
+        
+        categories.forEach((category, catIndex) => {
+            html += `
+                <div style="background: #eff6ff; border: 2px solid #bfdbfe; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <input type="text" value="${category.name}" onchange="MedicationTracker.updateCategoryName('selfreport', ${catIndex}, this.value)" style="flex: 1; padding: 8px; border: 2px solid #bfdbfe; border-radius: 6px; font-weight: 600; margin-right: 12px;">
+                        <button onclick="MedicationTracker.deleteCategory('selfreport', ${catIndex})" style="padding: 6px 12px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">🗑️</button>
+                    </div>
+                    
+                    <div style="margin-left: 16px;">
+            `;
+            
+            category.items.forEach((item, itemIndex) => {
+                html += `
+                    <div style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #bfdbfe;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; gap: 8px; margin-bottom: 8px;">
+                            <input type="text" value="${item.label}" onchange="MedicationTracker.updateItemLabel('selfreport', ${catIndex}, ${itemIndex}, this.value)" style="flex: 1; padding: 6px; border: 1px solid #bfdbfe; border-radius: 4px; font-size: 14px;">
+                            <button onclick="MedicationTracker.deleteItem('selfreport', ${catIndex}, ${itemIndex})" style="padding: 4px 8px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; border-radius: 4px; font-size: 12px; cursor: pointer;">✕</button>
+                        </div>
+                        <textarea onchange="MedicationTracker.updateItemDescription('selfreport', ${catIndex}, ${itemIndex}, this.value)" style="width: 100%; padding: 6px; border: 1px solid #bfdbfe; border-radius: 4px; font-size: 13px; color: #1e40af; min-height: 50px;">${item.description}</textarea>
+                    </div>
+                `;
+            });
+            
+            html += `
+                        <button onclick="MedicationTracker.addItem('selfreport', ${catIndex})" class="btn btn-secondary" style="width: 100%; margin-top: 8px; padding: 8px;">+ Add Question</button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    },
+    
+    // Update category name
+    updateCategoryName: function(type, catIndex, newName) {
+        const categories = type === 'observed' ? this.currentConfig.observedCategories : this.currentConfig.selfReportCategories;
+        categories[catIndex].name = newName;
+    },
+    
+    // Update item label
+    updateItemLabel: function(type, catIndex, itemIndex, newLabel) {
+        const categories = type === 'observed' ? this.currentConfig.observedCategories : this.currentConfig.selfReportCategories;
+        categories[catIndex].items[itemIndex].label = newLabel;
+    },
+    
+    // Update item description
+    updateItemDescription: function(type, catIndex, itemIndex, newDescription) {
+        const categories = type === 'observed' ? this.currentConfig.observedCategories : this.currentConfig.selfReportCategories;
+        categories[catIndex].items[itemIndex].description = newDescription;
+    },
+    
+    // Add new category
+    addObservedCategory: function() {
+        this.currentConfig.observedCategories.push({
+            name: 'New Category',
+            items: [
+                { id: 'new_item_' + Date.now(), label: 'New Question', description: 'Description here' }
+            ]
+        });
+        this.renderObservedCategoriesList();
+    },
+    
+    addSelfReportCategory: function() {
+        this.currentConfig.selfReportCategories.push({
+            name: 'New Category',
+            items: [
+                { id: 'new_item_' + Date.now(), label: 'New Question', description: 'Description here' }
+            ]
+        });
+        this.renderSelfReportCategoriesList();
+    },
+    
+    // Add new item to category
+    addItem: function(type, catIndex) {
+        const categories = type === 'observed' ? this.currentConfig.observedCategories : this.currentConfig.selfReportCategories;
+        categories[catIndex].items.push({
+            id: 'item_' + Date.now(),
+            label: 'New Question',
+            description: 'Description here'
+        });
+        
+        if (type === 'observed') {
+            this.renderObservedCategoriesList();
+        } else {
+            this.renderSelfReportCategoriesList();
+        }
+    },
+    
+    // Delete category
+    deleteCategory: function(type, catIndex) {
+        if (!confirm('Delete this entire category? This cannot be undone.')) return;
+        
+        const categories = type === 'observed' ? this.currentConfig.observedCategories : this.currentConfig.selfReportCategories;
+        categories.splice(catIndex, 1);
+        
+        if (type === 'observed') {
+            this.renderObservedCategoriesList();
+        } else {
+            this.renderSelfReportCategoriesList();
+        }
+    },
+    
+    // Delete item
+    deleteItem: function(type, catIndex, itemIndex) {
+        const categories = type === 'observed' ? this.currentConfig.observedCategories : this.currentConfig.selfReportCategories;
+        categories[catIndex].items.splice(itemIndex, 1);
+        
+        if (type === 'observed') {
+            this.renderObservedCategoriesList();
+        } else {
+            this.renderSelfReportCategoriesList();
+        }
+    },
+    
+    // Save settings to Firestore
+    saveSettings: async function() {
+        if (!currentUser) {
+            alert('Error: Not signed in');
+            return;
+        }
+        
+        try {
+            // Update section titles from inputs
+            const observerTitle = document.getElementById('settings-observer-title')?.value;
+            const selfreportTitle = document.getElementById('settings-selfreport-title')?.value;
+            
+            if (observerTitle) this.currentConfig.observerSectionTitle = observerTitle;
+            if (selfreportTitle) this.currentConfig.selfReportSectionTitle = selfreportTitle;
+            
+            // Get the child and update their tracker config
+            const child = StateManager.getCurrentChild();
+            const tracker = child.trackers.find(t => t.id === this.currentTrackerId);
+            
+            if (tracker) {
+                tracker.customConfig = this.currentConfig;
+                
+                // Save to Firestore
+                const userRef = db.collection('users').doc(currentUser.uid);
+                await userRef.collection('familyMembers').doc(this.currentMemberId).update({
+                    trackers: child.trackers
+                });
+                
+                console.log('✅ Tracker settings saved');
+                alert('✅ Settings saved successfully!');
+            }
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            alert('Failed to save settings: ' + error.message);
+        }
+    },
+    
+    // Reset to default configuration
+    resetToDefaults: async function() {
+        if (!confirm('Reset this tracker to default configuration? This will remove all custom questions.')) return;
+        
+        try {
+            // Get the child and tracker
+            const child = StateManager.getCurrentChild();
+            const tracker = child.trackers.find(t => t.id === this.currentTrackerId);
+            
+            if (tracker && tracker.templateId) {
+                // Get default template
+                const template = window.TrackerTemplates?.templates?.find(t => t.id === tracker.templateId);
+                
+                if (template) {
+                    // Reset to template config
+                    this.currentConfig = JSON.parse(JSON.stringify(template.config));
+                    tracker.customConfig = this.currentConfig;
+                    
+                    // Save to Firestore
+                    const userRef = db.collection('users').doc(currentUser.uid);
+                    await userRef.collection('familyMembers').doc(this.currentMemberId).update({
+                        trackers: child.trackers
+                    });
+                    
+                    console.log('✅ Reset to defaults');
+                    alert('✅ Reset to default configuration');
+                    
+                    // Re-render settings
+                    this.renderSettings();
+                } else {
+                    alert('Error: Template not found');
+                }
+            }
+        } catch (error) {
+            console.error('Error resetting:', error);
+            alert('Failed to reset: ' + error.message);
+        }
     }
 };
 
@@ -619,11 +913,14 @@ function switchMedTab(tab) {
     } else if (tab === 'analytics') {
         MedicationTracker.renderAnalytics();
     } else if (tab === 'settings') {
-        renderTrackerSettings();
+        MedicationTracker.renderSettings();
     }
 }
 
-// ========================================
+// Render tracker settings (called from main.js)
+function renderTrackerSettings() {
+    MedicationTracker.renderSettings();
+}
 
 // Export for Node.js (if needed)
 if (typeof module !== 'undefined' && module.exports) {
