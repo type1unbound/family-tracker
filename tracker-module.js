@@ -229,12 +229,28 @@ const MedicationTracker = {
     },
     
     // Save entry to Firestore
+   // Save entry to Firestore
     saveEntry: async function() {
-        // Validation
-        const date = document.getElementById('med-entry-date').value;
-        const observer = document.getElementById('med-observer').value;
-        const periodType = document.querySelector('input[name="med-period"]:checked')?.value;
-        const notes = document.getElementById('med-entry-notes').value;
+        // Validation - check if elements exist first
+        const dateEl = document.getElementById('med-entry-date');
+        const observerEl = document.getElementById('med-observer');
+        const periodTypeEl = document.querySelector('input[name="med-period"]:checked');
+        const notesEl = document.getElementById('med-entry-notes');
+        
+        if (!dateEl) {
+            alert('Error: Date field not found. Please close and reopen the tracker.');
+            return;
+        }
+        
+        if (!observerEl) {
+            alert('Error: Observer field not found. Please close and reopen the tracker.');
+            return;
+        }
+        
+        const date = dateEl.value;
+        const observer = observerEl.value;
+        const periodType = periodTypeEl?.value;
+        const notes = notesEl?.value || '';
         
         if (!date) {
             alert('Please select a date');
