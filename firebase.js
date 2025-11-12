@@ -33,6 +33,15 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 
+// Set auth persistence to LOCAL (survives browser restarts)
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+    .then(() => {
+        console.log('✅ Auth persistence set to LOCAL');
+    })
+    .catch((error) => {
+        console.error('❌ Error setting persistence:', error);
+    });
+
 // Enable offline persistence
 db.enablePersistence()
     .catch((err) => {
@@ -47,21 +56,38 @@ let currentUser = null;
 
 // Handle redirect result FIRST before anything else
 let redirectResultProcessed = false;
+let authInitialized = false;
 
 // Process redirect result immediately on page load
 (async function() {
     try {
         console.log('🔄 Checking for redirect result...');
         const result = await auth.getRedirectResult();
-        redirectResultProcessed = true;
+        
+        console.log('📋 Redirect result details:', {
+            hasUser: !!result.user,
+            email: result.user?.email,
+            credential: !!result.credential,
+            operationType: result.operationType
+        });
         
         if (result.user) {
             console.log('✅ Sign-in successful via redirect:', result.user.email);
+            console.log('🔐 User object:', {
+                uid: result.user.uid,
+                email: result.user.email,
+                displayName: result.user.displayName
+            });
         } else {
             console.log('ℹ️ No redirect result (user may already be signed in or this is first page load)');
         }
+        
+        redirectResultProcessed = true;
+        console.log('✅ Redirect result processed');
     } catch (error) {
         console.error('❌ Redirect sign-in error:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
         alert('Sign in failed: ' + error.message);
         redirectResultProcessed = true;
     }
@@ -326,39 +352,83 @@ async function initializeDashboard() {
 // ========================================
 
 auth.onAuthStateChanged(async (user) => {
+    console.log('🎯 onAuthStateChanged fired!');
+    console.log('   - redirectResultProcessed:', redirectResultProcessed);
+    console.log('   - authInitialized:', authInitialized);
+    console.log('   - user:', user ? user.email : 'none');
+    
     // Wait for redirect result to be processed first
-    while (!redirectResultProcessed) {
+    let waitCount = 0;
+    while (!redirectResultProcessed && waitCount < 50) { // Max 5 seconds
+        console.log('⏳ Waiting for redirect result...', waitCount);
         await new Promise(resolve => setTimeout(resolve, 100));
+        waitCount++;
+    }
+    
+    if (!redirectResultProcessed) {
+        console.error('❌ Timeout waiting for redirect result');
     }
     
     console.log('🔐 Auth state changed, user:', user ? user.email : 'none');
     
     if (user) {
+        // Prevent duplicate initialization
+        if (authInitialized) {
+            console.log('ℹ️ Already initialized, skipping...');
+            return;
+        }
+        authInitialized = true;
+        
         currentUser = user;
         console.log('✅ User signed in:', user.email);
+        console.log('👤 User details:', {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName
+        });
+        
+        // Check if login overlay exists
+        const loginOverlay = document.getElementById('login-overlay');
+        console.log('🎨 Login overlay element:', loginOverlay ? 'found' : 'NOT FOUND');
+        if (loginOverlay) {
+            console.log('   Current display:', window.getComputedStyle(loginOverlay).display);
+        }
         
         // Wait a bit for other modules to load
+        console.log('⏳ Waiting for modules to load...');
         await new Promise(resolve => setTimeout(resolve, 500));
         
         // Initialize the dashboard
+        console.log('🚀 Starting dashboard initialization...');
         const success = await initializeDashboard();
         
         if (success) {
             // Add sign out button
             addSignOutButton();
             console.log('✅ Login complete - user should see dashboard now');
+            
+            // Double-check overlay is hidden
+            if (loginOverlay) {
+                console.log('🎨 Final overlay display:', window.getComputedStyle(loginOverlay).display);
+            }
         } else {
             console.error('❌ Dashboard initialization failed');
         }
         
     } else {
+        authInitialized = false;
         currentUser = null;
-        console.log('User signed out');
+        console.log('👋 User signed out');
         
         // Show login overlay
         const loginOverlay = document.getElementById('login-overlay');
         const loginContent = document.getElementById('login-content');
         const loadingContent = document.getElementById('loading-content');
+        
+        console.log('🎨 Showing login overlay');
+        console.log('   - loginOverlay:', loginOverlay ? 'found' : 'NOT FOUND');
+        console.log('   - loginContent:', loginContent ? 'found' : 'NOT FOUND');
+        console.log('   - loadingContent:', loadingContent ? 'found' : 'NOT FOUND');
         
         if (loginOverlay) loginOverlay.style.display = 'flex';
         if (loginContent) loginContent.style.display = 'block';
