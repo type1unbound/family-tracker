@@ -421,12 +421,38 @@ const UICore = {
         this.updateUI();
     },
 
-    toggleWeeklyChore(choreId) {
-        const dayData = StateManager.getDayData();
-        dayData.weeklyChores[choreId] = !dayData.weeklyChores[choreId];
-        if (window.saveData) window.saveData();
-        this.updateUI();
-    },
+toggleWeeklyChore(choreId) {
+    const weekDates = StateManager.getWeekDates(StateManager.state.currentDate);
+    const child = StateManager.getCurrentChild();
+    const weeklyChoresData = PointsModule.getWeeklyChoresData();
+    
+    // Check current state across the week
+    const isCurrentlyChecked = weeklyChoresData[choreId];
+    
+    // Toggle for ALL days in the week (not just current day)
+    weekDates.forEach(date => {
+        if (!child.days[date]) {
+            child.days[date] = {
+                schedule: {},
+                weeklyChores: {},
+                categoryMultipliers: {
+                    conflict: 1.0,
+                    respect: 1.0,
+                    etiquette: 1.0,
+                    transitions: 1.0
+                },
+                notes: '',
+                characterNotes: {}
+            };
+        }
+        
+        // Set opposite of current state
+        child.days[date].weeklyChores[choreId] = !isCurrentlyChecked;
+    });
+    
+    if (window.saveData) window.saveData();
+    this.updateUI();
+},
 
     setCategoryMultiplier(categoryId, value) {
         const dayData = StateManager.getDayData();
