@@ -293,11 +293,9 @@ async function loadDataFromFirebase() {
     } catch (error) {
         console.error('❌ Error loading data from Firestore:', error);
         alert('Failed to load data: ' + error.message);
+        hideLoading();  // Hide on error
         return false;
-    } finally {
-        hideLoading();
     }
-}
 
 window.loadData = loadDataFromFirebase;
 
@@ -366,7 +364,7 @@ async function initializeDashboard() {
             console.warn('⚠️ ProfileModule not found');
         }
         
-        // Initialize UICore
+// Initialize UICore
         if (window.UICore && window.StateManager.state) {
             console.log('✅ UICore found, initializing...');
             window.UICore.selectChild(window.StateManager.state.currentChild);
@@ -377,10 +375,12 @@ async function initializeDashboard() {
         }
         
         console.log('✅ Dashboard initialized successfully');
+        hideLoading();  // ← ADD THIS
         return true;
         
     } catch (error) {
         console.error('❌ Error initializing dashboard:', error);
+        hideLoading();  // Hide on error too
         alert('Error initializing dashboard: ' + error.message);
         return false;
     }
