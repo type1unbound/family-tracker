@@ -622,8 +622,7 @@ const TrackerTemplates = {
                 }
             ]
         }
-    }
-},
+    },
 
 
 
