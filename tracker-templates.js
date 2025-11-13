@@ -625,7 +625,124 @@ const TrackerTemplates = {
     }
 };
 
+},
+
+    // Open modal to add a new tracker
+    openAddTrackerModal: function() {
+        console.log('📋 Opening add tracker modal...');
+        
+        // Create modal HTML
+        const modalHtml = `
+            <div id="add-tracker-modal" class="modal active">
+                <div class="modal-content" style="max-width: 700px;">
+                    <div class="modal-header">
+                        <h2>➕ Add Health Tracker</h2>
+                        <button class="close-btn" onclick="TrackerTemplates.closeAddTrackerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="color: #6b7280; margin-bottom: 20px;">Choose a health tracker template for ${state.data[state.currentChild].name}:</p>
+                        <div id="tracker-template-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+                            ${this.getTemplateList().map(template => `
+                                <div onclick="TrackerTemplates.selectTemplate('${template.id}')" 
+                                     style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                            color: white; border-radius: 12px; cursor: pointer; text-align: center;
+                                            transition: transform 0.2s, box-shadow 0.2s;"
+                                     onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.2)';"
+                                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                    <div style="font-size: 36px; margin-bottom: 8px;">${template.icon}</div>
+                                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">${template.name}</div>
+                                    <div style="font-size: 11px; opacity: 0.9;">${template.description}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add to page
+        const container = document.getElementById('modals-container') || document.body;
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = modalHtml;
+        container.appendChild(tempDiv.firstElementChild);
+    },
+    
+    // Select a template and add tracker
+    selectTemplate: async function(templateId) {
+        console.log('✅ Selected template:', templateId);
+        
+        const template = this.getTemplate(templateId);
+        const templateInfo = this.getTemplateList().find(t => t.id === templateId);
+        
+        if (!template || !templateInfo) {
+            alert('Error: Template not found');
+            return;
+        }
+        
+        // Create new tracker
+        const trackerId = 'tracker_' + Date.now();
+        const child = state.data[state.currentChild];
+        
+        if (!child.trackers) {
+            child.trackers = [];
+        }
+        
+        const newTracker = {
+            id: trackerId,
+            templateId: templateId,
+            templateName: templateInfo.name,
+            icon: templateInfo.icon,
+            customConfig: template,
+            createdAt: Date.now()
+        };
+        
+        child.trackers.push(newTracker);
+        
+        // Save to Firestore
+        try {
+            if (window.currentUser && window.db) {
+                const userRef = db.collection('users').doc(currentUser.uid);
+                await userRef.collection('familyMembers').doc(state.currentChild).update({
+                    trackers: child.trackers
+                });
+                console.log('✅ Tracker saved to Firestore');
+            }
+            
+            // Update UI
+            if (window.saveData) await saveData();
+            if (window.updateTrackerButtons) updateTrackerButtons();
+            
+            // Close modals
+            this.closeAddTrackerModal();
+            if (window.ProfileModule && ProfileModule.closeModal) {
+                ProfileModule.closeModal();
+            }
+            
+            alert(`✅ ${templateInfo.name} tracker added successfully!`);
+            
+        } catch (error) {
+            console.error('Error saving tracker:', error);
+            alert('Failed to save tracker: ' + error.message);
+        }
+    },
+    
+    // Close add tracker modal
+    closeAddTrackerModal: function() {
+        const modal = document.getElementById('add-tracker-modal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+};
+
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = TrackerTemplates;
 }
+
+// Always export for browser
+window.TrackerTemplates = TrackerTemplates;
+
+console.log('✅ TrackerTemplates exported globally');
+
+
