@@ -142,10 +142,14 @@ function switchMedTab(tab) {
 
 // Render tracker settings
 function renderTrackerSettings() {
-    const content = document.getElementById('med-settings-content');
-    if (!content) return;
-    
-    content.innerHTML = '<p>Settings configuration coming soon...</p>';
+    if (window.MedicationTracker && typeof MedicationTracker.renderSettings === 'function') {
+        MedicationTracker.renderSettings();
+    } else {
+        const content = document.getElementById('med-settings-content');
+        if (content) {
+            content.innerHTML = '<p style="padding: 20px; color: #ef4444;">Error: Settings rendering function not available</p>';
+        }
+    }
 }
 
 console.log('✅ Main.js loaded - waiting for Firebase authentication');
