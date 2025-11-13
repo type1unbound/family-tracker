@@ -213,95 +213,137 @@ async function loadDataFromFirebase() {
         const userId = currentUser.uid;
         const userRef = db.collection('users').doc(userId);
 
-        // Load user metadata
-        const userDoc = await userRef.get();
-        if (userDoc.exists) {
-            const userData = userDoc.data();
+// Load user metadata
+const userDoc = await userRef.get();
+if (userDoc.exists) {
+    const userData = userDoc.data();
+    
+    // Check if user is part of a family
+    if (userData.familyId) {
+        // Load family data instead of personal data
+        const familyRef = db.collection('families').doc(userData.familyId);
+        const familyDoc = await familyRef.get();
+        
+        if (familyDoc.exists) {
+            const familyData = familyDoc.data();
+            window.StateManager.state.children = familyData.children || ['child1', 'child2'];
+            window.StateManager.state.familyId = userData.familyId;
             
-            // Check if user is part of a family
-            if (userData.familyId) {
-                // Load family data instead of personal data
-                const familyRef = db.collection('families').doc(userData.familyId);
-                const familyDoc = await familyRef.get();
-                
-                if (familyDoc.exists) {
-                    const familyData = familyDoc.data();
-                    window.StateManager.state.children = familyData.children || ['child1', 'child2'];
-                    window.StateManager.state.familyId = userData.familyId;
-                    window.StateManager.state.familyCode = familyData.familyCode;
-                    console.log('  Loaded family data with code:', familyData.familyCode);
-                    
-                    // Load each family member from family document
-                    for (const childId of window.StateManager.state.children) {
-                        const memberDoc = await familyRef.collection('familyMembers').doc(childId).get();
-                        
-                        if (memberDoc.exists) {
-                            window.StateManager.state.data[childId] = memberDoc.data();
-                            
-                            // Ensure required fields exist
-                            if (!window.StateManager.state.data[childId].trackers) {
-                                window.StateManager.state.data[childId].trackers = [];
-                            }
-                            if (!window.StateManager.state.data[childId].days) {
-                                window.StateManager.state.data[childId].days = {};
-                            }
-                            
-                            console.log('  Loaded member:', window.StateManager.state.data[childId].name);
-                            
-                            // Load days data
-                            const daysSnapshot = await familyRef.collection('familyMembers').doc(childId)
-                                .collection('days').get();
-                            
-                            daysSnapshot.forEach(doc => {
-                                window.StateManager.state.data[childId].days[doc.id] = doc.data();
-                            });
-                            console.log('  Loaded', daysSnapshot.size, 'days of data for', window.StateManager.state.data[childId].name);
-                        } else if (!window.StateManager.state.data[childId]) {
-                            // Initialize new member with defaults
-                            console.log('  Initializing new member:', childId);
-                            window.StateManager.createChild(childId);
-                        }
-                    }
-                } else {
-                    console.error('❌ Family document not found!');
-                }
+            // Check if family has a code, if not create one (for legacy users)
+            if (!familyData.familyCode) {
+                console.log('  Legacy family detected - generating family code...');
+                const familyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                await familyRef.update({
+                    familyCode: familyCode,
+                    codeGeneratedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                window.StateManager.state.familyCode = familyCode;
+                console.log('  ✅ Generated family code:', familyCode);
             } else {
-                // Personal account (legacy or needs migration)
-                window.StateManager.state.children = userData.children || ['child1', 'child2'];
-                console.log('  Loaded personal data (legacy mode)');
+                window.StateManager.state.familyCode = familyData.familyCode;
+                console.log('  Loaded family data with code:', familyData.familyCode);
+            }
+            
+            // Load each family member from family document
+            for (const childId of window.StateManager.state.children) {
+                const memberDoc = await familyRef.collection('familyMembers').doc(childId).get();
                 
-                // Load each family member from user document
-                for (const childId of window.StateManager.state.children) {
-                    const memberDoc = await userRef.collection('familyMembers').doc(childId).get();
+                if (memberDoc.exists) {
+                    window.StateManager.state.data[childId] = memberDoc.data();
                     
-                    if (memberDoc.exists) {
-                        window.StateManager.state.data[childId] = memberDoc.data();
-                        
-                        // Ensure required fields exist
-                        if (!window.StateManager.state.data[childId].trackers) {
-                            window.StateManager.state.data[childId].trackers = [];
-                        }
-                        if (!window.StateManager.state.data[childId].days) {
-                            window.StateManager.state.data[childId].days = {};
-                        }
-                        
-                        console.log('  Loaded member:', window.StateManager.state.data[childId].name);
-                        
-                        // Load days data
-                        const daysSnapshot = await userRef.collection('familyMembers').doc(childId)
-                            .collection('days').get();
-                        
-                        daysSnapshot.forEach(doc => {
-                            window.StateManager.state.data[childId].days[doc.id] = doc.data();
-                        });
-                        console.log('  Loaded', daysSnapshot.size, 'days of data for', window.StateManager.state.data[childId].name);
-                    } else if (!window.StateManager.state.data[childId]) {
-                        // Initialize new member with defaults
-                        console.log('  Initializing new member:', childId);
-                        window.StateManager.createChild(childId);
+                    // Ensure required fields exist
+                    if (!window.StateManager.state.data[childId].trackers) {
+                        window.StateManager.state.data[childId].trackers = [];
                     }
+                    if (!window.StateManager.state.data[childId].days) {
+                        window.StateManager.state.data[childId].days = {};
+                    }
+                    
+                    console.log('  Loaded member:', window.StateManager.state.data[childId].name);
+                    
+                    // Load days data
+                    const daysSnapshot = await familyRef.collection('familyMembers').doc(childId)
+                        .collection('days').get();
+                    
+                    daysSnapshot.forEach(doc => {
+                        window.StateManager.state.data[childId].days[doc.id] = doc.data();
+                    });
+                    console.log('  Loaded', daysSnapshot.size, 'days of data for', window.StateManager.state.data[childId].name);
+                } else if (!window.StateManager.state.data[childId]) {
+                    // Initialize new member with defaults
+                    console.log('  Initializing new member:', childId);
+                    window.StateManager.createChild(childId);
                 }
             }
+        } else {
+            console.error('❌ Family document not found!');
+        }
+    } else {
+        // Personal account (legacy) - migrate to family system
+        console.log('  🔄 Legacy personal account detected - migrating to family system...');
+        
+        window.StateManager.state.children = userData.children || ['child1', 'child2'];
+        
+        // Generate unique 6-character family code
+        const familyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const familyId = 'family_' + Date.now();
+        
+        // Create family document
+        await db.collection('families').doc(familyId).set({
+            familyCode: familyCode,
+            createdBy: currentUser.uid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            migratedFrom: 'legacy_account',
+            children: window.StateManager.state.children
+        });
+        
+        // Link user to family
+        await userRef.update({
+            familyId: familyId,
+            migratedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        window.StateManager.state.familyId = familyId;
+        window.StateManager.state.familyCode = familyCode;
+        
+        console.log('  ✅ Migrated to family system with code:', familyCode);
+        
+        // Load each family member from user document and copy to family
+        for (const childId of window.StateManager.state.children) {
+            const memberDoc = await userRef.collection('familyMembers').doc(childId).get();
+            
+            if (memberDoc.exists) {
+                window.StateManager.state.data[childId] = memberDoc.data();
+                
+                // Ensure required fields exist
+                if (!window.StateManager.state.data[childId].trackers) {
+                    window.StateManager.state.data[childId].trackers = [];
+                }
+                if (!window.StateManager.state.data[childId].days) {
+                    window.StateManager.state.data[childId].days = {};
+                }
+                
+                console.log('  Loaded member:', window.StateManager.state.data[childId].name);
+                
+                // Load days data
+                const daysSnapshot = await userRef.collection('familyMembers').doc(childId)
+                    .collection('days').get();
+                
+                daysSnapshot.forEach(doc => {
+                    window.StateManager.state.data[childId].days[doc.id] = doc.data();
+                });
+                console.log('  Loaded', daysSnapshot.size, 'days of data for', window.StateManager.state.data[childId].name);
+            } else if (!window.StateManager.state.data[childId]) {
+                // Initialize new member with defaults
+                console.log('  Initializing new member:', childId);
+                window.StateManager.createChild(childId);
+            }
+        }
+        
+        // Save migrated data to new family structure
+        await saveDataToFirebase();
+        console.log('  ✅ Legacy data migrated to family structure');
+    }
             
             console.log('  Found existing user data with', window.StateManager.state.children.length, 'family members');
         } else {
