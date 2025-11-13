@@ -623,7 +623,7 @@ const TrackerTemplates = {
             ]
         }
     }
-};
+},
 
 
 
