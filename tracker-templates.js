@@ -736,12 +736,10 @@ const TrackerTemplates = {
 
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = TrackerTemplates;
+module.exports = TrackerTemplates;
 }
-
 // Always export for browser
 window.TrackerTemplates = TrackerTemplates;
-
 console.log('✅ TrackerTemplates exported globally');
 
 
