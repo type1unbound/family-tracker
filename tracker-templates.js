@@ -625,7 +625,7 @@ const TrackerTemplates = {
     }
 };
 
-},
+
 
     // Open modal to add a new tracker
     openAddTrackerModal: function() {
