@@ -288,7 +288,7 @@ async function loadDataFromFirebase() {
             }
         }
 
-        console.log('✅ Data loaded from Firestore successfully');
+console.log('✅ Data loaded from Firestore successfully');
         return true;
     } catch (error) {
         console.error('❌ Error loading data from Firestore:', error);
@@ -296,6 +296,7 @@ async function loadDataFromFirebase() {
         hideLoading();  // Hide on error
         return false;
     }
+}
 
 window.loadData = loadDataFromFirebase;
 
