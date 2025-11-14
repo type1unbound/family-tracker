@@ -5,11 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Family Routine & Values Tracker</title>
     
-    <!-- CSS Files -->
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/modals.css">
-    <link rel="stylesheet" href="css/responsive.css">
+    <!-- CSS Files from GitHub -->
+   <link rel="stylesheet" href="https://type1unbound.github.io/family-tracker/tracker-main-css.css">
+    <link rel="stylesheet" href="https://type1unbound.github.io/family-tracker/tracker-modals-css.css">
+    <link rel="stylesheet" href="https://type1unbound.github.io/family-tracker/tracker-responsive-css.css">
+    <link rel="stylesheet" href="https://type1unbound.github.io/family-tracker/styles.css">
+   
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
+
+    <!-- JavaScript Modules from GitHub (order matters!) -->
+    <script src="https://type1unbound.github.io/family-tracker/tracker-config-js.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/tracker-state-js.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/tracker-points-js.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/tracker-schedule-js.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/tracker-character-js.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/tracker-templates.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/tracker-module.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/tracker-profile-js.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/ui-core.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/firebase.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/main.js"></script>
+
+<script>
+    console.log('ProfileModule loaded?', !!window.ProfileModule);
+    console.log('UICore loaded?', !!window.UICore);
+    console.log('StateManager loaded?', !!window.StateManager);
+    console.log('PointsModule loaded?', !!window.PointsModule);
+</script>
+    
 </head>
+<h1></h1>
 <body>
     <!-- Login Overlay -->
     <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; z-index: 10000;">
@@ -31,7 +60,7 @@
                 <div style="margin-top: 24px; font-size: 14px; color: #6b7280;">
                     <p>🔒 Secure authentication</p>
                     <p style="margin-top: 8px;">☁️ Your data syncs across devices</p>
-                    <p style="margin-top: 8px;">👨‍👩‍👧‍👦 Each user has their own family</p>
+                    <p style="margin-top: 8px;">👨‍👩‍👧‍👦 Share your family code to invite family to join</p>
                 </div>
             </div>
             
@@ -174,26 +203,306 @@
         <span id="edit-mode-text">✏️ Edit Mode</span>
     </button>
     
-    <!-- Modals (imported from modals.html via JS) -->
-    <div id="modals-container"></div>
+<!-- Modals container -->
+<div id="modals-container">
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Profile</h2>
+                <button class="close-btn" onclick="ProfileModule.closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 16px;">
+                    <label>Name:</label>
+                    <input type="text" id="modal-profile-name" class="edit-input" placeholder="Family member's name">
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <label>Profile Photo:</label>
+                    <div id="upload-area" style="border: 2px dashed #d1d5db; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; margin-top: 8px;" onclick="document.getElementById('photo-upload').click()">
+                        <div id="photo-preview-container">
+                            <div style="font-size: 48px; margin-bottom: 8px;">📷</div>
+                            <div style="color: #6b7280; font-size: 14px;">Click to upload photo</div>
+                            <div style="color: #9ca3af; font-size: 12px; margin-top: 4px;">JPG, PNG or GIF</div>
+                        </div>
+                    </div>
+                    <input type="file" id="photo-upload" accept="image/*" onchange="handlePhotoUpload(event)" style="display: none;">
+                    <button id="remove-photo-btn" onclick="removePhoto()" style="margin-top: 8px; padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; display: none;">Remove Photo</button>
+                    
+                    <div id="crop-area" style="display: none; margin-top: 16px;">
+                        <div id="crop-container" style="position: relative; max-width: 100%; margin: 0 auto;">
+                            <img id="crop-image" style="max-width: 100%; display: block;">
+                            <div id="crop-overlay" style="position: absolute; border: 2px solid #3b82f6; cursor: move;">
+                                <div class="crop-handle nw" style="position: absolute; top: -5px; left: -5px; width: 10px; height: 10px; background: #3b82f6; cursor: nw-resize;"></div>
+                                <div class="crop-handle ne" style="position: absolute; top: -5px; right: -5px; width: 10px; height: 10px; background: #3b82f6; cursor: ne-resize;"></div>
+                                <div class="crop-handle sw" style="position: absolute; bottom: -5px; left: -5px; width: 10px; height: 10px; background: #3b82f6; cursor: sw-resize;"></div>
+                                <div class="crop-handle se" style="position: absolute; bottom: -5px; right: -5px; width: 10px; height: 10px; background: #3b82f6; cursor: se-resize;"></div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-top: 12px;">
+                            <button onclick="applyCrop()" class="btn btn-primary">Apply Crop</button>
+                            <button onclick="cancelCrop()" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <label>Color Theme:</label>
+                    <div id="color-palette-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px;">
+                        <!-- Color palette options will be rendered here by ProfileModule -->
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <label>Health Trackers:</label>
+                    <div id="tracker-list-container" style="margin-top: 8px;">
+                        <!-- Tracker list will be rendered here -->
+                    </div>
+<button onclick="TrackerTemplates.openAddTrackerModal()" style="margin-top: 8px; padding: 8px 16px; background: #6366f1; color: white; border: none; border-radius: 6px; cursor: pointer; width: 100%;">+ Add Health Tracker</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="delete-child-btn" onclick="ProfileModule.deleteCurrentChild()" class="btn" style="background: #ef4444; color: white; margin-right: auto;">Delete Profile</button>
+                <button class="btn btn-secondary" onclick="ProfileModule.closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveProfile()">Save</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
+    <!-- Schedule Modal -->
+    <div id="schedule-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Routine Item</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 12px;">
+                    <label>Time:</label>
+                    <input type="time" id="modal-time" class="edit-input">
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label>Activity Name:</label>
+                    <input type="text" id="modal-name" class="edit-input" placeholder="e.g., Morning Routine">
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label>Days of Week:</label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+                        <label style="display: flex; align-items: center; gap: 4px;">
+                            <input type="checkbox" id="day-sun" value="0"> Sun
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px;">
+                            <input type="checkbox" id="day-mon" value="1"> Mon
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px;">
+                            <input type="checkbox" id="day-tue" value="2"> Tue
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px;">
+                            <input type="checkbox" id="day-wed" value="3"> Wed
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px;">
+                            <input type="checkbox" id="day-thu" value="4"> Thu
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px;">
+                            <input type="checkbox" id="day-fri" value="5"> Fri
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px;">
+                            <input type="checkbox" id="day-sat" value="6"> Sat
+                        </label>
+                    </div>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label>Tasks/Expectations:</label>
+                    <ul id="modal-tasks" style="list-style: none; padding: 0; margin-top: 8px;"></ul>
+                    <button class="btn btn-secondary" onclick="addModalTask()" style="margin-top: 8px; width: 100%;">+ Add Task</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveScheduleItem()">Save</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- JavaScript Modules (order matters!) -->
-    <script src="js/config.js"></script>
-    <script src="js/state.js"></script>
-    <script src="js/points.js"></script>
-    <script src="js/schedule.js"></script>
-    <script src="js/character.js"></script>
-    <script src="js/profile.js"></script>
-    <script src="js/tracker-templates.js"></script>
-    <script src="js/tracker-module.js"></script>
-    <script src="js/ui-core.js"></script>
-    <script src="js/firebase.js"></script>
-    <script src="js/main.js"></script>
+    <!-- Character Category Modal -->
+    <div id="character-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Character Category</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 12px;">
+                    <label>Category Name:</label>
+                    <input type="text" id="modal-character-category" class="edit-input" placeholder="e.g., Respect">
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label>Character Traits:</label>
+                    <ul id="modal-character-items" style="list-style: none; padding: 0; margin-top: 8px;"></ul>
+                    <button class="btn btn-secondary" onclick="addModalCharacterItem()" style="margin-top: 8px; width: 100%;">+ Add Trait</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveCharacterCategory()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chore/Goal Modal -->
+    <div id="chore-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Weekly Goal</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 12px;">
+                    <label>Goal Name:</label>
+                    <input type="text" id="modal-chore-name" class="edit-input" placeholder="e.g., Clean bedroom">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveChore()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spend Points Modal -->
+    <div id="spend-points-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Spend Points</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 16px; text-align: center;">
+                    <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">Current Balance</div>
+                    <div style="font-size: 36px; font-weight: bold; color: #6366f1;" id="spend-modal-balance">0</div>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label>Amount to Spend:</label>
+                    <input type="number" id="modal-spend-amount" class="edit-input" placeholder="Enter points amount" min="1">
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label>Reason (Optional):</label>
+                    <input type="text" id="modal-spend-reason" class="edit-input" placeholder="e.g., Bought a toy">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="spendPoints()">Spend Points</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-confirm-modal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>⚠️ Confirm Delete</h2>
+                <button class="close-btn" onclick="closeDeleteConfirm()">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="delete-child-name" style="font-size: 16px; margin-bottom: 16px;"></p>
+                <p style="color: #ef4444; font-weight: 600;">This action cannot be undone!</p>
+                <p style="color: #6b7280; font-size: 14px;">All data for this family member will be permanently deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteConfirm()">Cancel</button>
+                <button class="btn" style="background: #ef4444; color: white;" onclick="confirmDeleteChild()">Delete Forever</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Goal Confirmation Modal -->
+    <div id="delete-goal-confirm-modal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>⚠️ Confirm Delete</h2>
+                <button class="close-btn" onclick="closeDeleteGoalConfirm()">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="delete-goal-name" style="font-size: 16px; margin-bottom: 16px;"></p>
+                <p style="color: #6b7280; font-size: 14px;">This goal will be removed from the weekly goals list.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteGoalConfirm()">Cancel</button>
+                <button class="btn" style="background: #ef4444; color: white;" onclick="confirmDeleteGoal()">Delete Goal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medication/Health Tracker Modal -->
+    <div id="med-tracker-modal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 id="med-tracker-member-name">Health Tracker</h2>
+                <button class="close-btn" onclick="closeMedicationTracker()">×</button>
+            </div>
+            
+            <!-- Tabs (MUST come before content) -->
+            <div style="display: flex; gap: 8px; border-bottom: 2px solid #e5e7eb; margin-bottom: 20px;">
+                <button id="med-tab-entry" onclick="switchMedTab('entry')" style="padding: 12px 24px; border: none; background: none; cursor: pointer; border-bottom: 2px solid #6366f1; color: #6366f1; font-weight: 600;">Entry</button>
+                <button id="med-tab-history" onclick="switchMedTab('history')" style="padding: 12px 24px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; color: #6b7280; font-weight: 600;">History</button>
+                <button id="med-tab-analytics" onclick="switchMedTab('analytics')" style="padding: 12px 24px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; color: #6b7280; font-weight: 600;">Analytics</button>
+                <button id="med-tab-settings" onclick="switchMedTab('settings')" style="padding: 12px 24px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; color: #6b7280; font-weight: 600;">Settings</button>
+            </div>
+            
+            <!-- Tab Contents -->
+            <div id="med-content-entry">
+                <div style="margin-bottom: 16px;">
+                    <label>Date:</label>
+                    <input type="date" id="med-entry-date" class="edit-input">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label>Observer Name:</label>
+                    <input type="text" id="med-observer" class="edit-input" placeholder="Who is filling this out?">
+                </div>
+                <div id="med-period-types-container" style="margin-bottom: 16px;"></div>
+                <div id="med-rating-categories"></div>
+                <div style="margin-top: 20px; margin-bottom: 16px;">
+                    <label>Notes (optional):</label>
+                    <textarea id="med-entry-notes" class="edit-input" rows="4" placeholder="Any additional observations or notes..."></textarea>
+                </div>
+                <button onclick="saveMedEntry()" class="btn btn-primary" style="width: 100%; margin-top: 20px;">Save Entry</button>
+            </div>
+            
+            <div id="med-content-history" style="display: none;">
+                <div id="med-history-list"></div>
+            </div>
+            
+            <div id="med-content-analytics" style="display: none;">
+                <div id="med-analytics-content"></div>
+            </div>
+            
+            <div id="med-content-settings" style="display: none;">
+                <div id="med-settings-content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    console.log('ProfileModule loaded?', !!window.ProfileModule);
+    console.log('UICore loaded?', !!window.UICore);
+    console.log('StateManager loaded?', !!window.StateManager);
+    console.log('PointsModule loaded?', !!window.PointsModule);
+    
+    // Debug code for photo tracking
+    setTimeout(() => {
+        if (window.StateManager && StateManager.state.data) {
+            const currentChild = StateManager.getCurrentChild();
+            console.log('🖼️ Current child photo:', currentChild.photo ? 'EXISTS' : 'MISSING');
+            if (currentChild.photo) {
+                console.log('📏 Photo data length:', currentChild.photo.length);
+                console.log('🔤 Photo starts with:', currentChild.photo.substring(0, 50));
+            }
+        }
+    }, 5000);
+</script>
+
 </body>
 </html>
