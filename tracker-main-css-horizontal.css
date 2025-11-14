@@ -1,0 +1,738 @@
+/* ========================================
+   HORIZONTAL CARD LAYOUT - Updated Styles
+   ======================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Container */
+.container {
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+/* Header Card - Fixed at top */
+.card:first-child {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 0;
+    padding: 20px 40px;
+    margin-bottom: 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* All other cards - semi-transparent glass effect */
+.card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    color: white;
+}
+
+/* Typography - Updated for dark-on-light theme */
+h1 {
+    font-size: 32px;
+    color: #1a202c;
+    margin-bottom: 4px;
+}
+
+h2 {
+    font-size: 20px;
+    color: white;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+}
+
+h3 {
+    font-size: 16px;
+    color: white;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.subtitle {
+    color: #4a5568;
+    font-size: 14px;
+}
+
+/* Dashboard Grid - Horizontal Layout */
+.dashboard-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 20px 40px;
+}
+
+/* Stats Row - Horizontal at top */
+.left-column {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.left-column > .grid.grid-2 {
+    margin-bottom: 16px;
+}
+
+.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 0 !important;
+}
+
+/* Single stat card for weekly total */
+.left-column > .grid:last-child {
+    display: none; /* Hide weekly total from left column */
+}
+
+/* Add weekly total to the 4-grid */
+.grid-4::after {
+    content: '';
+    display: none;
+}
+
+/* Swipeable Cards Container */
+.right-column {
+    width: 100%;
+}
+
+.schedule-character-row {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    padding-bottom: 20px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.schedule-character-row::-webkit-scrollbar {
+    height: 8px;
+}
+
+.schedule-character-row::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.schedule-character-row::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+.schedule-character-row::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Individual swipeable cards */
+.schedule-character-row > .card {
+    flex: 0 0 400px;
+    scroll-snap-align: start;
+    height: 600px;
+    overflow-y: auto;
+}
+
+.schedule-character-row > div:not(.card) {
+    flex: 0 0 400px;
+    scroll-snap-align: start;
+}
+
+.schedule-character-row > div > .card {
+    height: 600px;
+    overflow-y: auto;
+    margin-bottom: 0;
+}
+
+/* Child Selector Cards */
+.child-selector-date-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.card label {
+    color: white;
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: block;
+}
+
+/* Stat Cards - Glass morphism effect */
+.stat-card {
+    padding: 20px;
+    border-radius: 16px;
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.stat-label {
+    font-size: 12px;
+    opacity: 0.95;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stat-sublabel {
+    font-size: 11px;
+    opacity: 0.9;
+    margin-top: 4px;
+}
+
+/* Progress Bars - Updated for dark theme */
+.progress-bar-container {
+    margin-bottom: 20px;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: white;
+    font-weight: 600;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    transition: width 0.5s ease;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.progress-fill.weekly {
+    background: linear-gradient(90deg, #f97316 0%, #ea580c 100%);
+    box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+}
+
+/* Schedule Items - Glass effect */
+.schedule-list {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 32px;
+    margin-bottom: 16px;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: -16px;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.timeline-item:last-child::before {
+    display: none;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    transition: all 0.2s;
+}
+
+.timeline-dot.completed {
+    background: #10b981;
+    border-color: #10b981;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.schedule-item {
+    padding: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.schedule-item:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(4px);
+}
+
+.schedule-item.completed {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.schedule-time {
+    font-size: 11px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.schedule-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+    margin-top: 4px;
+}
+
+/* Task Lists */
+.task-list {
+    list-style: none;
+    margin-top: 8px;
+}
+
+.task-list li {
+    padding: 4px 0;
+    padding-left: 16px;
+    position: relative;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+}
+
+.task-list li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 16px;
+}
+
+/* Yes/No Buttons */
+.yes-no-buttons {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.yes-no-btn {
+    padding: 6px 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s;
+    color: white;
+    min-width: 50px;
+}
+
+.yes-no-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
+}
+
+.yes-no-btn.yes {
+    background: #10b981;
+    border-color: #10b981;
+    color: white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.yes-no-btn.no {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Character Sections */
+.character-section {
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.character-list {
+    list-style: none;
+    margin-bottom: 12px;
+}
+
+.character-list li {
+    padding: 4px 0;
+    padding-left: 20px;
+    position: relative;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+}
+
+.character-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: bold;
+}
+
+/* Multiplier Buttons */
+.btn-multiplier {
+    padding: 12px;
+    text-align: center;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    transition: all 0.2s;
+    cursor: pointer;
+    color: white;
+}
+
+.btn-multiplier:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.btn-multiplier.active {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.25);
+    border-width: 3px;
+}
+
+/* Chores */
+.chore-item {
+    padding: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.chore-item:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.chore-item.completed {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.5);
+}
+
+.chore-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+}
+
+.completion-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.completion-badge.complete {
+    background: rgba(16, 185, 129, 0.3);
+    color: white;
+    border: 2px solid #10b981;
+}
+
+.completion-badge.incomplete {
+    background: rgba(251, 191, 36, 0.3);
+    color: white;
+    border: 2px solid #fbbf24;
+}
+
+/* Checkbox */
+.checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.checkbox.checked {
+    background: #10b981;
+    border-color: #10b981;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.checkbox svg {
+    display: none;
+}
+
+.checkbox.checked svg {
+    display: block;
+}
+
+/* Form Elements */
+textarea, input[type="text"], input[type="date"], input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    backdrop-filter: blur(10px);
+}
+
+textarea::placeholder,
+input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+textarea:focus, input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Date picker specific styling */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* Buttons */
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.btn-primary:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.child-btn {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.child-btn:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.btn-active {
+    background: rgba(255, 255, 255, 0.4) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Streak Card */
+.streak-card {
+    background: rgba(254, 243, 199, 0.3);
+    border: 2px solid rgba(245, 158, 11, 0.5);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.streak-icon {
+    font-size: 32px;
+}
+
+.streak-text {
+    font-weight: bold;
+    color: white;
+    font-size: 16px;
+}
+
+.streak-subtext {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+}
+
+/* Profile Photo */
+.profile-photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.profile-photo-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Swipe Navigation Hints */
+.schedule-character-row::before {
+    content: '← Swipe →';
+    position: sticky;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    margin-right: 16px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Edit Mode Toggle */
+.edit-mode-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 16px 24px;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s;
+}
+
+.edit-mode-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.edit-mode-toggle.active {
+    background: rgba(249, 115, 22, 0.3);
+    border-color: #f97316;
+}
+
+/* Animations */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        padding: 12px;
+    }
+    
+    .card:first-child {
+        padding: 16px 20px;
+    }
+    
+    .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .schedule-character-row > .card,
+    .schedule-character-row > div {
+        flex: 0 0 85vw;
+    }
+}
