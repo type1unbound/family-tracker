@@ -6,7 +6,9 @@ console.log('🧭 Compass Compatibility Loading...');
 const LEGACY_ELEMENTS = [
     { id: 'child-buttons-container', tag: 'div' },
     { id: 'add-child-btn', tag: 'button' },
-    { id: 'tracker-buttons-container', tag: 'div' }
+    { id: 'tracker-buttons-container', tag: 'div' },
+    { id: 'schedule-buttons-container', tag: 'div' },
+    { id: 'schedule-detail-container', tag: 'div' }
 ];
 
 // Create required legacy elements
@@ -213,6 +215,7 @@ function patchUICore() {
         }
         renderSidebarAvatars();
         updateHeaderBadge();
+        renderScheduleWithFocus();
     };
     
     const originalSelectChild = UICore.selectChild;
@@ -223,6 +226,7 @@ function patchUICore() {
         }
         renderSidebarAvatars();
         updateHeaderBadge();
+        renderScheduleWithFocus();
     };
     
     console.log('✅ UICore patched');
@@ -259,11 +263,12 @@ function initCompatibilityBridge() {
         const children = StateManager?.state?.children || StateManager?.state?.data?.children;
         
         if (window.StateManager && StateManager.state && children && children.length > 0) {
-            console.log('✅ Data found! Rendering sidebar...');
+            console.log('✅ Data found! Rendering UI...');
             console.log('Children:', children);
             clearInterval(retryInterval);
             renderSidebarAvatars();
             updateHeaderBadge();
+            renderScheduleWithFocus();
         } else if (retryCount >= maxRetries) {
             console.log('❌ Max retries reached');
             console.log('StateManager:', window.StateManager);
@@ -277,10 +282,181 @@ function initCompatibilityBridge() {
     console.log('✅ Compass UI compatibility initialized');
 }
 
+// Render schedule with focus system
+function renderScheduleWithFocus() {
+    console.log('📅 renderScheduleWithFocus() called');
+    
+    const scheduleContainer = document.getElementById('schedule-buttons-container');
+    const detailContainer = document.getElementById('schedule-detail-container');
+    
+    if (!scheduleContainer) {
+        console.log('⚠️ schedule-buttons-container not found');
+        return;
+    }
+    
+    if (!window.StateManager || !StateManager.state) {
+        console.log('⚠️ StateManager not available');
+        return;
+    }
+    
+    const currentChild = StateManager.getCurrentChild();
+    if (!currentChild || !currentChild.schedule) {
+        console.log('⚠️ No schedule data');
+        return;
+    }
+    
+    const schedule = currentChild.schedule;
+    const focusedId = StateManager.state.focusedScheduleId || (schedule.length > 0 ? schedule[0].id : null);
+    
+    console.log(`📅 Rendering ${schedule.length} schedule items, focused: ${focusedId}`);
+    
+    // Render high-level list in left column
+    scheduleContainer.innerHTML = '';
+    schedule.forEach(item => {
+        const isFocused = item.id === focusedId;
+        const completed = item.completedDates && item.completedDates.includes(StateManager.state.currentDate);
+        
+        const div = document.createElement('div');
+        div.className = `schedule-item ${isFocused ? 'in-focus' : 'out-of-focus'}`;
+        div.onclick = () => selectScheduleItem(item.id);
+        
+        let statusBadge = '';
+        if (completed) {
+            statusBadge = '<span class="status-badge completed">✓ Completed</span>';
+        } else if (isFocused) {
+            const taskCount = item.tasks ? item.tasks.length : 0;
+            const completedTasks = 0; // Would need to track this
+            statusBadge = `<span class="status-badge in-progress">⏳ In Progress · ${completedTasks}/${taskCount}</span>`;
+        } else {
+            statusBadge = '<span class="status-badge upcoming">⏰ Upcoming</span>';
+        }
+        
+        div.innerHTML = `
+            <div class="schedule-time">${item.time}</div>
+            <div class="schedule-name">${item.name}</div>
+            <div class="schedule-status">${statusBadge}</div>
+        `;
+        
+        scheduleContainer.appendChild(div);
+    });
+    
+    // Render details in center column
+    if (detailContainer && focusedId) {
+        const focusedItem = schedule.find(item => item.id === focusedId);
+        if (focusedItem) {
+            renderScheduleDetails(focusedItem, detailContainer);
+        }
+    }
+    
+    console.log('✅ Schedule rendered with focus');
+}
+
+// Render schedule item details
+function renderScheduleDetails(item, container) {
+    const completed = item.completedDates && item.completedDates.includes(StateManager.state.currentDate);
+    const taskCount = item.tasks ? item.tasks.length : 0;
+    const completedTasks = 0; // Would need to track this
+    const progress = taskCount > 0 ? (completedTasks / taskCount * 100) : 0;
+    
+    container.innerHTML = `
+        <div class="detail-header">
+            <div class="detail-time">${item.time}</div>
+            <div class="detail-name">${item.name}</div>
+        </div>
+        
+        <div class="progress-section">
+            <div class="progress-label">
+                <span>Task Progress</span>
+                <span>${completedTasks}/${taskCount} completed</span>
+            </div>
+            <div class="progress-mini">
+                <div class="progress-fill-mini" style="width: ${progress}%;"></div>
+            </div>
+        </div>
+        
+        <div class="section-subtitle">Tasks & Expectations</div>
+        
+        <div class="detail-tasks">
+            ${item.tasks ? item.tasks.map((task, index) => `
+                <div class="task-item">
+                    <input type="checkbox" class="task-checkbox" id="task-${index}">
+                    <div class="task-text">${task}</div>
+                </div>
+            `).join('') : '<p>No tasks defined</p>'}
+        </div>
+        
+        <button class="complete-btn ${completed ? 'completed' : ''}" onclick="toggleScheduleComplete(${item.id})">
+            ${completed ? '✓ Completed' : '✓ Mark Activity Complete'}
+        </button>
+    `;
+}
+
+// Select a schedule item to focus
+function selectScheduleItem(itemId) {
+    console.log(`🎯 Selecting schedule item: ${itemId}`);
+    if (window.StateManager) {
+        StateManager.state.focusedScheduleId = itemId;
+        renderScheduleWithFocus();
+    }
+}
+
+// Toggle schedule item completion
+function toggleScheduleComplete(itemId) {
+    console.log(`✓ Toggling completion for: ${itemId}`);
+    if (window.ScheduleModule && ScheduleModule.setScheduleStatus) {
+        // Use existing function if available
+        ScheduleModule.setScheduleStatus(itemId, true);
+    }
+    renderScheduleWithFocus();
+}
+
+// Open wellness journal
+function openWellnessJournal() {
+    console.log('⚕️ Opening wellness journal...');
+    
+    if (!window.TrackerModule) {
+        console.log('⚠️ TrackerModule not available');
+        alert('Wellness tracker feature is loading. Please try again in a moment.');
+        return;
+    }
+    
+    const currentChild = StateManager.getCurrentChild();
+    if (!currentChild) {
+        console.log('⚠️ No current child selected');
+        return;
+    }
+    
+    // Get trackers for this child
+    const trackers = currentChild.trackers || [];
+    
+    if (trackers.length === 0) {
+        console.log('ℹ️ No trackers found, opening template selection');
+        if (TrackerModule.openTemplateSelection) {
+            TrackerModule.openTemplateSelection();
+        } else {
+            alert('No wellness trackers configured yet. Please set up a tracker first.');
+        }
+        return;
+    }
+    
+    // Open the first tracker
+    console.log(`📊 Opening tracker: ${trackers[0].id}`);
+    if (TrackerModule.openSpecificTracker) {
+        TrackerModule.openSpecificTracker(trackers[0].id);
+    } else if (window.openSpecificTracker) {
+        openSpecificTracker(trackers[0].id);
+    } else {
+        console.log('⚠️ openSpecificTracker function not found');
+        alert('Tracker feature is still loading. Please try again.');
+    }
+}
+
 // Make everything globally available for debugging
 window.CompassUI = {
     renderSidebarAvatars,
     updateHeaderBadge,
+    renderScheduleWithFocus,
+    selectScheduleItem,
     patchProfileModule,
     patchUICore,
     initCompatibilityBridge,
@@ -288,8 +464,14 @@ window.CompassUI = {
         console.log('🔄 Manual refresh called');
         renderSidebarAvatars();
         updateHeaderBadge();
+        renderScheduleWithFocus();
     }
 };
+
+// Make functions available globally for onclick handlers
+window.selectScheduleItem = selectScheduleItem;
+window.toggleScheduleComplete = toggleScheduleComplete;
+window.openWellnessJournal = openWellnessJournal;
 
 // Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
