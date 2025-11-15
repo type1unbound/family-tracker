@@ -1,6 +1,7 @@
 // Compass UI Compatibility Bridge
 // This file ensures your existing JavaScript modules work with the new Compass UI structure
 
+console.log('🧭🧭🧭 COMPASS COMPATIBILITY SCRIPT LOADING - TOP OF FILE 🧭🧭🧭');
 console.log('🧭 Compass Compatibility Loading...');
 
 const LEGACY_ELEMENTS = [
