@@ -1,7 +1,6 @@
 // Compass UI Compatibility Bridge
 // This file ensures your existing JavaScript modules work with the new Compass UI structure
 
-console.log('🧭🧭🧭 COMPASS COMPATIBILITY SCRIPT LOADING - TOP OF FILE 🧭🧭🧭');
 console.log('🧭 Compass Compatibility Loading...');
 
 const LEGACY_ELEMENTS = [
@@ -10,6 +9,7 @@ const LEGACY_ELEMENTS = [
     { id: 'tracker-buttons-container', tag: 'div' }
 ];
 
+// Create required legacy elements
 function createRequiredElements() {
     console.log('🔨 Creating legacy elements...');
     LEGACY_ELEMENTS.forEach(({ id, tag, content }) => {
@@ -29,240 +29,273 @@ function createRequiredElements() {
 if (document.body) {
     createRequiredElements();
 } else {
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', createRequiredElements);
-    } else {
-        document.addEventListener('DOMContentLoaded', createRequiredElements);
-    }
+    document.addEventListener('DOMContentLoaded', createRequiredElements);
 }
 
 console.log('✅ Compatibility script loaded');
 
-// Set up UI patching
-(function() {
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initCompatibilityBridge);
-    } else {
-        initCompatibilityBridge();
+// Render sidebar avatars
+function renderSidebarAvatars() {
+    console.log('🎨 renderSidebarAvatars() called');
+    
+    const container = document.getElementById('sidebar-avatars-container');
+    if (!container) {
+        console.log('⚠️ sidebar-avatars-container not found');
+        return;
     }
     
-    function initCompatibilityBridge() {
-        console.log('🔧 Initializing Compass UI compatibility...');
-        overrideUIFunctions();
+    if (!window.StateManager || !StateManager.state) {
+        console.log('⚠️ StateManager or state not available');
+        return;
     }
     
-    function overrideUIFunctions() {
-        console.log('🔧 Setting up UI function overrides...');
-        
-        // Wait for ProfileModule
-        const checkProfileModule = setInterval(() => {
-            if (window.ProfileModule) {
-                clearInterval(checkProfileModule);
-                patchProfileModule();
-            }
-        }, 50);
-        
-        // Wait for UICore
-        const checkUICore = setInterval(() => {
-            if (window.UICore && UICore.updateUI) {
-                clearInterval(checkUICore);
-                patchUICore();
-            }
-        }, 50);
-        
-        function patchProfileModule() {
-            console.log('📝 Patching ProfileModule...');
-            
-            const originalRenderChildButtons = ProfileModule.renderChildButtons;
-            ProfileModule.renderChildButtons = function() {
-                console.log('🎨 renderChildButtons() called');
-                const container = document.getElementById('child-buttons-container');
-                if (container) {
-                    container.innerHTML = '';
-                }
-                renderSidebarAvatars();
-                updateHeaderBadge();
-            };
-            
-            const originalUpdateChildButtons = ProfileModule.updateChildButtons;
-            ProfileModule.updateChildButtons = function() {
-                console.log('🔄 updateChildButtons() called');
-                originalUpdateChildButtons.call(this);
-                renderSidebarAvatars();
-                updateHeaderBadge();
-            };
-            
-            console.log('✅ ProfileModule patched');
-            
-            // Force render with multiple retries
-            let retryCount = 0;
-            const maxRetries = 10;
-            const retryInterval = setInterval(() => {
-                retryCount++;
-                console.log(`🔄 Retry ${retryCount}/${maxRetries}: Checking for data...`);
-                
-                if (window.StateManager && StateManager.state && StateManager.state.data && StateManager.state.data.children) {
-                    console.log('✅ Data found! Rendering sidebar...');
-                    clearInterval(retryInterval);
-                    renderSidebarAvatars();
-                    updateHeaderBadge();
-                } else if (retryCount >= maxRetries) {
-                    console.log('❌ Max retries reached, no data found');
-                    console.log('StateManager:', window.StateManager);
-                    console.log('State:', StateManager?.state);
-                    console.log('Data:', StateManager?.state?.data);
-                    clearInterval(retryInterval);
-                }
-            }, 200); // Check every 200ms
+    // Handle both possible data structures
+    const children = StateManager.state.children || StateManager.state.data?.children || [];
+    const currentChildId = StateManager.state.currentChildId;
+    
+    console.log(`🎨 Rendering ${children.length} avatars, current: ${currentChildId}`);
+    console.log('Children array:', children);
+    
+    container.innerHTML = '';
+    
+    children.forEach(childId => {
+        const child = StateManager.getChild(childId);
+        if (!child) {
+            console.log(`⚠️ Child ${childId} not found`);
+            return;
         }
         
-        function patchUICore() {
-            console.log('📝 Patching UICore...');
-            
-            const originalUpdateUI = UICore.updateUI;
-            UICore.updateUI = function() {
-                originalUpdateUI.call(this);
-                renderSidebarAvatars();
-                updateHeaderBadge();
-            };
-            
-            const originalSelectChild = UICore.selectChild;
-            UICore.selectChild = function(childId) {
-                originalSelectChild.call(this, childId);
-                renderSidebarAvatars();
-                updateHeaderBadge();
-            };
-            
-            console.log('✅ UICore patched');
+        console.log(`  ✓ Rendering avatar for ${child.name}`);
+        
+        const avatar = document.createElement('div');
+        avatar.className = 'sidebar-avatar';
+        if (childId === currentChildId) {
+            avatar.classList.add('active');
         }
         
-        function renderSidebarAvatars() {
-            const container = document.getElementById('sidebar-avatars-container');
-            if (!container) {
-                console.log('⚠️ sidebar-avatars-container not found');
-                return;
+        // Apply color gradient
+        if (child.colorPalette && window.CONFIG && CONFIG.COLOR_PALETTES) {
+            const palette = CONFIG.COLOR_PALETTES[child.colorPalette];
+            if (palette) {
+                avatar.style.background = `linear-gradient(135deg, ${palette.bgGradient1}, ${palette.bgGradient2})`;
             }
-            
-            if (!window.StateManager || !StateManager.state || !StateManager.state.data) {
-                console.log('⚠️ StateManager or data not available');
-                return;
-            }
-            
-            const children = StateManager.state.data.children || [];
-            const currentChildId = StateManager.state.currentChildId;
-            
-            console.log(`🎨 Rendering ${children.length} avatars, current: ${currentChildId}`);
-            
-            container.innerHTML = '';
-            
-            children.forEach(childId => {
-                const child = StateManager.getChild(childId);
-                if (!child) {
-                    console.log(`⚠️ Child ${childId} not found`);
-                    return;
-                }
-                
-                console.log(`  ✓ Rendering avatar for ${child.name}`);
-                
-                const avatar = document.createElement('div');
-                avatar.className = 'sidebar-avatar';
-                if (childId === currentChildId) {
-                    avatar.classList.add('active');
-                }
-                
-                // Apply color gradient
-                if (child.colorPalette && window.CONFIG && CONFIG.COLOR_PALETTES) {
-                    const palette = CONFIG.COLOR_PALETTES[child.colorPalette];
-                    if (palette) {
-                        avatar.style.background = `linear-gradient(135deg, ${palette.bgGradient1}, ${palette.bgGradient2})`;
-                    }
-                }
-                
-                // Add photo or emoji
-                if (child.photo) {
-                    const img = document.createElement('img');
-                    img.src = child.photo;
-                    img.alt = child.name;
-                    avatar.appendChild(img);
-                } else if (child.emoji) {
-                    avatar.textContent = child.emoji;
-                } else {
-                    avatar.textContent = '👤';
-                }
-                
-                // Add name label
-                const nameLabel = document.createElement('div');
-                nameLabel.className = 'name';
-                nameLabel.textContent = child.name;
-                avatar.appendChild(nameLabel);
-                
-                // Click handler
-                avatar.onclick = () => {
-                    console.log(`🖱️ Clicked ${child.name}`);
-                    if (window.UICore && UICore.selectChild) {
-                        UICore.selectChild(childId);
-                    }
-                };
-                
-                container.appendChild(avatar);
-            });
-            
-            console.log('✅ Sidebar avatars rendered');
         }
         
-        function updateHeaderBadge() {
-            if (!window.StateManager) return;
-            
-            const currentChild = StateManager.getCurrentChild();
-            if (!currentChild) {
-                console.log('⚠️ No current child');
-                return;
-            }
-            
-            const avatarEl = document.getElementById('header-member-avatar');
-            const nameEl = document.getElementById('header-member-name');
-            
-            if (nameEl) {
-                nameEl.textContent = `${currentChild.name}'s Dashboard`;
-            }
-            
-            if (avatarEl) {
-                avatarEl.innerHTML = '';
-                
-                if (currentChild.photo) {
-                    const img = document.createElement('img');
-                    img.src = currentChild.photo;
-                    img.alt = currentChild.name;
-                    avatarEl.appendChild(img);
-                } else if (currentChild.emoji) {
-                    avatarEl.textContent = currentChild.emoji;
-                } else {
-                    avatarEl.textContent = '👤';
-                }
-                
-                // Apply color gradient
-                if (currentChild.colorPalette && window.CONFIG && CONFIG.COLOR_PALETTES) {
-                    const palette = CONFIG.COLOR_PALETTES[currentChild.colorPalette];
-                    if (palette) {
-                        avatarEl.style.background = `linear-gradient(135deg, ${palette.bgGradient1}, ${palette.bgGradient2})`;
-                    }
-                }
-            }
-            
-            console.log(`✅ Header updated for ${currentChild.name}`);
+        // Add photo or emoji
+        if (child.photo) {
+            const img = document.createElement('img');
+            img.src = child.photo;
+            img.alt = child.name;
+            avatar.appendChild(img);
+        } else if (child.emoji) {
+            avatar.textContent = child.emoji;
+        } else {
+            avatar.textContent = '👤';
         }
         
-        // Make functions globally available
-        window.CompassUI = {
-            renderSidebarAvatars: renderSidebarAvatars,
-            updateHeaderBadge: updateHeaderBadge,
-            refresh: function() {
-                console.log('🔄 Manual refresh called');
-                renderSidebarAvatars();
-                updateHeaderBadge();
+        // Add name label
+        const nameLabel = document.createElement('div');
+        nameLabel.className = 'name';
+        nameLabel.textContent = child.name;
+        avatar.appendChild(nameLabel);
+        
+        // Click handler
+        avatar.onclick = () => {
+            console.log(`🖱️ Clicked ${child.name}`);
+            if (window.UICore && UICore.selectChild) {
+                UICore.selectChild(childId);
             }
         };
         
-        console.log('✅ Compass UI compatibility complete');
+        container.appendChild(avatar);
+    });
+    
+    console.log('✅ Sidebar avatars rendered');
+}
+
+// Update header badge
+function updateHeaderBadge() {
+    console.log('🏷️ updateHeaderBadge() called');
+    
+    if (!window.StateManager) {
+        console.log('⚠️ StateManager not available');
+        return;
     }
-})();
+    
+    const currentChild = StateManager.getCurrentChild();
+    if (!currentChild) {
+        console.log('⚠️ No current child');
+        return;
+    }
+    
+    console.log(`🏷️ Updating header for ${currentChild.name}`);
+    
+    const avatarEl = document.getElementById('header-member-avatar');
+    const nameEl = document.getElementById('header-member-name');
+    
+    if (nameEl) {
+        nameEl.textContent = `${currentChild.name}'s Dashboard`;
+    }
+    
+    if (avatarEl) {
+        avatarEl.innerHTML = '';
+        
+        if (currentChild.photo) {
+            const img = document.createElement('img');
+            img.src = currentChild.photo;
+            img.alt = currentChild.name;
+            avatarEl.appendChild(img);
+        } else if (currentChild.emoji) {
+            avatarEl.textContent = currentChild.emoji;
+        } else {
+            avatarEl.textContent = '👤';
+        }
+        
+        // Apply color gradient
+        if (currentChild.colorPalette && window.CONFIG && CONFIG.COLOR_PALETTES) {
+            const palette = CONFIG.COLOR_PALETTES[currentChild.colorPalette];
+            if (palette) {
+                avatarEl.style.background = `linear-gradient(135deg, ${palette.bgGradient1}, ${palette.bgGradient2})`;
+            }
+        }
+    }
+    
+    console.log(`✅ Header updated for ${currentChild.name}`);
+}
+
+// Patch ProfileModule
+function patchProfileModule() {
+    console.log('📝 Patching ProfileModule...');
+    
+    if (!window.ProfileModule) {
+        console.log('⚠️ ProfileModule not found');
+        return;
+    }
+    
+    const originalRenderChildButtons = ProfileModule.renderChildButtons;
+    ProfileModule.renderChildButtons = function() {
+        console.log('🎨 ProfileModule.renderChildButtons() called');
+        const container = document.getElementById('child-buttons-container');
+        if (container) {
+            container.innerHTML = '';
+        }
+        renderSidebarAvatars();
+        updateHeaderBadge();
+    };
+    
+    const originalUpdateChildButtons = ProfileModule.updateChildButtons;
+    ProfileModule.updateChildButtons = function() {
+        console.log('🔄 ProfileModule.updateChildButtons() called');
+        if (originalUpdateChildButtons) {
+            originalUpdateChildButtons.call(this);
+        }
+        renderSidebarAvatars();
+        updateHeaderBadge();
+    };
+    
+    console.log('✅ ProfileModule patched');
+}
+
+// Patch UICore
+function patchUICore() {
+    console.log('📝 Patching UICore...');
+    
+    if (!window.UICore) {
+        console.log('⚠️ UICore not found');
+        return;
+    }
+    
+    const originalUpdateUI = UICore.updateUI;
+    UICore.updateUI = function() {
+        console.log('🎨 UICore.updateUI() called');
+        if (originalUpdateUI) {
+            originalUpdateUI.call(this);
+        }
+        renderSidebarAvatars();
+        updateHeaderBadge();
+    };
+    
+    const originalSelectChild = UICore.selectChild;
+    UICore.selectChild = function(childId) {
+        console.log(`🎯 UICore.selectChild(${childId}) called`);
+        if (originalSelectChild) {
+            originalSelectChild.call(this, childId);
+        }
+        renderSidebarAvatars();
+        updateHeaderBadge();
+    };
+    
+    console.log('✅ UICore patched');
+}
+
+// Initialize compatibility bridge
+function initCompatibilityBridge() {
+    console.log('🔧 Initializing Compass UI compatibility...');
+    
+    // Wait for ProfileModule
+    const checkProfileModule = setInterval(() => {
+        if (window.ProfileModule) {
+            clearInterval(checkProfileModule);
+            patchProfileModule();
+        }
+    }, 50);
+    
+    // Wait for UICore
+    const checkUICore = setInterval(() => {
+        if (window.UICore) {
+            clearInterval(checkUICore);
+            patchUICore();
+        }
+    }, 50);
+    
+    // Wait for StateManager with data - check both possible structures
+    let retryCount = 0;
+    const maxRetries = 10;
+    const retryInterval = setInterval(() => {
+        retryCount++;
+        console.log(`🔄 Retry ${retryCount}/${maxRetries}: Checking for data...`);
+        
+        // Check both possible data structures
+        const children = StateManager?.state?.children || StateManager?.state?.data?.children;
+        
+        if (window.StateManager && StateManager.state && children && children.length > 0) {
+            console.log('✅ Data found! Rendering sidebar...');
+            console.log('Children:', children);
+            clearInterval(retryInterval);
+            renderSidebarAvatars();
+            updateHeaderBadge();
+        } else if (retryCount >= maxRetries) {
+            console.log('❌ Max retries reached');
+            console.log('StateManager:', window.StateManager);
+            console.log('State:', StateManager?.state);
+            console.log('Children (state.children):', StateManager?.state?.children);
+            console.log('Children (state.data.children):', StateManager?.state?.data?.children);
+            clearInterval(retryInterval);
+        }
+    }, 200);
+    
+    console.log('✅ Compass UI compatibility initialized');
+}
+
+// Make everything globally available for debugging
+window.CompassUI = {
+    renderSidebarAvatars,
+    updateHeaderBadge,
+    patchProfileModule,
+    patchUICore,
+    initCompatibilityBridge,
+    refresh: function() {
+        console.log('🔄 Manual refresh called');
+        renderSidebarAvatars();
+        updateHeaderBadge();
+    }
+};
+
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCompatibilityBridge);
+} else {
+    initCompatibilityBridge();
+}
+
+console.log('✅ CompassUI object created and available globally');
