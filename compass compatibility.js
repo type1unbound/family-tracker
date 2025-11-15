@@ -93,17 +93,26 @@ console.log('✅ Compatibility script loaded');
             
             console.log('✅ ProfileModule patched');
             
-            // Force render after short delay
-            setTimeout(() => {
-                console.log('🔄 Checking for initial data...');
-                if (window.StateManager && StateManager.state && StateManager.state.data) {
-                    console.log('✅ Data found, rendering sidebar...');
+            // Force render with multiple retries
+            let retryCount = 0;
+            const maxRetries = 10;
+            const retryInterval = setInterval(() => {
+                retryCount++;
+                console.log(`🔄 Retry ${retryCount}/${maxRetries}: Checking for data...`);
+                
+                if (window.StateManager && StateManager.state && StateManager.state.data && StateManager.state.data.children) {
+                    console.log('✅ Data found! Rendering sidebar...');
+                    clearInterval(retryInterval);
                     renderSidebarAvatars();
                     updateHeaderBadge();
-                } else {
-                    console.log('⏳ No data yet, waiting...');
+                } else if (retryCount >= maxRetries) {
+                    console.log('❌ Max retries reached, no data found');
+                    console.log('StateManager:', window.StateManager);
+                    console.log('State:', StateManager?.state);
+                    console.log('Data:', StateManager?.state?.data);
+                    clearInterval(retryInterval);
                 }
-            }, 500);
+            }, 200); // Check every 200ms
         }
         
         function patchUICore() {
