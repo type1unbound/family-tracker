@@ -1,9 +1,8 @@
 // Compass UI Compatibility Bridge
 // This file ensures your existing JavaScript modules work with the new Compass UI structure
 
-// CREATE ELEMENTS IMMEDIATELY - BEFORE THE IIFE
-// This runs synchronously as soon as this script loads
-console.log('🧭 Compass Compatibility: Creating elements IMMEDIATELY...');
+// CREATE ELEMENTS - Handle both head and body loading
+console.log('🧭 Compass Compatibility Loading...');
 
 const REQUIRED_ELEMENTS = [
     { id: 'child-buttons-container', tag: 'div' },
@@ -14,18 +13,35 @@ const REQUIRED_ELEMENTS = [
     { id: 'weekly-points', tag: 'div', content: '0' }
 ];
 
-REQUIRED_ELEMENTS.forEach(({ id, tag, content }) => {
-    if (!document.getElementById(id)) {
-        console.log(`  ✓ Creating: #${id}`);
-        const element = document.createElement(tag);
-        element.id = id;
-        element.style.display = 'none'; // Hidden, new UI handles these
-        if (content) element.textContent = content;
-        document.body.appendChild(element);
-    }
-});
+function createRequiredElements() {
+    console.log('🔨 Creating required elements...');
+    REQUIRED_ELEMENTS.forEach(({ id, tag, content }) => {
+        if (!document.getElementById(id)) {
+            console.log(`  ✓ Creating: #${id}`);
+            const element = document.createElement(tag);
+            element.id = id;
+            element.style.display = 'none'; // Hidden, new UI handles these
+            if (content) element.textContent = content;
+            document.body.appendChild(element);
+        }
+    });
+    console.log('✅ All elements created');
+}
 
-console.log('✅ All elements created synchronously');
+// Create elements as soon as body is available
+if (document.body) {
+    createRequiredElements();
+} else {
+    // Body doesn't exist yet, wait for it
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', createRequiredElements);
+    } else {
+        // DOM is already loaded but no body?? Create one
+        document.addEventListener('DOMContentLoaded', createRequiredElements);
+    }
+}
+
+console.log('✅ Compatibility script loaded');
 
 // NOW set up the rest of compatibility
 (function() {
