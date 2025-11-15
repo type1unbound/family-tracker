@@ -240,6 +240,44 @@ body {
     gap: 16px;
 }
 
+.utility-btn {
+    padding: 8px 16px;
+    background: white;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.utility-btn:hover {
+    border-color: #6366f1;
+    background: #f0f9ff;
+}
+
+.utility-btn.active {
+    background: #6366f1;
+    color: white;
+    border-color: #6366f1;
+}
+
+.utility-btn.active:hover {
+    background: #4f46e5;
+}
+
+#edit-mode-icon {
+    font-size: 14px;
+}
+
+#edit-mode-text {
+    font-size: 13px;
+}
+
 .date-picker-mini {
     padding: 8px 14px;
     border: 1.5px solid #e5e7eb;
@@ -381,6 +419,13 @@ body {
     padding: 16px;
     overflow: hidden;
     background: #f9fafb;
+    max-height: calc(100vh - 180px); /* Subtract header and score bar height */
+}
+
+/* All three columns should scroll independently */
+.dashboard-content > * {
+    overflow-y: auto;
+    max-height: 100%;
 }
 
 /* ========================================
@@ -395,6 +440,12 @@ body {
     border: 1px solid #e5e7eb;
     display: flex;
     flex-direction: column;
+    overflow-y: auto; /* Section itself scrolls */
+}
+
+/* Remove the separate scroll container styles since section scrolls */
+#schedule-list {
+    flex: 1;
 }
 
 .section-header {
@@ -557,9 +608,10 @@ body {
     border: 1px solid #e5e7eb;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    overflow-y: auto; /* Scrolls independently */
 }
 
+/* Remove separate scrollbar styles since section scrolls */
 .detail-section::-webkit-scrollbar {
     width: 6px;
 }
@@ -1150,6 +1202,62 @@ body {
 
 .edit-mode-toggle.active {
     background: linear-gradient(135deg, #f97316, #ea580c);
+}
+
+.edit-controls {
+    display: none;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.edit-mode .edit-controls {
+    display: flex;
+}
+
+.edit-btn {
+    padding: 4px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.edit-btn:hover {
+    background: #f3f4f6;
+    border-color: #6366f1;
+}
+
+.edit-btn.delete {
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.edit-btn.delete:hover {
+    background: #fef2f2;
+    border-color: #dc2626;
+}
+
+.add-item-btn {
+    width: 100%;
+    padding: 12px;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    background: white;
+    color: #6b7280;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    margin-top: 8px;
+}
+
+.add-item-btn:hover {
+    border-color: #6366f1;
+    color: #6366f1;
+    background: #f0f9ff;
 }
 
 .edit-controls {
