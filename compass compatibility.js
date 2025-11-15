@@ -4,18 +4,15 @@
 // CREATE ELEMENTS - Handle both head and body loading
 console.log('🧭 Compass Compatibility Loading...');
 
-const REQUIRED_ELEMENTS = [
+const LEGACY_ELEMENTS = [
     { id: 'child-buttons-container', tag: 'div' },
     { id: 'add-child-btn', tag: 'button' },
-    { id: 'date-display', tag: 'div' },
-    { id: 'tracker-buttons-container', tag: 'div' },
-    { id: 'total-points', tag: 'div', content: '0' },
-    { id: 'weekly-points', tag: 'div', content: '0' }
+    { id: 'tracker-buttons-container', tag: 'div' }
 ];
 
 function createRequiredElements() {
-    console.log('🔨 Creating required elements...');
-    REQUIRED_ELEMENTS.forEach(({ id, tag, content }) => {
+    console.log('🔨 Creating legacy elements...');
+    LEGACY_ELEMENTS.forEach(({ id, tag, content }) => {
         if (!document.getElementById(id)) {
             console.log(`  ✓ Creating: #${id}`);
             const element = document.createElement(tag);
@@ -25,7 +22,7 @@ function createRequiredElements() {
             document.body.appendChild(element);
         }
     });
-    console.log('✅ All elements created');
+    console.log('✅ All legacy elements created');
 }
 
 // Create elements as soon as body is available
