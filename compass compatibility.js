@@ -2,10 +2,9 @@
 // This file ensures your existing JavaScript modules work with the new Compass UI structure
 
 (function() {
-    console.log('🧭 Loading Compass UI Compatibility Bridge...');
+    console.log('🧭 Compass UI Compatibility Bridge Loading...');
     
-    // Create missing elements IMMEDIATELY (don't wait for DOMContentLoaded)
-    // This ensures elements exist before other scripts try to access them
+    // Create missing elements immediately (body exists since script is in body tag)
     createMissingElements();
     
     // Wait for DOM to be ready for other compatibility features
@@ -30,16 +29,18 @@
         
         requiredElements.forEach(({ id, tag, content }) => {
             if (!document.getElementById(id)) {
-                console.log(`  Creating missing element: #${id}`);
+                console.log(`  ✓ Creating: #${id}`);
                 const element = document.createElement(tag);
                 element.id = id;
                 element.style.display = 'none'; // Hidden, new UI handles these
                 if (content) element.textContent = content;
                 document.body.appendChild(element);
+            } else {
+                console.log(`  ✓ Already exists: #${id}`);
             }
         });
         
-        console.log('✅ All required elements created');
+        console.log('✅ All required elements ready');
     }
     
     function initCompatibilityBridge() {
