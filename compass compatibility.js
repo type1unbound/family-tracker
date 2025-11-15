@@ -1,12 +1,34 @@
 // Compass UI Compatibility Bridge
 // This file ensures your existing JavaScript modules work with the new Compass UI structure
 
+// CREATE ELEMENTS IMMEDIATELY - BEFORE THE IIFE
+// This runs synchronously as soon as this script loads
+console.log('🧭 Compass Compatibility: Creating elements IMMEDIATELY...');
+
+const REQUIRED_ELEMENTS = [
+    { id: 'child-buttons-container', tag: 'div' },
+    { id: 'add-child-btn', tag: 'button' },
+    { id: 'date-display', tag: 'div' },
+    { id: 'tracker-buttons-container', tag: 'div' },
+    { id: 'total-points', tag: 'div', content: '0' },
+    { id: 'weekly-points', tag: 'div', content: '0' }
+];
+
+REQUIRED_ELEMENTS.forEach(({ id, tag, content }) => {
+    if (!document.getElementById(id)) {
+        console.log(`  ✓ Creating: #${id}`);
+        const element = document.createElement(tag);
+        element.id = id;
+        element.style.display = 'none'; // Hidden, new UI handles these
+        if (content) element.textContent = content;
+        document.body.appendChild(element);
+    }
+});
+
+console.log('✅ All elements created synchronously');
+
+// NOW set up the rest of compatibility
 (function() {
-    console.log('🧭 Compass UI Compatibility Bridge Loading...');
-    
-    // Create missing elements immediately (body exists since script is in body tag)
-    createMissingElements();
-    
     // Wait for DOM to be ready for other compatibility features
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initCompatibilityBridge);
@@ -14,77 +36,97 @@
         initCompatibilityBridge();
     }
     
-    function createMissingElements() {
-        console.log('🔨 Creating missing UI elements...');
-        
-        // List of all elements that old code expects
-        const requiredElements = [
-            { id: 'child-buttons-container', tag: 'div' },
-            { id: 'add-child-btn', tag: 'button' },
-            { id: 'date-display', tag: 'div' },
-            { id: 'tracker-buttons-container', tag: 'div' },
-            { id: 'total-points', tag: 'div', content: '0' },
-            { id: 'weekly-points', tag: 'div', content: '0' }
-        ];
-        
-        requiredElements.forEach(({ id, tag, content }) => {
-            if (!document.getElementById(id)) {
-                console.log(`  ✓ Creating: #${id}`);
-                const element = document.createElement(tag);
-                element.id = id;
-                element.style.display = 'none'; // Hidden, new UI handles these
-                if (content) element.textContent = content;
-                document.body.appendChild(element);
-            } else {
-                console.log(`  ✓ Already exists: #${id}`);
-            }
-        });
-        
-        console.log('✅ All required elements ready');
-    }
-    
     function initCompatibilityBridge() {
-        console.log('🔧 Initializing Compass UI compatibility...');
-        
-        // Override any functions that need to work differently with new UI
+        console.log('🔧 Initializing Compass UI compatibility bridge...');
         overrideUIFunctions();
-        
         console.log('✅ Compass UI compatibility bridge loaded');
     }
     
     function overrideUIFunctions() {
-        // Override child button rendering to use sidebar avatars
-        if (window.UICore && UICore.renderChildButtons) {
-            const originalRenderChildButtons = UICore.renderChildButtons;
-            UICore.renderChildButtons = function() {
-                // Call original to maintain backward compatibility
-                originalRenderChildButtons.apply(this, arguments);
+        console.log('🔧 Setting up UI function overrides...');
+        
+        // Wait for ProfileModule to be available, then patch it
+        const checkProfileModule = setInterval(() => {
+            if (window.ProfileModule) {
+                clearInterval(checkProfileModule);
+                patchProfileModule();
+            }
+        }, 50);
+        
+        function patchProfileModule() {
+            console.log('📝 Patching ProfileModule.renderChildButtons...');
+            
+            // Save original function
+            const originalRenderChildButtons = ProfileModule.renderChildButtons;
+            
+            // Replace with our version that handles both old and new UI
+            ProfileModule.renderChildButtons = function() {
+                console.log('🎨 Rendering child buttons (Compass version)...');
                 
-                // Also render sidebar avatars
+                // Get the container - it should exist now
+                const container = document.getElementById('child-buttons-container');
+                if (!container) {
+                    console.error('❌ child-buttons-container still missing!');
+                    return;
+                }
+                
+                // Clear it (this is what the original code does)
+                container.innerHTML = '';
+                
+                // Now render sidebar avatars for the new UI
                 renderSidebarAvatars();
+                
+                // Also update header badge
+                updateHeaderBadge();
+                
+                console.log('✅ Child buttons rendered');
             };
+            
+            // Also patch updateChildButtons to update sidebar
+            const originalUpdateChildButtons = ProfileModule.updateChildButtons;
+            ProfileModule.updateChildButtons = function() {
+                console.log('🔄 Updating child buttons (Compass version)...');
+                
+                // Call original to update hidden elements
+                originalUpdateChildButtons.call(this);
+                
+                // Update sidebar
+                renderSidebarAvatars();
+                updateHeaderBadge();
+            };
+            
+            console.log('✅ ProfileModule patched');
         }
         
         // Helper to render sidebar avatars
         function renderSidebarAvatars() {
             const container = document.getElementById('sidebar-avatars-container');
-            if (!container || !window.StateManager || !StateManager.state.data) return;
+            if (!container || !window.StateManager || !StateManager.state.data) {
+                console.log('⚠️ Cannot render sidebar avatars - missing container or StateManager');
+                return;
+            }
             
             const children = StateManager.state.data.children || [];
             const currentChildId = StateManager.state.currentChildId;
             
             container.innerHTML = '';
             
-            children.forEach(child => {
+            children.forEach(childId => {
+                const child = StateManager.getChild(childId);
+                if (!child) return;
+                
                 const avatar = document.createElement('div');
                 avatar.className = 'sidebar-avatar';
-                if (child.id === currentChildId) {
+                if (childId === currentChildId) {
                     avatar.classList.add('active');
                 }
                 
                 // Apply color gradient if available
                 if (child.colorPalette) {
-                    avatar.style.background = `linear-gradient(135deg, ${child.colorPalette.gradient1}, ${child.colorPalette.gradient2})`;
+                    const palette = window.CONFIG && CONFIG.COLOR_PALETTES ? CONFIG.COLOR_PALETTES[child.colorPalette] : null;
+                    if (palette) {
+                        avatar.style.background = `linear-gradient(135deg, ${palette.bgGradient1}, ${palette.bgGradient2})`;
+                    }
                 }
                 
                 // Add photo or emoji
@@ -95,6 +137,8 @@
                     avatar.appendChild(img);
                 } else if (child.emoji) {
                     avatar.textContent = child.emoji;
+                } else {
+                    avatar.textContent = '👤';
                 }
                 
                 // Add name label
@@ -106,26 +150,17 @@
                 // Click handler
                 avatar.onclick = () => {
                     if (window.UICore && UICore.selectChild) {
-                        UICore.selectChild(child.id);
+                        UICore.selectChild(childId);
                     }
                 };
                 
                 container.appendChild(avatar);
             });
+            
+            console.log(`✅ Rendered ${children.length} sidebar avatars`);
         }
         
-        // Override member badge update in header
-        if (window.UICore && UICore.selectChild) {
-            const originalSelectChild = UICore.selectChild;
-            UICore.selectChild = function(childId) {
-                // Call original
-                originalSelectChild.apply(this, arguments);
-                
-                // Update header member badge
-                updateHeaderBadge();
-            };
-        }
-        
+        // Helper to update header member badge
         function updateHeaderBadge() {
             if (!window.StateManager) return;
             
@@ -149,16 +184,23 @@
                     avatarEl.appendChild(img);
                 } else if (currentChild.emoji) {
                     avatarEl.textContent = currentChild.emoji;
+                } else {
+                    avatarEl.textContent = '👤';
                 }
                 
                 // Apply color gradient
                 if (currentChild.colorPalette) {
-                    avatarEl.style.background = `linear-gradient(135deg, ${currentChild.colorPalette.gradient1}, ${currentChild.colorPalette.gradient2})`;
+                    const palette = window.CONFIG && CONFIG.COLOR_PALETTES ? CONFIG.COLOR_PALETTES[currentChild.colorPalette] : null;
+                    if (palette) {
+                        avatarEl.style.background = `linear-gradient(135deg, ${palette.bgGradient1}, ${palette.bgGradient2})`;
+                    }
                 }
             }
+            
+            console.log(`✅ Updated header badge for ${currentChild.name}`);
         }
         
-        // Make renderSidebarAvatars and updateHeaderBadge globally available
+        // Make functions globally available
         window.CompassUI = {
             renderSidebarAvatars: renderSidebarAvatars,
             updateHeaderBadge: updateHeaderBadge,
@@ -167,5 +209,7 @@
                 updateHeaderBadge();
             }
         };
+        
+        console.log('✅ UI function overrides complete');
     }
 })();
