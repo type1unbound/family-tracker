@@ -1,16 +1,22 @@
 // Compass UI Compatibility Bridge
 // This file ensures your existing JavaScript modules work with the new Compass UI structure
 
+console.log('🧭🧭🧭 COMPASS COMPATIBILITY SCRIPT LOADING - TOP OF FILE 🧭🧭🧭');
 console.log('🧭 Compass Compatibility Loading...');
+console.log('📍 Script start time:', new Date().toISOString());
 
 // Make wellness functions available IMMEDIATELY (before anything else)
 // This early binding ensures the button works even if scripts load out of order
 let wellnessJournalStub = function() {
-    console.log('⚕️ WELLNESS BUTTON CLICKED - Early stub called');
+    console.log('⚕️⚕️⚕️ WELLNESS BUTTON CLICKED - EARLY STUB ⚕️⚕️⚕️');
+    console.log('📍 Stub called at:', new Date().toISOString());
     console.log('🔍 Checking if main function is loaded...');
     
     // Try to find the real implementation
     const realImpl = window.CompassUI?.openWellnessJournal;
+    
+    console.log('🔍 CompassUI exists?', !!window.CompassUI);
+    console.log('🔍 openWellnessJournal exists?', !!realImpl);
     
     if (realImpl && typeof realImpl === 'function') {
         console.log('✅ Found real implementation, calling it');
@@ -19,12 +25,14 @@ let wellnessJournalStub = function() {
         console.log('⏳ Real implementation not ready, retrying in 200ms');
         setTimeout(() => {
             const delayedImpl = window.CompassUI?.openWellnessJournal;
+            console.log('🔄 Retry - openWellnessJournal exists?', !!delayedImpl);
+            
             if (delayedImpl && typeof delayedImpl === 'function') {
                 console.log('✅ Found real implementation on retry');
                 delayedImpl();
             } else {
                 console.log('❌ Still no implementation found');
-                console.log('Available:', Object.keys(window.CompassUI || {}));
+                console.log('Available in CompassUI:', Object.keys(window.CompassUI || {}));
                 alert('Wellness tracker is still loading. Please refresh the page and try again.');
             }
         }, 200);
@@ -32,6 +40,7 @@ let wellnessJournalStub = function() {
 };
 
 window.openWellnessJournal = wellnessJournalStub;
+console.log('✅ openWellnessJournal stub installed, type:', typeof window.openWellnessJournal);
 
 // Stub other functions
 window.closeTrackerList = function() { console.log('closeTrackerList stub called'); };
@@ -295,39 +304,54 @@ function patchUICore() {
     const originalToggleEditMode = UICore.toggleEditMode;
     UICore.toggleEditMode = function() {
         console.log('✏️ toggleEditMode() called');
-        try {
-            if (originalToggleEditMode) {
-                originalToggleEditMode.call(this);
-            }
-        } catch (error) {
-            console.log('⚠️ toggleEditMode error (expected with new UI):', error.message);
-            // Manually toggle edit mode
-            const isEditMode = document.body.classList.contains('edit-mode');
-            if (isEditMode) {
-                document.body.classList.remove('edit-mode');
-            } else {
-                document.body.classList.add('edit-mode');
-            }
-            
-            // Update button appearance
-            const editBtn = document.getElementById('edit-mode-toggle');
-            const editIcon = document.getElementById('edit-mode-icon');
-            const editText = document.getElementById('edit-mode-text');
-            
-            if (editBtn) {
-                if (isEditMode) {
-                    editBtn.classList.remove('active');
-                    if (editIcon) editIcon.textContent = '✏️';
-                    if (editText) editText.textContent = 'Edit';
-                } else {
-                    editBtn.classList.add('active');
-                    if (editIcon) editIcon.textContent = '💾';
-                    if (editText) editText.textContent = 'Done';
-                }
-            }
-            
-            console.log(`✅ Edit mode ${isEditMode ? 'disabled' : 'enabled'}`);
+        
+        // Toggle edit mode state
+        StateManager.state.editMode = !StateManager.state.editMode;
+        const isEditMode = StateManager.state.editMode;
+        
+        console.log(`📝 Edit mode is now: ${isEditMode ? 'ON' : 'OFF'}`);
+        
+        // Update body class (this always works)
+        if (isEditMode) {
+            document.body.classList.add('edit-mode');
+        } else {
+            document.body.classList.remove('edit-mode');
         }
+        
+        // Try to update button appearance (safely)
+        const btn = document.getElementById('edit-mode-toggle');
+        const text = document.getElementById('edit-mode-text');
+        const icon = document.getElementById('edit-mode-icon');
+        const addChildBtn = document.getElementById('add-child-btn');
+        
+        if (btn) {
+            if (isEditMode) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        } else {
+            console.log('⚠️ edit-mode-toggle button not found');
+        }
+        
+        if (text) {
+            text.textContent = isEditMode ? 'Done' : 'Edit';
+        }
+        
+        if (icon) {
+            icon.textContent = isEditMode ? '💾' : '✏️';
+        }
+        
+        if (addChildBtn) {
+            addChildBtn.style.display = isEditMode ? 'inline-block' : 'none';
+        }
+        
+        // Call updateUI to refresh the interface
+        if (this.updateUI) {
+            this.updateUI();
+        }
+        
+        console.log('✅ Edit mode toggled successfully');
     };
     
     console.log('✅ UICore patched');
@@ -513,26 +537,43 @@ function toggleScheduleComplete(itemId) {
 
 // Toggle wellness tracker list visibility
 function openWellnessJournal() {
-    console.log('⚕️ Toggling wellness tracker list...');
+    console.log('⚕️⚕️⚕️ openWellnessJournal() CALLED ⚕️⚕️⚕️');
+    console.log('📍 Function is executing');
     
     const container = document.getElementById('tracker-buttons-container');
+    console.log('📦 Container element:', container);
+    
     if (!container) {
-        console.log('⚠️ tracker-buttons-container not found');
+        console.error('❌ tracker-buttons-container NOT FOUND!');
+        console.log('🔍 Available elements with "tracker" in ID:');
+        Array.from(document.querySelectorAll('[id*="tracker"]')).forEach(el => {
+            console.log('  -', el.id);
+        });
+        alert('Error: Tracker container not found. Check console for details.');
         return;
     }
     
+    console.log('📊 Current display:', container.style.display);
+    
     // Toggle visibility
     if (container.style.display === 'none' || container.style.display === '') {
+        console.log('🔓 Opening tracker list...');
         container.style.display = 'block';
+        console.log('📊 New display:', container.style.display);
+        
         renderTrackerButtons();
         
         // Add click-outside-to-close handler
         setTimeout(() => {
+            console.log('🎯 Adding click-outside handler');
             document.addEventListener('click', closeTrackerListOnClickOutside);
         }, 100);
     } else {
+        console.log('🔒 Closing tracker list...');
         closeTrackerList();
     }
+    
+    console.log('✅ openWellnessJournal() completed');
 }
 
 // Close tracker list
