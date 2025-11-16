@@ -112,6 +112,15 @@ body {
     letter-spacing: 0.3px;
 }
 
+/* Auto-created sidebar avatars container */
+#sidebar-avatars-container {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    width: 100%;
+}
+
 .sidebar-divider {
     width: 100%;
     height: 1px;
@@ -325,6 +334,25 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/* Header member avatar images */
+#header-member-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    overflow: hidden;
+}
+
+#header-member-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 .member-name {
@@ -597,6 +625,78 @@ body {
 }
 
 /* ========================================
+   AUTO-CREATED SCHEDULE CONTAINERS
+   (For compatibility with JavaScript rendering)
+   ======================================== */
+
+#schedule-buttons-container {
+    display: block !important;
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+    position: relative;
+    margin: 0 -8px;
+    padding: 0 8px;
+}
+
+#schedule-buttons-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+#schedule-buttons-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#schedule-buttons-container::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+#schedule-buttons-container::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Schedule focus system for auto-created items */
+#schedule-buttons-container .schedule-item {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+#schedule-buttons-container .schedule-item:hover {
+    border-color: #6366f1;
+    transform: translateX(2px);
+}
+
+#schedule-buttons-container .schedule-item.in-focus {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+    border-color: #6366f1;
+    background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
+}
+
+#schedule-buttons-container .schedule-item.out-of-focus {
+    opacity: 0.35;
+    transform: scale(0.96);
+    background: #fafafa;
+}
+
+#schedule-buttons-container .schedule-item.out-of-focus .schedule-time {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+#schedule-buttons-container .schedule-item.out-of-focus .schedule-name {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* ========================================
    DETAIL SECTION - Center Column
    ======================================== */
 
@@ -704,6 +804,11 @@ body {
     margin-bottom: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+.detail-tasks {
+    flex: 1;
+    overflow-y: auto;
 }
 
 .task-item {
@@ -816,6 +921,172 @@ body {
 .streak-subtext {
     color: #92400e;
     font-size: 14px;
+}
+
+/* ========================================
+   AUTO-CREATED DETAIL CONTAINER
+   (For compatibility with JavaScript rendering)
+   ======================================== */
+
+#schedule-detail-container {
+    display: block !important;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 400px;
+}
+
+#schedule-detail-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+#schedule-detail-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#schedule-detail-container::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+/* Styles for JS-rendered detail sections */
+#schedule-detail-container .detail-header {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+#schedule-detail-container .detail-time {
+    font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+}
+
+#schedule-detail-container .detail-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: -0.3px;
+}
+
+#schedule-detail-container .progress-section {
+    background: #f9fafb;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+}
+
+#schedule-detail-container .progress-label {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 8px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+}
+
+#schedule-detail-container .progress-mini {
+    background: #e5e7eb;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#schedule-detail-container .progress-fill-mini {
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s;
+}
+
+#schedule-detail-container .section-subtitle {
+    font-size: 13px;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#schedule-detail-container .detail-tasks {
+    flex: 1;
+    overflow-y: auto;
+}
+
+#schedule-detail-container .task-item {
+    background: #fafafa;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+}
+
+#schedule-detail-container .task-item:hover {
+    background: #f0f9ff;
+    border-color: #6366f1;
+    transform: translateX(2px);
+}
+
+#schedule-detail-container .task-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #6366f1;
+}
+
+#schedule-detail-container .task-text {
+    flex: 1;
+    font-size: 14px;
+    color: #1f2937;
+    font-weight: 500;
+}
+
+#schedule-detail-container .task-item.completed {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+#schedule-detail-container .task-item.completed .task-text {
+    text-decoration: line-through;
+    color: #9ca3af;
+}
+
+#schedule-detail-container .complete-btn {
+    margin-top: 20px;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    transition: all 0.2s;
+    letter-spacing: -0.2px;
+    width: 100%;
+}
+
+#schedule-detail-container .complete-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+}
+
+#schedule-detail-container .complete-btn:active {
+    transform: translateY(0);
+}
+
+#schedule-detail-container .complete-btn.completed {
+    background: linear-gradient(135deg, #10b981, #059669);
 }
 
 /* ========================================
@@ -1240,62 +1511,6 @@ body {
     border-color: #dc2626;
 }
 
-.add-item-btn {
-    width: 100%;
-    padding: 12px;
-    border: 2px dashed #d1d5db;
-    border-radius: 8px;
-    background: white;
-    color: #6b7280;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s;
-    margin-top: 8px;
-}
-
-.add-item-btn:hover {
-    border-color: #6366f1;
-    color: #6366f1;
-    background: #f0f9ff;
-}
-
-.edit-controls {
-    display: none;
-    gap: 4px;
-    margin-top: 8px;
-}
-
-.edit-mode .edit-controls {
-    display: flex;
-}
-
-.edit-btn {
-    padding: 4px 8px;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    background: white;
-    cursor: pointer;
-    font-size: 11px;
-    font-weight: 500;
-    transition: all 0.2s;
-}
-
-.edit-btn:hover {
-    background: #f3f4f6;
-    border-color: #6366f1;
-}
-
-.edit-btn.delete {
-    color: #dc2626;
-    border-color: #fecaca;
-}
-
-.edit-btn.delete:hover {
-    background: #fef2f2;
-    border-color: #dc2626;
-}
-
 /* ========================================
    FORM ELEMENTS
    ======================================== */
@@ -1350,6 +1565,17 @@ label {
 
 .checkbox.checked svg {
     display: block;
+}
+
+/* ========================================
+   HIDDEN LEGACY ELEMENTS
+   ======================================== */
+
+/* Make sure hidden legacy elements stay hidden */
+#child-buttons-container,
+#add-child-btn,
+#tracker-buttons-container {
+    display: none !important;
 }
 
 /* ========================================
