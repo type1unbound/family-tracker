@@ -3,12 +3,68 @@
 
 console.log('🧭 Compass Compatibility Loading...');
 
+// Make wellness functions available IMMEDIATELY (before anything else)
+// This early binding ensures the button works even if scripts load out of order
+let wellnessJournalStub = function() {
+    console.log('⚕️ WELLNESS BUTTON CLICKED - Early stub called');
+    console.log('🔍 Checking if main function is loaded...');
+    
+    // Try to find the real implementation
+    const realImpl = window.CompassUI?.openWellnessJournal;
+    
+    if (realImpl && typeof realImpl === 'function') {
+        console.log('✅ Found real implementation, calling it');
+        realImpl();
+    } else {
+        console.log('⏳ Real implementation not ready, retrying in 200ms');
+        setTimeout(() => {
+            const delayedImpl = window.CompassUI?.openWellnessJournal;
+            if (delayedImpl && typeof delayedImpl === 'function') {
+                console.log('✅ Found real implementation on retry');
+                delayedImpl();
+            } else {
+                console.log('❌ Still no implementation found');
+                console.log('Available:', Object.keys(window.CompassUI || {}));
+                alert('Wellness tracker is still loading. Please refresh the page and try again.');
+            }
+        }, 200);
+    }
+};
+
+window.openWellnessJournal = wellnessJournalStub;
+
+// Stub other functions
+window.closeTrackerList = function() { console.log('closeTrackerList stub called'); };
+window.renderTrackerButtons = function() { console.log('renderTrackerButtons stub called'); };
+window.openTemplateSelection = function() { 
+    console.log('openTemplateSelection called');
+    if (window.TrackerModule && TrackerModule.openTemplateSelection) {
+        TrackerModule.openTemplateSelection();
+    } else {
+        alert('Template selection is loading. Please try again.');
+    }
+};
+window.openSpecificTracker = function(id) { 
+    console.log('openSpecificTracker called:', id);
+    if (window.TrackerModule && TrackerModule.openSpecificTracker) {
+        TrackerModule.openSpecificTracker(id);
+    } else if (window.openSpecificTracker && window.openSpecificTracker !== arguments.callee) {
+        window.openSpecificTracker(id);
+    }
+};
+
+console.log('✅ Early stubs created');
+
 const LEGACY_ELEMENTS = [
     { id: 'child-buttons-container', tag: 'div' },
     { id: 'add-child-btn', tag: 'button' },
     { id: 'tracker-buttons-container', tag: 'div' },
     { id: 'schedule-buttons-container', tag: 'div' },
-    { id: 'schedule-detail-container', tag: 'div' }
+    { id: 'schedule-detail-container', tag: 'div' },
+    { id: 'schedule-list', tag: 'div' },
+    { id: 'weekly-goals-container', tag: 'div' },
+    { id: 'chores-container', tag: 'div' },
+    { id: 'character-container', tag: 'div' }
 ];
 
 // Create required legacy elements
@@ -232,6 +288,45 @@ function patchUICore() {
         const trackerContainer = document.getElementById('tracker-buttons-container');
         if (trackerContainer && trackerContainer.style.display === 'block') {
             renderTrackerButtons();
+        }
+    };
+    
+    // Patch toggleEditMode to prevent errors with missing elements
+    const originalToggleEditMode = UICore.toggleEditMode;
+    UICore.toggleEditMode = function() {
+        console.log('✏️ toggleEditMode() called');
+        try {
+            if (originalToggleEditMode) {
+                originalToggleEditMode.call(this);
+            }
+        } catch (error) {
+            console.log('⚠️ toggleEditMode error (expected with new UI):', error.message);
+            // Manually toggle edit mode
+            const isEditMode = document.body.classList.contains('edit-mode');
+            if (isEditMode) {
+                document.body.classList.remove('edit-mode');
+            } else {
+                document.body.classList.add('edit-mode');
+            }
+            
+            // Update button appearance
+            const editBtn = document.getElementById('edit-mode-toggle');
+            const editIcon = document.getElementById('edit-mode-icon');
+            const editText = document.getElementById('edit-mode-text');
+            
+            if (editBtn) {
+                if (isEditMode) {
+                    editBtn.classList.remove('active');
+                    if (editIcon) editIcon.textContent = '✏️';
+                    if (editText) editText.textContent = 'Edit';
+                } else {
+                    editBtn.classList.add('active');
+                    if (editIcon) editIcon.textContent = '💾';
+                    if (editText) editText.textContent = 'Done';
+                }
+            }
+            
+            console.log(`✅ Edit mode ${isEditMode ? 'disabled' : 'enabled'}`);
         }
     };
     
@@ -580,6 +675,15 @@ window.CompassUI = {
     updateHeaderBadge,
     renderScheduleWithFocus,
     renderTrackerButtons,
+    openWellnessJournal: function() {
+        console.log('⚕️ CompassUI.openWellnessJournal called');
+        const actualFunction = typeof openWellnessJournal === 'function' ? openWellnessJournal : null;
+        if (actualFunction) {
+            actualFunction();
+        } else {
+            console.log('❌ openWellnessJournal function not found');
+        }
+    },
     selectScheduleItem,
     patchProfileModule,
     patchUICore,
@@ -593,14 +697,17 @@ window.CompassUI = {
     }
 };
 
-// Make functions available globally for onclick handlers
+// Replace the stub functions with real implementations
+window.openWellnessJournal = openWellnessJournal;  // Reference the actual function defined above
 window.selectScheduleItem = selectScheduleItem;
 window.toggleScheduleComplete = toggleScheduleComplete;
-window.openWellnessJournal = openWellnessJournal;
 window.closeTrackerList = closeTrackerList;
 window.renderTrackerButtons = renderTrackerButtons;
 window.openTemplateSelection = openTemplateSelection;
 window.openSpecificTracker = openSpecificTracker;
+
+console.log('✅ All global functions assigned');
+console.log('✅ openWellnessJournal is now:', typeof window.openWellnessJournal);
 
 // Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
