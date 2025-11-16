@@ -687,26 +687,99 @@ function renderTrackerButtons() {
 }
 
 // Open template selection modal
+// Open template selection modal
 function openTemplateSelection() {
-    console.log('📋 Opening template selection...');
+    console.log('📋📋📋 openTemplateSelection() CALLED 📋📋📋');
     
-    if (window.TrackerModule && TrackerModule.openTemplateSelection) {
-        TrackerModule.openTemplateSelection();
+    // Check if modal exists in DOM  
+    const modal = document.getElementById('tracker-template-modal');
+    console.log('🔍 Looking for tracker-template-modal:', modal);
+    
+    if (modal) {
+        modal.style.display = 'flex';
+        console.log('✅ Template modal opened');
     } else {
-        alert('Template selection is loading. Please try again in a moment.');
+        console.log('⚠️ tracker-template-modal not found in DOM');
+        console.log('🔍 Available modals:');
+        document.querySelectorAll('[id*="modal"]').forEach(el => {
+            console.log('  -', el.id);
+        });
+        
+        // Fallback: try ProfileModule
+        if (window.ProfileModule && window.ProfileModule.openTemplateSelection) {
+            console.log('📋 Trying ProfileModule.openTemplateSelection');
+            window.ProfileModule.openTemplateSelection();
+        } else {
+            console.log('❌ No way to open template selection found');
+            alert('Template selection modal not found. The modal HTML may not be included in your page yet.');
+        }
     }
 }
 
 // Open specific tracker modal
 function openSpecificTracker(trackerId) {
-    console.log(`📊 Opening tracker: ${trackerId}`);
+    console.log(`📊📊📊 openSpecificTracker('${trackerId}') CALLED 📊📊📊`);
     
-    if (window.TrackerModule && TrackerModule.openSpecificTracker) {
-        TrackerModule.openSpecificTracker(trackerId);
-    } else if (window.openSpecificTracker) {
-        window.openSpecificTracker(trackerId);
+    const currentChild = StateManager.getCurrentChild();
+    if (!currentChild) {
+        console.log('⚠️ No current child');
+        alert('Please select a child first');
+        return;
+    }
+    
+    console.log('👤 Current child:', currentChild.name);
+    console.log('📊 Looking for tracker:', trackerId);
+    console.log('📊 Available trackers:', currentChild.trackers);
+    
+    // Find the tracker
+    const tracker = currentChild.trackers?.find(t => t.id === trackerId);
+    if (!tracker) {
+        console.log(`❌ Tracker ${trackerId} not found`);
+        alert('Tracker not found');
+        return;
+    }
+    
+    console.log('✅ Tracker found:', tracker.templateName);
+    
+    // Check if tracker modal exists
+    const modal = document.getElementById('med-tracker-modal');
+    console.log('🔍 Looking for med-tracker-modal:', modal);
+    
+    if (modal) {
+        // Initialize the tracker with custom config
+        if (window.MedicationTracker) {
+            console.log('🔧 Initializing MedicationTracker...');
+            const config = tracker.customConfig || (window.TrackerTemplates?.getTemplate(tracker.templateId)?.config);
+            console.log('📋 Using config:', config ? 'custom/template config' : 'none');
+            
+            MedicationTracker.init(StateManager.state.currentChild, trackerId, config);
+            MedicationTracker.renderEntryForm();
+            
+            // Update modal title
+            const titleEl = document.getElementById('med-modal-title');
+            if (titleEl) {
+                titleEl.textContent = tracker.templateName || 'Health Tracker';
+            }
+            
+            // Show modal
+            modal.style.display = 'flex';
+            console.log('✅ Tracker modal opened');
+            
+            // Switch to entry tab
+            if (window.switchMedTab) {
+                switchMedTab('entry');
+            }
+        } else {
+            console.log('❌ MedicationTracker not available');
+            alert('Tracker module not loaded');
+        }
     } else {
-        alert('Tracker is loading. Please try again in a moment.');
+        console.log('⚠️ med-tracker-modal not found in DOM');
+        console.log('🔍 Available modals:');
+        document.querySelectorAll('[id*="modal"]').forEach(el => {
+            console.log('  -', el.id);
+        });
+        alert('Tracker modal not found in the page. Please make sure the tracker modal HTML is included.');
     }
 }
 
