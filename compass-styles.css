@@ -1,15 +1,14 @@
 /* ========================================
-   COMPASS - CORE STYLES & BRANDING
-   Family Growth Tracker
+   COMPASS UI - COMPLETE REPLACEMENT CSS
+   Replace your existing compass-ui.css with this file
    ======================================== */
 
 /* Import Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap');
 
 /* ========================================
-   RESET & BASE STYLES
+   RESET & BASE
    ======================================== */
-
 * {
     margin: 0;
     padding: 0;
@@ -27,14 +26,10 @@ body {
 }
 
 /* ========================================
-   MAIN CONTAINER & LAYOUT
+   MAIN CONTAINER
    ======================================== */
-
 .app-container {
     background: #fafafa;
-    border-radius: 0;
-    overflow: hidden;
-    box-shadow: none;
     display: flex;
     min-height: 100vh;
     max-width: none;
@@ -42,9 +37,8 @@ body {
 }
 
 /* ========================================
-   SIDEBAR - Family Member Selection
+   SIDEBAR
    ======================================== */
-
 .sidebar {
     width: 100px;
     background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
@@ -54,6 +48,7 @@ body {
     align-items: center;
     gap: 24px;
     border-right: 1px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
 }
 
 .sidebar-title {
@@ -112,49 +107,12 @@ body {
     letter-spacing: 0.3px;
 }
 
-/* Auto-created sidebar avatars container */
 #sidebar-avatars-container {
     display: flex !important;
     flex-direction: column;
     align-items: center;
     gap: 24px;
     width: 100%;
-}
-
-/* Tracker buttons container - appears below wellness button */
-#tracker-buttons-container {
-    display: none;
-    position: fixed;
-    left: 108px; /* Just right of sidebar */
-    top: 50%;
-    transform: translateY(-50%);
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-    border: 1px solid #e5e7eb;
-    min-width: 280px;
-    max-width: 320px;
-    max-height: 80vh;
-    overflow-y: auto;
-    z-index: 1000;
-    animation: slideIn 0.2s ease-out;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-50%) translateX(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(-50%) translateX(0);
-    }
-}
-
-/* Tracker list button hover effects */
-.tracker-list-btn:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
 }
 
 .sidebar-divider {
@@ -221,10 +179,27 @@ body {
     border-color: rgba(255,255,255,0.25);
 }
 
-/* ========================================
-   MAIN CONTENT AREA
-   ======================================== */
+/* Tracker dropdown */
+#tracker-buttons-container {
+    display: none;
+    position: fixed;
+    left: 108px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    border: 1px solid #e5e7eb;
+    min-width: 280px;
+    max-width: 320px;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 1000;
+}
 
+/* ========================================
+   MAIN CONTENT
+   ======================================== */
 .main-content {
     flex: 1;
     display: flex;
@@ -233,9 +208,8 @@ body {
 }
 
 /* ========================================
-   UTILITY BAR - Header
+   UTILITY BAR
    ======================================== */
-
 .utility-bar {
     background: white;
     padding: 16px 24px;
@@ -311,10 +285,6 @@ body {
     border-color: #6366f1;
 }
 
-.utility-btn.active:hover {
-    background: #4f46e5;
-}
-
 #edit-mode-icon {
     font-size: 14px;
 }
@@ -354,25 +324,7 @@ body {
     border: 1px solid #bae6fd;
 }
 
-.member-avatar-mini {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #BFFFB6, #4CD964);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    overflow: hidden;
-}
-
-.member-avatar-mini img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* Header member avatar images */
+.member-avatar-mini,
 #header-member-avatar {
     width: 24px;
     height: 24px;
@@ -384,11 +336,11 @@ body {
     overflow: hidden;
 }
 
+.member-avatar-mini img,
 #header-member-avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 50%;
 }
 
 .member-name {
@@ -398,9 +350,8 @@ body {
 }
 
 /* ========================================
-   SCORE BAR - Point Cards
+   SCORE BAR
    ======================================== */
-
 .score-bar {
     background: #f9fafb;
     padding: 16px 24px;
@@ -424,25 +375,6 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 8px 16px rgba(0,0,0,0.08);
     border-color: #d1d5db;
-}
-
-.score-action-btn {
-    margin-top: 8px;
-    padding: 6px 12px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-}
-
-.score-action-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .score-label {
@@ -471,10 +403,28 @@ body {
     font-weight: 500;
 }
 
-/* ========================================
-   DASHBOARD CONTENT - 3 Column Layout
-   ======================================== */
+.score-action-btn {
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
 
+.score-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* ========================================
+   DASHBOARD CONTENT - 3 COLUMNS
+   ======================================== */
 .dashboard-content {
     flex: 1;
     display: grid;
@@ -483,20 +433,12 @@ body {
     padding: 16px;
     overflow: hidden;
     background: #f9fafb;
-    max-height: calc(100vh - 180px); /* Subtract header and score bar height */
 }
 
-/* All three columns should scroll independently */
-.dashboard-content > * {
-    overflow-y: auto;
-    max-height: 100%;
-}
-
-/* ========================================
-   SCHEDULE SECTION - Left Column
-   ======================================== */
-
-.schedule-section {
+/* All columns scroll independently */
+.schedule-section,
+.detail-section,
+.goals-section {
     background: white;
     border-radius: 12px;
     padding: 20px;
@@ -504,12 +446,26 @@ body {
     border: 1px solid #e5e7eb;
     display: flex;
     flex-direction: column;
-    overflow-y: auto; /* Section itself scrolls */
+    overflow-y: auto;
 }
 
-/* Remove the separate scroll container styles since section scrolls */
-#schedule-list {
-    flex: 1;
+.schedule-section::-webkit-scrollbar,
+.detail-section::-webkit-scrollbar,
+.goals-section::-webkit-scrollbar {
+    width: 6px;
+}
+
+.schedule-section::-webkit-scrollbar-track,
+.detail-section::-webkit-scrollbar-track,
+.goals-section::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.schedule-section::-webkit-scrollbar-thumb,
+.detail-section::-webkit-scrollbar-thumb,
+.goals-section::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
 }
 
 .section-header {
@@ -527,30 +483,13 @@ body {
     font-size: 18px;
 }
 
-.schedule-scroll-container {
+/* ========================================
+   SCHEDULE SECTION - LEFT COLUMN
+   ======================================== */
+#schedule-buttons-container,
+#schedule-list {
+    display: block !important;
     flex: 1;
-    overflow-y: auto;
-    padding: 8px 0;
-    position: relative;
-    margin: 0 -8px;
-    padding: 0 8px;
-}
-
-.schedule-scroll-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-.schedule-scroll-container::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.schedule-scroll-container::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 3px;
-}
-
-.schedule-scroll-container::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
 }
 
 .schedule-item {
@@ -561,7 +500,6 @@ body {
     margin-bottom: 10px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
 }
 
 .schedule-item:hover {
@@ -569,13 +507,32 @@ body {
     transform: translateX(2px);
 }
 
-.schedule-item.completed {
-    background: #f0fdf4;
-    border-color: #bbf7d0;
+/* Focus states for schedule items */
+.schedule-item.in-focus {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+    border-color: #6366f1;
+    background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
+}
+
+.schedule-item.out-of-focus {
+    opacity: 0.35;
+    transform: scale(0.96);
+    background: #fafafa;
+}
+
+.schedule-item.out-of-focus .schedule-time {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+.schedule-item.out-of-focus .schedule-name {
+    font-size: 12px;
+    color: #6b7280;
 }
 
 .schedule-time {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 700;
     color: #6366f1;
     margin-bottom: 4px;
@@ -660,105 +617,26 @@ body {
     color: white;
 }
 
-/* ========================================
-   AUTO-CREATED SCHEDULE CONTAINERS
-   (For compatibility with JavaScript rendering)
-   ======================================== */
+.scroll-hint {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 11px;
+    margin-top: 8px;
+    font-weight: 500;
+    animation: pulse 2s infinite;
+}
 
-#schedule-buttons-container {
+@keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
+
+/* ========================================
+   DETAIL SECTION - CENTER COLUMN
+   ======================================== */
+#schedule-detail-container {
     display: block !important;
     flex: 1;
-    overflow-y: auto;
-    padding: 8px 0;
-    position: relative;
-    margin: 0 -8px;
-    padding: 0 8px;
-}
-
-#schedule-buttons-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-#schedule-buttons-container::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-#schedule-buttons-container::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 3px;
-}
-
-#schedule-buttons-container::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
-}
-
-/* Schedule focus system for auto-created items */
-#schedule-buttons-container .schedule-item {
-    background: white;
-    border: 2px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-}
-
-#schedule-buttons-container .schedule-item:hover {
-    border-color: #6366f1;
-    transform: translateX(2px);
-}
-
-#schedule-buttons-container .schedule-item.in-focus {
-    transform: scale(1.02);
-    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
-    border-color: #6366f1;
-    background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
-}
-
-#schedule-buttons-container .schedule-item.out-of-focus {
-    opacity: 0.35;
-    transform: scale(0.96);
-    background: #fafafa;
-}
-
-#schedule-buttons-container .schedule-item.out-of-focus .schedule-time {
-    font-size: 13px;
-    color: #9ca3af;
-}
-
-#schedule-buttons-container .schedule-item.out-of-focus .schedule-name {
-    font-size: 12px;
-    color: #6b7280;
-}
-
-/* ========================================
-   DETAIL SECTION - Center Column
-   ======================================== */
-
-.detail-section {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    border: 1px solid #e5e7eb;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto; /* Scrolls independently */
-}
-
-/* Remove separate scrollbar styles since section scrolls */
-.detail-section::-webkit-scrollbar {
-    width: 6px;
-}
-
-.detail-section::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.detail-section::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 3px;
 }
 
 .detail-header {
@@ -814,23 +692,6 @@ body {
     height: 100%;
     border-radius: 4px;
     transition: width 0.3s;
-}
-
-.progress-bar {
-    background: #e5e7eb;
-    height: 16px;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    background: linear-gradient(90deg, #10b981, #059669);
-    height: 100%;
-    transition: width 0.5s ease;
-}
-
-.progress-fill.weekly {
-    background: linear-gradient(90deg, #f97316, #ea580c);
 }
 
 .section-subtitle {
@@ -889,214 +750,7 @@ body {
     color: #9ca3af;
 }
 
-.task-list {
-    list-style: none;
-}
-
-.task-list li {
-    padding: 4px 0;
-    padding-left: 12px;
-    position: relative;
-    color: #4b5563;
-    font-size: 14px;
-}
-
-.task-list li::before {
-    content: '•';
-    position: absolute;
-    left: 0;
-    color: #9ca3af;
-}
-
-.tip-box {
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
-    border: 1px solid #fbbf24;
-    border-radius: 10px;
-    padding: 12px;
-    margin-top: 12px;
-}
-
-.tip-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: #78350f;
-    margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.tip-text {
-    font-size: 11px;
-    color: #78350f;
-    line-height: 1.4;
-}
-
-/* Streak Card */
-.streak-card {
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
-    border: 2px solid #fbbf24;
-    border-radius: 12px;
-    padding: 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 16px;
-}
-
-.streak-icon {
-    font-size: 36px;
-}
-
-.streak-text {
-    font-weight: bold;
-    color: #78350f;
-    font-size: 18px;
-}
-
-.streak-subtext {
-    color: #92400e;
-    font-size: 14px;
-}
-
-/* ========================================
-   AUTO-CREATED DETAIL CONTAINER
-   (For compatibility with JavaScript rendering)
-   ======================================== */
-
-#schedule-detail-container {
-    display: block !important;
-    flex: 1;
-    overflow-y: auto;
-    min-height: 400px;
-}
-
-#schedule-detail-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-#schedule-detail-container::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-#schedule-detail-container::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 3px;
-}
-
-/* Styles for JS-rendered detail sections */
-#schedule-detail-container .detail-header {
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 2px solid #f3f4f6;
-}
-
-#schedule-detail-container .detail-time {
-    font-size: 28px;
-    font-weight: 800;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 6px;
-    letter-spacing: -0.5px;
-}
-
-#schedule-detail-container .detail-name {
-    font-size: 18px;
-    font-weight: 700;
-    color: #111827;
-    letter-spacing: -0.3px;
-}
-
-#schedule-detail-container .progress-section {
-    background: #f9fafb;
-    padding: 12px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #e5e7eb;
-}
-
-#schedule-detail-container .progress-label {
-    font-size: 12px;
-    color: #6b7280;
-    margin-bottom: 8px;
-    font-weight: 600;
-    display: flex;
-    justify-content: space-between;
-}
-
-#schedule-detail-container .progress-mini {
-    background: #e5e7eb;
-    height: 8px;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-#schedule-detail-container .progress-fill-mini {
-    background: linear-gradient(90deg, #6366f1, #8b5cf6);
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.3s;
-}
-
-#schedule-detail-container .section-subtitle {
-    font-size: 13px;
-    font-weight: 700;
-    color: #374151;
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-#schedule-detail-container .detail-tasks {
-    flex: 1;
-    overflow-y: auto;
-}
-
-#schedule-detail-container .task-item {
-    background: #fafafa;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 14px;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: all 0.2s;
-}
-
-#schedule-detail-container .task-item:hover {
-    background: #f0f9ff;
-    border-color: #6366f1;
-    transform: translateX(2px);
-}
-
-#schedule-detail-container .task-checkbox {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    accent-color: #6366f1;
-}
-
-#schedule-detail-container .task-text {
-    flex: 1;
-    font-size: 14px;
-    color: #1f2937;
-    font-weight: 500;
-}
-
-#schedule-detail-container .task-item.completed {
-    background: #f0fdf4;
-    border-color: #bbf7d0;
-}
-
-#schedule-detail-container .task-item.completed .task-text {
-    text-decoration: line-through;
-    color: #9ca3af;
-}
-
-#schedule-detail-container .complete-btn {
+.complete-btn {
     margin-top: 20px;
     padding: 14px 24px;
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
@@ -1112,47 +766,18 @@ body {
     width: 100%;
 }
 
-#schedule-detail-container .complete-btn:hover {
+.complete-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
 }
 
-#schedule-detail-container .complete-btn:active {
-    transform: translateY(0);
-}
-
-#schedule-detail-container .complete-btn.completed {
+.complete-btn.completed {
     background: linear-gradient(135deg, #10b981, #059669);
 }
 
 /* ========================================
-   GOALS SECTION - Right Column
+   GOALS SECTION - RIGHT COLUMN
    ======================================== */
-
-.goals-section {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    border: 1px solid #e5e7eb;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-}
-
-.goals-section::-webkit-scrollbar {
-    width: 6px;
-}
-
-.goals-section::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.goals-section::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 3px;
-}
-
 .goals-group {
     margin-bottom: 24px;
 }
@@ -1258,29 +883,9 @@ body {
     color: #9ca3af;
 }
 
-.completion-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 12px;
-}
-
-.completion-badge.complete {
-    background: #10b981;
-    color: white;
-}
-
-.completion-badge.incomplete {
-    background: #fbbf24;
-    color: #78350f;
-}
-
 /* ========================================
-   CHARACTER DEVELOPMENT - Right Column
+   CHARACTER/GROWTH AREAS
    ======================================== */
-
 .character-category {
     margin-bottom: 16px;
 }
@@ -1365,127 +970,9 @@ body {
     box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
 }
 
-.character-section {
-    border: 2px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 12px;
-}
-
-.character-list {
-    list-style: none;
-    margin-bottom: 12px;
-}
-
-.character-list li {
-    padding: 4px 0;
-    padding-left: 20px;
-    position: relative;
-    color: #4b5563;
-    font-size: 14px;
-}
-
-.character-list li::before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    color: #6366f1;
-}
-
-/* ========================================
-   BUTTONS & ACTIONS
-   ======================================== */
-
-.btn {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 14px;
-    font-family: 'Inter', sans-serif;
-}
-
-.btn-primary {
-    background: #6366f1;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #4f46e5;
-    transform: scale(1.02);
-}
-
-.btn-secondary {
-    background: #e5e7eb;
-    color: #374151;
-}
-
-.btn-secondary:hover {
-    background: #d1d5db;
-}
-
-.btn-active {
-    background: #6366f1;
-    color: white;
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-}
-
-.complete-btn {
-    margin-top: 20px;
-    padding: 14px 24px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
-    transition: all 0.2s;
-    letter-spacing: -0.2px;
-    width: 100%;
-}
-
-.complete-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
-}
-
-.complete-btn:active {
-    transform: translateY(0);
-}
-
-.complete-btn.completed {
-    background: linear-gradient(135deg, #10b981, #059669);
-}
-
-.add-item-btn {
-    width: 100%;
-    padding: 12px;
-    border: 2px dashed #d1d5db;
-    border-radius: 8px;
-    background: white;
-    color: #6b7280;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s;
-    margin-top: 8px;
-}
-
-.add-item-btn:hover {
-    border-color: #6366f1;
-    color: #6366f1;
-    background: #f0f9ff;
-}
-
 /* ========================================
    EDIT MODE
    ======================================== */
-
 .edit-mode-toggle {
     position: fixed;
     bottom: 20px;
@@ -1547,10 +1034,29 @@ body {
     border-color: #dc2626;
 }
 
+.add-item-btn {
+    width: 100%;
+    padding: 12px;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    background: white;
+    color: #6b7280;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    margin-top: 8px;
+}
+
+.add-item-btn:hover {
+    border-color: #6366f1;
+    color: #6366f1;
+    background: #f0f9ff;
+}
+
 /* ========================================
    FORM ELEMENTS
    ======================================== */
-
 textarea, 
 input[type="text"], 
 input[type="date"], 
@@ -1579,73 +1085,17 @@ label {
     font-size: 14px;
 }
 
-.checkbox {
-    width: 24px;
-    height: 24px;
-    border: 2px solid #d1d5db;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.checkbox.checked {
-    background: #10b981;
-    border-color: #10b981;
-}
-
-.checkbox svg {
-    display: none;
-}
-
-.checkbox.checked svg {
-    display: block;
-}
-
 /* ========================================
    HIDDEN LEGACY ELEMENTS
    ======================================== */
-
-/* Make sure hidden legacy elements stay hidden */
 #child-buttons-container,
-#add-child-btn,
-#tracker-buttons-container {
+#add-child-btn {
     display: none !important;
 }
 
 /* ========================================
-   UTILITY CLASSES
+   RESPONSIVE
    ======================================== */
-
-.scrollable {
-    max-height: 500px;
-    overflow-y: auto;
-    padding-right: 8px;
-}
-
-.scroll-hint {
-    text-align: center;
-    color: #9ca3af;
-    font-size: 11px;
-    margin-top: 8px;
-    animation: pulse 2s infinite;
-    font-weight: 500;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 1; }
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* ========================================
-   RESPONSIVE - Mobile/Tablet
-   ======================================== */
-
 @media (max-width: 1200px) {
     .dashboard-content {
         grid-template-columns: 1fr;
