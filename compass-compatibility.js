@@ -1,68 +1,35 @@
-// Compass UI Compatibility Bridge
-// This file ensures your existing JavaScript modules work with the new Compass UI structure
+// ========================================
+// COMPASS UI COMPATIBILITY BRIDGE
+// Replace your existing compass-compatibility.js with this file
+// ========================================
 
-console.log('🧭🧭🧭 COMPASS COMPATIBILITY SCRIPT LOADING - TOP OF FILE 🧭🧭🧭');
-console.log('🧭 Compass Compatibility Loading...');
-console.log('📍 Script start time:', new Date().toISOString());
+console.log('🧭 Compass Compatibility Bridge Loading...');
 
-// Make wellness functions available IMMEDIATELY (before anything else)
-// This early binding ensures the button works even if scripts load out of order
-let wellnessJournalStub = function() {
-    console.log('⚕️⚕️⚕️ WELLNESS BUTTON CLICKED - EARLY STUB ⚕️⚕️⚕️');
-    console.log('📍 Stub called at:', new Date().toISOString());
-    console.log('🔍 Checking if main function is loaded...');
-    
-    // Try to find the real implementation
-    const realImpl = window.CompassUI?.openWellnessJournal;
-    
-    console.log('🔍 CompassUI exists?', !!window.CompassUI);
-    console.log('🔍 openWellnessJournal exists?', !!realImpl);
-    
-    if (realImpl && typeof realImpl === 'function') {
-        console.log('✅ Found real implementation, calling it');
-        realImpl();
+// ========================================
+// EARLY FUNCTION STUBS
+// ========================================
+
+window.openWellnessJournal = function() {
+    console.log('⚕️ openWellnessJournal stub called');
+    if (window.CompassUI?.openWellnessJournal) {
+        window.CompassUI.openWellnessJournal();
     } else {
-        console.log('⏳ Real implementation not ready, retrying in 200ms');
         setTimeout(() => {
-            const delayedImpl = window.CompassUI?.openWellnessJournal;
-            console.log('🔄 Retry - openWellnessJournal exists?', !!delayedImpl);
-            
-            if (delayedImpl && typeof delayedImpl === 'function') {
-                console.log('✅ Found real implementation on retry');
-                delayedImpl();
-            } else {
-                console.log('❌ Still no implementation found');
-                console.log('Available in CompassUI:', Object.keys(window.CompassUI || {}));
-                alert('Wellness tracker is still loading. Please refresh the page and try again.');
+            if (window.CompassUI?.openWellnessJournal) {
+                window.CompassUI.openWellnessJournal();
             }
         }, 200);
     }
 };
 
-window.openWellnessJournal = wellnessJournalStub;
-console.log('✅ openWellnessJournal stub installed, type:', typeof window.openWellnessJournal);
+window.closeTrackerList = function() { console.log('closeTrackerList stub'); };
+window.renderTrackerButtons = function() { console.log('renderTrackerButtons stub'); };
+window.openTemplateSelection = function() { console.log('openTemplateSelection stub'); };
+window.openSpecificTracker = function(id) { console.log('openSpecificTracker stub:', id); };
 
-// Stub other functions
-window.closeTrackerList = function() { console.log('closeTrackerList stub called'); };
-window.renderTrackerButtons = function() { console.log('renderTrackerButtons stub called'); };
-window.openTemplateSelection = function() { 
-    console.log('openTemplateSelection called');
-    if (window.TrackerModule && TrackerModule.openTemplateSelection) {
-        TrackerModule.openTemplateSelection();
-    } else {
-        alert('Template selection is loading. Please try again.');
-    }
-};
-window.openSpecificTracker = function(id) { 
-    console.log('openSpecificTracker called:', id);
-    if (window.TrackerModule && TrackerModule.openSpecificTracker) {
-        TrackerModule.openSpecificTracker(id);
-    } else if (window.openSpecificTracker && window.openSpecificTracker !== arguments.callee) {
-        window.openSpecificTracker(id);
-    }
-};
-
-console.log('✅ Early stubs created');
+// ========================================
+// CREATE REQUIRED LEGACY ELEMENTS
+// ========================================
 
 const LEGACY_ELEMENTS = [
     { id: 'child-buttons-container', tag: 'div' },
@@ -72,67 +39,50 @@ const LEGACY_ELEMENTS = [
     { id: 'schedule-detail-container', tag: 'div' },
     { id: 'schedule-list', tag: 'div' },
     { id: 'weekly-goals-container', tag: 'div' },
-    { id: 'chores-container', tag: 'div' },
-    { id: 'character-container', tag: 'div' }
+    { id: 'character-sections', tag: 'div' }
 ];
 
-// Create required legacy elements
 function createRequiredElements() {
     console.log('🔨 Creating legacy elements...');
-    LEGACY_ELEMENTS.forEach(({ id, tag, content }) => {
+    LEGACY_ELEMENTS.forEach(({ id, tag }) => {
         if (!document.getElementById(id)) {
-            console.log(`  ✓ Creating: #${id}`);
             const element = document.createElement(tag);
             element.id = id;
             element.style.display = 'none';
-            if (content) element.textContent = content;
             document.body.appendChild(element);
+            console.log(`  ✓ Created: #${id}`);
         }
     });
-    console.log('✅ All legacy elements created');
 }
 
-// Create elements as soon as body is available
 if (document.body) {
     createRequiredElements();
 } else {
     document.addEventListener('DOMContentLoaded', createRequiredElements);
 }
 
-console.log('✅ Compatibility script loaded');
+// ========================================
+// RENDER FUNCTIONS
+// ========================================
 
-// Render sidebar avatars
 function renderSidebarAvatars() {
     console.log('🎨 renderSidebarAvatars() called');
     
     const container = document.getElementById('sidebar-avatars-container');
-    if (!container) {
-        console.log('⚠️ sidebar-avatars-container not found');
-        return;
-    }
+    if (!container) return;
     
-    if (!window.StateManager || !StateManager.state) {
-        console.log('⚠️ StateManager or state not available');
-        return;
-    }
+    if (!window.StateManager || !StateManager.state) return;
     
-    // Handle both possible data structures
     const children = StateManager.state.children || StateManager.state.data?.children || [];
-    const currentChildId = StateManager.state.currentChildId;
+    const currentChildId = StateManager.state.currentChild;
     
-    console.log(`🎨 Rendering ${children.length} avatars, current: ${currentChildId}`);
-    console.log('Children array:', children);
+    console.log(`🎨 Rendering ${children.length} avatars`);
     
     container.innerHTML = '';
     
     children.forEach(childId => {
         const child = StateManager.getChild(childId);
-        if (!child) {
-            console.log(`⚠️ Child ${childId} not found`);
-            return;
-        }
-        
-        console.log(`  ✓ Rendering avatar for ${child.name}`);
+        if (!child) return;
         
         const avatar = document.createElement('div');
         avatar.className = 'sidebar-avatar';
@@ -140,15 +90,13 @@ function renderSidebarAvatars() {
             avatar.classList.add('active');
         }
         
-        // Apply color gradient
-        if (child.colorPalette && window.CONFIG && CONFIG.COLOR_PALETTES) {
+        if (child.colorPalette && window.CONFIG?.COLOR_PALETTES) {
             const palette = CONFIG.COLOR_PALETTES[child.colorPalette];
             if (palette) {
                 avatar.style.background = `linear-gradient(135deg, ${palette.bgGradient1}, ${palette.bgGradient2})`;
             }
         }
         
-        // Add photo or emoji
         if (child.photo) {
             const img = document.createElement('img');
             img.src = child.photo;
@@ -160,42 +108,28 @@ function renderSidebarAvatars() {
             avatar.textContent = '👤';
         }
         
-        // Add name label
         const nameLabel = document.createElement('div');
         nameLabel.className = 'name';
         nameLabel.textContent = child.name;
         avatar.appendChild(nameLabel);
         
-        // Click handler
         avatar.onclick = () => {
-            console.log(`🖱️ Clicked ${child.name}`);
-            if (window.UICore && UICore.selectChild) {
+            if (window.UICore?.selectChild) {
                 UICore.selectChild(childId);
             }
         };
         
         container.appendChild(avatar);
     });
-    
-    console.log('✅ Sidebar avatars rendered');
 }
 
-// Update header badge
 function updateHeaderBadge() {
     console.log('🏷️ updateHeaderBadge() called');
     
-    if (!window.StateManager) {
-        console.log('⚠️ StateManager not available');
-        return;
-    }
+    if (!window.StateManager) return;
     
     const currentChild = StateManager.getCurrentChild();
-    if (!currentChild) {
-        console.log('⚠️ No current child');
-        return;
-    }
-    
-    console.log(`🏷️ Updating header for ${currentChild.name}`);
+    if (!currentChild) return;
     
     const avatarEl = document.getElementById('header-member-avatar');
     const nameEl = document.getElementById('header-member-name');
@@ -218,228 +152,37 @@ function updateHeaderBadge() {
             avatarEl.textContent = '👤';
         }
         
-        // Apply color gradient
-        if (currentChild.colorPalette && window.CONFIG && CONFIG.COLOR_PALETTES) {
+        if (currentChild.colorPalette && window.CONFIG?.COLOR_PALETTES) {
             const palette = CONFIG.COLOR_PALETTES[currentChild.colorPalette];
             if (palette) {
                 avatarEl.style.background = `linear-gradient(135deg, ${palette.bgGradient1}, ${palette.bgGradient2})`;
             }
         }
     }
-    
-    console.log(`✅ Header updated for ${currentChild.name}`);
 }
 
-// Patch ProfileModule
-function patchProfileModule() {
-    console.log('📝 Patching ProfileModule...');
-    
-    if (!window.ProfileModule) {
-        console.log('⚠️ ProfileModule not found');
-        return;
-    }
-    
-    const originalRenderChildButtons = ProfileModule.renderChildButtons;
-    ProfileModule.renderChildButtons = function() {
-        console.log('🎨 ProfileModule.renderChildButtons() called');
-        const container = document.getElementById('child-buttons-container');
-        if (container) {
-            container.innerHTML = '';
-        }
-        renderSidebarAvatars();
-        updateHeaderBadge();
-    };
-    
-    const originalUpdateChildButtons = ProfileModule.updateChildButtons;
-    ProfileModule.updateChildButtons = function() {
-        console.log('🔄 ProfileModule.updateChildButtons() called');
-        if (originalUpdateChildButtons) {
-            originalUpdateChildButtons.call(this);
-        }
-        renderSidebarAvatars();
-        updateHeaderBadge();
-    };
-    
-    console.log('✅ ProfileModule patched');
-}
-
-// Patch UICore
-function patchUICore() {
-    console.log('📝 Patching UICore...');
-    
-    if (!window.UICore) {
-        console.log('⚠️ UICore not found');
-        return;
-    }
-    
-    const originalUpdateUI = UICore.updateUI;
-    UICore.updateUI = function() {
-        console.log('🎨 UICore.updateUI() called');
-        if (originalUpdateUI) {
-            originalUpdateUI.call(this);
-        }
-        renderSidebarAvatars();
-        updateHeaderBadge();
-        renderScheduleWithFocus();
-    };
-    
-    const originalSelectChild = UICore.selectChild;
-    UICore.selectChild = function(childId) {
-        console.log(`🎯 UICore.selectChild(${childId}) called`);
-        if (originalSelectChild) {
-            originalSelectChild.call(this, childId);
-        }
-        renderSidebarAvatars();
-        updateHeaderBadge();
-        renderScheduleWithFocus();
-        
-        // Update tracker buttons if they're visible
-        const trackerContainer = document.getElementById('tracker-buttons-container');
-        if (trackerContainer && trackerContainer.style.display === 'block') {
-            renderTrackerButtons();
-        }
-    };
-    
-    // Patch toggleEditMode to prevent errors with missing elements
-    const originalToggleEditMode = UICore.toggleEditMode;
-    UICore.toggleEditMode = function() {
-        console.log('✏️ toggleEditMode() called');
-        
-        // Toggle edit mode state
-        StateManager.state.editMode = !StateManager.state.editMode;
-        const isEditMode = StateManager.state.editMode;
-        
-        console.log(`📝 Edit mode is now: ${isEditMode ? 'ON' : 'OFF'}`);
-        
-        // Update body class (this always works)
-        if (isEditMode) {
-            document.body.classList.add('edit-mode');
-        } else {
-            document.body.classList.remove('edit-mode');
-        }
-        
-        // Try to update button appearance (safely)
-        const btn = document.getElementById('edit-mode-toggle');
-        const text = document.getElementById('edit-mode-text');
-        const icon = document.getElementById('edit-mode-icon');
-        const addChildBtn = document.getElementById('add-child-btn');
-        
-        if (btn) {
-            if (isEditMode) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-        } else {
-            console.log('⚠️ edit-mode-toggle button not found');
-        }
-        
-        if (text) {
-            text.textContent = isEditMode ? 'Done' : 'Edit';
-        }
-        
-        if (icon) {
-            icon.textContent = isEditMode ? '💾' : '✏️';
-        }
-        
-        if (addChildBtn) {
-            addChildBtn.style.display = isEditMode ? 'inline-block' : 'none';
-        }
-        
-        // Call updateUI to refresh the interface
-        if (this.updateUI) {
-            this.updateUI();
-        }
-        
-        console.log('✅ Edit mode toggled successfully');
-    };
-    
-    console.log('✅ UICore patched');
-}
-
-// Initialize compatibility bridge
-function initCompatibilityBridge() {
-    console.log('🔧 Initializing Compass UI compatibility...');
-    
-    // Wait for ProfileModule
-    const checkProfileModule = setInterval(() => {
-        if (window.ProfileModule) {
-            clearInterval(checkProfileModule);
-            patchProfileModule();
-        }
-    }, 50);
-    
-    // Wait for UICore
-    const checkUICore = setInterval(() => {
-        if (window.UICore) {
-            clearInterval(checkUICore);
-            patchUICore();
-        }
-    }, 50);
-    
-    // Wait for StateManager with data - check both possible structures
-    let retryCount = 0;
-    const maxRetries = 10;
-    const retryInterval = setInterval(() => {
-        retryCount++;
-        console.log(`🔄 Retry ${retryCount}/${maxRetries}: Checking for data...`);
-        
-        // Check both possible data structures
-        const children = StateManager?.state?.children || StateManager?.state?.data?.children;
-        
-        if (window.StateManager && StateManager.state && children && children.length > 0) {
-            console.log('✅ Data found! Rendering UI...');
-            console.log('Children:', children);
-            clearInterval(retryInterval);
-            renderSidebarAvatars();
-            updateHeaderBadge();
-            renderScheduleWithFocus();
-        } else if (retryCount >= maxRetries) {
-            console.log('❌ Max retries reached');
-            console.log('StateManager:', window.StateManager);
-            console.log('State:', StateManager?.state);
-            console.log('Children (state.children):', StateManager?.state?.children);
-            console.log('Children (state.data.children):', StateManager?.state?.data?.children);
-            clearInterval(retryInterval);
-        }
-    }, 200);
-    
-    console.log('✅ Compass UI compatibility initialized');
-}
-
-// Render schedule with focus system
 function renderScheduleWithFocus() {
     console.log('📅 renderScheduleWithFocus() called');
     
     const scheduleContainer = document.getElementById('schedule-buttons-container');
     const detailContainer = document.getElementById('schedule-detail-container');
     
-    if (!scheduleContainer) {
-        console.log('⚠️ schedule-buttons-container not found');
-        return;
-    }
-    
-    if (!window.StateManager || !StateManager.state) {
-        console.log('⚠️ StateManager not available');
-        return;
-    }
+    if (!scheduleContainer) return;
+    if (!window.StateManager?.state) return;
     
     const currentChild = StateManager.getCurrentChild();
-    if (!currentChild || !currentChild.schedule) {
-        console.log('⚠️ No schedule data');
-        return;
-    }
+    if (!currentChild?.schedule) return;
     
     const schedule = currentChild.schedule;
     const focusedId = StateManager.state.focusedScheduleId || (schedule.length > 0 ? schedule[0].id : null);
     
-    console.log(`📅 Rendering ${schedule.length} schedule items, focused: ${focusedId}`);
-    
-    // Render high-level list in left column
     scheduleContainer.innerHTML = '';
+    
     schedule.forEach(item => {
         const isFocused = item.id === focusedId;
-        const completed = item.completedDates && item.completedDates.includes(StateManager.state.currentDate);
+        const dayData = StateManager.getDayData();
+        const status = dayData.schedule[item.id];
+        const completed = status === true;
         
         const div = document.createElement('div');
         div.className = `schedule-item ${isFocused ? 'in-focus' : 'out-of-focus'}`;
@@ -449,9 +192,8 @@ function renderScheduleWithFocus() {
         if (completed) {
             statusBadge = '<span class="status-badge completed">✓ Completed</span>';
         } else if (isFocused) {
-            const taskCount = item.tasks ? item.tasks.length : 0;
-            const completedTasks = 0; // Would need to track this
-            statusBadge = `<span class="status-badge in-progress">⏳ In Progress · ${completedTasks}/${taskCount}</span>`;
+            const taskCount = item.tasks?.length || 0;
+            statusBadge = `<span class="status-badge in-progress">⏳ ${taskCount} tasks</span>`;
         } else {
             statusBadge = '<span class="status-badge upcoming">⏰ Upcoming</span>';
         }
@@ -465,23 +207,24 @@ function renderScheduleWithFocus() {
         scheduleContainer.appendChild(div);
     });
     
-    // Render details in center column
+    const hint = document.createElement('div');
+    hint.className = 'scroll-hint';
+    hint.textContent = '↕️ Click to focus';
+    scheduleContainer.appendChild(hint);
+    
     if (detailContainer && focusedId) {
         const focusedItem = schedule.find(item => item.id === focusedId);
         if (focusedItem) {
             renderScheduleDetails(focusedItem, detailContainer);
         }
     }
-    
-    console.log('✅ Schedule rendered with focus');
 }
 
-// Render schedule item details
 function renderScheduleDetails(item, container) {
-    const completed = item.completedDates && item.completedDates.includes(StateManager.state.currentDate);
-    const taskCount = item.tasks ? item.tasks.length : 0;
-    const completedTasks = 0; // Would need to track this
-    const progress = taskCount > 0 ? (completedTasks / taskCount * 100) : 0;
+    const dayData = StateManager.getDayData();
+    const status = dayData.schedule[item.id];
+    const completed = status === true;
+    const taskCount = item.tasks?.length || 0;
     
     container.innerHTML = `
         <div class="detail-header">
@@ -489,34 +232,39 @@ function renderScheduleDetails(item, container) {
             <div class="detail-name">${item.name}</div>
         </div>
         
+        ${taskCount > 0 ? `
         <div class="progress-section">
             <div class="progress-label">
-                <span>Task Progress</span>
-                <span>${completedTasks}/${taskCount} completed</span>
-            </div>
-            <div class="progress-mini">
-                <div class="progress-fill-mini" style="width: ${progress}%;"></div>
+                <span>Task Checklist</span>
+                <span>${taskCount} tasks</span>
             </div>
         </div>
+        ` : ''}
         
         <div class="section-subtitle">Tasks & Expectations</div>
         
         <div class="detail-tasks">
-            ${item.tasks ? item.tasks.map((task, index) => `
+            ${item.tasks && item.tasks.length > 0 ? item.tasks.map((task, index) => `
                 <div class="task-item">
-                    <input type="checkbox" class="task-checkbox" id="task-${index}">
+                    <input type="checkbox" class="task-checkbox" id="task-${item.id}-${index}">
                     <div class="task-text">${task}</div>
                 </div>
-            `).join('') : '<p>No tasks defined</p>'}
+            `).join('') : '<p style="color: #6b7280; font-size: 14px;">No tasks defined</p>'}
+            
+            ${taskCount > 0 ? `
+            <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #fbbf24; border-radius: 10px; padding: 12px; margin-top: 12px;">
+                <div style="font-size: 12px; font-weight: 700; color: #78350f; margin-bottom: 4px;">💡 Helpful Tip</div>
+                <div style="font-size: 11px; color: #78350f; line-height: 1.4;">Mark complete when all tasks are done!</div>
+            </div>
+            ` : ''}
         </div>
         
-        <button class="complete-btn ${completed ? 'completed' : ''}" onclick="toggleScheduleComplete(${item.id})">
+        <button class="complete-btn ${completed ? 'completed' : ''}" onclick="toggleScheduleComplete('${item.id}')">
             ${completed ? '✓ Completed' : '✓ Mark Activity Complete'}
         </button>
     `;
 }
 
-// Select a schedule item to focus
 function selectScheduleItem(itemId) {
     console.log(`🎯 Selecting schedule item: ${itemId}`);
     if (window.StateManager) {
@@ -525,58 +273,185 @@ function selectScheduleItem(itemId) {
     }
 }
 
-// Toggle schedule item completion
 function toggleScheduleComplete(itemId) {
     console.log(`✓ Toggling completion for: ${itemId}`);
-    if (window.ScheduleModule && ScheduleModule.setScheduleStatus) {
-        // Use existing function if available
-        ScheduleModule.setScheduleStatus(itemId, true);
+    if (window.ScheduleModule?.setScheduleStatus) {
+        const dayData = StateManager.getDayData();
+        const currentStatus = dayData.schedule[itemId];
+        ScheduleModule.setScheduleStatus(itemId, !currentStatus);
     }
     renderScheduleWithFocus();
 }
 
-// Toggle wellness tracker list visibility
+function renderCharacterGrowth() {
+    console.log('⭐ renderCharacterGrowth() called');
+    
+    const container = document.getElementById('character-sections');
+    if (!container) return;
+    
+    const currentChild = StateManager.getCurrentChild();
+    if (!currentChild) return;
+    
+    const dayData = StateManager.getDayData();
+    const characterValues = StateManager.getCharacterValues();
+    
+    let html = '';
+    
+    characterValues.forEach(category => {
+        const mult = dayData.categoryMultipliers?.[category.id] || 1.0;
+        
+        html += `
+            <div class="character-category">
+                <div class="character-category-title">${category.category}</div>
+                ${category.items.map(item => {
+                    const traitKey = `${category.id}_${item.replace(/\s+/g, '_')}`;
+                    const traitRating = dayData.traitRatings?.[traitKey] || mult;
+                    
+                    return `
+                        <div class="character-trait-item">
+                            <div class="character-trait-text">${item}</div>
+                            <div class="rating-buttons">
+                                <button 
+                                    class="rating-btn ${traitRating === 2.0 ? 'active level-3' : ''}" 
+                                    onclick="setTraitRating('${traitKey}', 2.0)">
+                                    Excelling
+                                </button>
+                                <button 
+                                    class="rating-btn ${traitRating === 1.5 ? 'active level-2' : ''}" 
+                                    onclick="setTraitRating('${traitKey}', 1.5)">
+                                    Progress
+                                </button>
+                                <button 
+                                    class="rating-btn ${traitRating === 1.0 ? 'active level-1' : ''}" 
+                                    onclick="setTraitRating('${traitKey}', 1.0)">
+                                    Starting
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    });
+    
+    html += `
+        <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); padding: 12px; border-radius: 10px; border: 1px solid #86efac; margin-top: 12px;">
+            <div style="font-size: 11px; font-weight: 700; color: #166534; margin-bottom: 4px;">💡 Growth Multipliers</div>
+            <div style="font-size: 10px; color: #166534; line-height: 1.4;">
+                <strong>Starting</strong> 1.0x · <strong>Progress</strong> 1.5x · <strong>Excelling</strong> 2.0x
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+function setTraitRating(traitKey, rating) {
+    console.log(`⭐ Setting rating for ${traitKey}: ${rating}x`);
+    
+    const dayData = StateManager.getDayData();
+    
+    if (!dayData.traitRatings) {
+        dayData.traitRatings = {};
+    }
+    
+    dayData.traitRatings[traitKey] = rating;
+    
+    const categoryId = traitKey.split('_')[0];
+    const categoryTraits = Object.keys(dayData.traitRatings).filter(k => k.startsWith(categoryId + '_'));
+    if (categoryTraits.length > 0) {
+        const avgRating = categoryTraits.reduce((sum, k) => sum + dayData.traitRatings[k], 0) / categoryTraits.length;
+        dayData.categoryMultipliers[categoryId] = avgRating;
+    }
+    
+    if (window.saveData) saveData();
+    if (window.UICore) {
+        UICore.updateUI();
+    } else {
+        renderCharacterGrowth();
+    }
+}
+
+function renderWeeklyGoals() {
+    console.log('🎯 renderWeeklyGoals() called');
+    
+    const container = document.getElementById('weekly-goals-container');
+    if (!container) return;
+    
+    const currentChild = StateManager.getCurrentChild();
+    if (!currentChild) return;
+    
+    const weeklyChores = currentChild.weeklyChores || [];
+    const weeklyChoresData = window.PointsModule?.getWeeklyChoresData() || {};
+    const choresCompletion = window.PointsModule?.calculateChoresCompletion() || {
+        completed: 0, 
+        total: 0, 
+        percentage: 0, 
+        isComplete: false
+    };
+    
+    let html = `
+        <div class="goals-progress">
+            <div class="goals-progress-text">Weekly Completion</div>
+            <div class="goals-progress-number">${choresCompletion.percentage}%</div>
+            <div class="goals-subtext">${choresCompletion.isComplete ? '🎉 5x BONUS ACTIVE!' : `Complete ${choresCompletion.total - choresCompletion.completed} more for 5x bonus!`}</div>
+        </div>
+        
+        <div class="week-range">Mon-Sun · Resets Weekly</div>
+    `;
+    
+    weeklyChores.forEach(chore => {
+        const isComplete = weeklyChoresData[chore.id];
+        html += `
+            <div class="weekly-goal-item ${isComplete ? 'completed' : ''}" onclick="toggleWeeklyChore('${chore.id}')">
+                <input type="checkbox" class="weekly-goal-checkbox" ${isComplete ? 'checked' : ''}>
+                <div class="weekly-goal-text">${chore.name}</div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function toggleWeeklyChore(choreId) {
+    console.log(`🎯 Toggling chore: ${choreId}`);
+    
+    const dayData = StateManager.getDayData();
+    
+    if (!dayData.weeklyChores) {
+        dayData.weeklyChores = {};
+    }
+    
+    dayData.weeklyChores[choreId] = !dayData.weeklyChores[choreId];
+    
+    if (window.saveData) saveData();
+    if (window.UICore) {
+        UICore.updateUI();
+    } else {
+        renderWeeklyGoals();
+    }
+}
+
 function openWellnessJournal() {
-    console.log('⚕️⚕️⚕️ openWellnessJournal() CALLED ⚕️⚕️⚕️');
-    console.log('📍 Function is executing');
+    console.log('⚕️ openWellnessJournal() called');
     
     const container = document.getElementById('tracker-buttons-container');
-    console.log('📦 Container element:', container);
-    
     if (!container) {
-        console.error('❌ tracker-buttons-container NOT FOUND!');
-        console.log('🔍 Available elements with "tracker" in ID:');
-        Array.from(document.querySelectorAll('[id*="tracker"]')).forEach(el => {
-            console.log('  -', el.id);
-        });
-        alert('Error: Tracker container not found. Check console for details.');
+        console.error('❌ tracker-buttons-container not found');
         return;
     }
     
-    console.log('📊 Current display:', container.style.display);
-    
-    // Toggle visibility
     if (container.style.display === 'none' || container.style.display === '') {
-        console.log('🔓 Opening tracker list...');
         container.style.display = 'block';
-        console.log('📊 New display:', container.style.display);
-        
         renderTrackerButtons();
-        
-        // Add click-outside-to-close handler
         setTimeout(() => {
-            console.log('🎯 Adding click-outside handler');
             document.addEventListener('click', closeTrackerListOnClickOutside);
         }, 100);
     } else {
-        console.log('🔒 Closing tracker list...');
         closeTrackerList();
     }
-    
-    console.log('✅ openWellnessJournal() completed');
 }
 
-// Close tracker list
 function closeTrackerList() {
     const container = document.getElementById('tracker-buttons-container');
     if (container) {
@@ -585,35 +460,27 @@ function closeTrackerList() {
     document.removeEventListener('click', closeTrackerListOnClickOutside);
 }
 
-// Close tracker list when clicking outside
 function closeTrackerListOnClickOutside(event) {
     const container = document.getElementById('tracker-buttons-container');
     const wellnessBtn = event.target.closest('.sidebar-action-btn.wellness');
     
-    if (container && 
-        !container.contains(event.target) && 
-        !wellnessBtn) {
+    if (container && !container.contains(event.target) && !wellnessBtn) {
         closeTrackerList();
     }
 }
 
-// Render tracker buttons for current child
 function renderTrackerButtons() {
     console.log('📊 renderTrackerButtons() called');
     
     const container = document.getElementById('tracker-buttons-container');
-    if (!container) {
-        console.log('⚠️ tracker-buttons-container not found');
-        return;
-    }
+    if (!container) return;
     
     const currentChild = StateManager.getCurrentChild();
     if (!currentChild) {
-        console.log('⚠️ No current child');
         container.innerHTML = `
             <div style="padding: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <h3 style="font-size: 14px; font-weight: 700; color: #111827; margin: 0;">Wellness Trackers</h3>
+                    <h3 style="font-size: 14px; font-weight: 700; color: #111827; margin: 0;">Wellness Journal</h3>
                     <button onclick="closeTrackerList()" style="background: none; border: none; font-size: 20px; color: #9ca3af; cursor: pointer; padding: 0; line-height: 1;">×</button>
                 </div>
                 <p style="color: #6b7280; font-size: 12px; text-align: center;">No child selected</p>
@@ -624,13 +491,10 @@ function renderTrackerButtons() {
     
     const trackers = currentChild.trackers || [];
     
-    console.log(`📊 Rendering ${trackers.length} trackers for ${currentChild.name}`);
-    
-    // Header
     let html = `
         <div style="padding: 16px; border-bottom: 1px solid #e5e7eb;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="font-size: 14px; font-weight: 700; color: #111827; margin: 0;">Wellness Trackers</h3>
+                <h3 style="font-size: 14px; font-weight: 700; color: #111827; margin: 0;">Wellness Journal</h3>
                 <button onclick="closeTrackerList()" style="background: none; border: none; font-size: 20px; color: #9ca3af; cursor: pointer; padding: 0; line-height: 1;">×</button>
             </div>
             <p style="font-size: 11px; color: #6b7280; margin: 4px 0 0 0;">${currentChild.name}'s trackers</p>
@@ -651,14 +515,11 @@ function renderTrackerButtons() {
         html += '<div style="padding: 12px;">';
         
         trackers.forEach(tracker => {
-            // Get template icon if available
-            const template = window.TrackerTemplates ? 
-                TrackerTemplates.getTemplateList().find(t => t.id === tracker.templateId) : null;
+            const template = window.TrackerTemplates?.getTemplateList()?.find(t => t.id === tracker.templateId);
             const icon = template ? template.icon : '📊';
             
             html += `
                 <button onclick="openSpecificTracker('${tracker.id}'); closeTrackerList();" 
-                        class="tracker-list-btn"
                         style="width: 100%; padding: 12px; margin-bottom: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.2s; display: flex; align-items: center; gap: 8px; font-size: 13px;"
                         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.4)'"
                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
@@ -668,7 +529,6 @@ function renderTrackerButtons() {
             `;
         });
         
-        // Add button to create new tracker
         html += `
             <button onclick="openTemplateSelection(); closeTrackerList();" 
                     style="width: 100%; padding: 10px; margin-top: 4px; background: rgba(99, 102, 241, 0.1); color: #6366f1; border: 2px dashed #6366f1; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;"
@@ -682,152 +542,162 @@ function renderTrackerButtons() {
     }
     
     container.innerHTML = html;
-    
-    console.log('✅ Tracker buttons rendered');
 }
 
-// Open template selection modal
-// Open template selection modal
-function openTemplateSelection() {
-    console.log('📋📋📋 openTemplateSelection() CALLED 📋📋📋');
+// ========================================
+// PATCH EXISTING MODULES
+// ========================================
+
+function patchProfileModule() {
+    if (!window.ProfileModule) return;
     
-    // Check if modal exists in DOM  
-    const modal = document.getElementById('tracker-template-modal');
-    console.log('🔍 Looking for tracker-template-modal:', modal);
+    const originalRenderChildButtons = ProfileModule.renderChildButtons;
+    ProfileModule.renderChildButtons = function() {
+        const container = document.getElementById('child-buttons-container');
+        if (container) container.innerHTML = '';
+        renderSidebarAvatars();
+        updateHeaderBadge();
+    };
     
-    if (modal) {
-        modal.style.display = 'flex';
-        console.log('✅ Template modal opened');
-    } else {
-        console.log('⚠️ tracker-template-modal not found in DOM');
-        console.log('🔍 Available modals:');
-        document.querySelectorAll('[id*="modal"]').forEach(el => {
-            console.log('  -', el.id);
-        });
+    const originalUpdateChildButtons = ProfileModule.updateChildButtons;
+    ProfileModule.updateChildButtons = function() {
+        if (originalUpdateChildButtons) originalUpdateChildButtons.call(this);
+        renderSidebarAvatars();
+        updateHeaderBadge();
+    };
+}
+
+function patchUICore() {
+    if (!window.UICore) return;
+    
+    const originalUpdateUI = UICore.updateUI;
+    UICore.updateUI = function() {
+        if (originalUpdateUI) originalUpdateUI.call(this);
+        renderSidebarAvatars();
+        updateHeaderBadge();
+        renderScheduleWithFocus();
+        renderCharacterGrowth();
+        renderWeeklyGoals();
+    };
+    
+    const originalSelectChild = UICore.selectChild;
+    UICore.selectChild = function(childId) {
+        if (originalSelectChild) originalSelectChild.call(this, childId);
+        renderSidebarAvatars();
+        updateHeaderBadge();
+        renderScheduleWithFocus();
+        renderCharacterGrowth();
+        renderWeeklyGoals();
+    };
+}
+
+function patchCharacterModule() {
+    if (!window.CharacterModule) return;
+    
+    const originalRenderCharacterSections = CharacterModule.renderCharacterSections;
+    CharacterModule.renderCharacterSections = function() {
+        if (document.getElementById('character-sections')) {
+            renderCharacterGrowth();
+        } else if (originalRenderCharacterSections) {
+            originalRenderCharacterSections.call(this);
+        }
+    };
+    
+    const originalRenderWeeklyChores = CharacterModule.renderWeeklyChores;
+    CharacterModule.renderWeeklyChores = function() {
+        if (document.getElementById('weekly-goals-container')) {
+            renderWeeklyGoals();
+        } else if (originalRenderWeeklyChores) {
+            originalRenderWeeklyChores.call(this);
+        }
+    };
+}
+
+// ========================================
+// INITIALIZATION
+// ========================================
+
+function initCompatibilityBridge() {
+    console.log('🔧 Initializing Compass UI compatibility...');
+    
+    const checkProfileModule = setInterval(() => {
+        if (window.ProfileModule) {
+            clearInterval(checkProfileModule);
+            patchProfileModule();
+        }
+    }, 50);
+    
+    const checkUICore = setInterval(() => {
+        if (window.UICore) {
+            clearInterval(checkUICore);
+            patchUICore();
+        }
+    }, 50);
+    
+    const checkCharacterModule = setInterval(() => {
+        if (window.CharacterModule) {
+            clearInterval(checkCharacterModule);
+            patchCharacterModule();
+        }
+    }, 50);
+    
+    let retryCount = 0;
+    const maxRetries = 10;
+    const retryInterval = setInterval(() => {
+        retryCount++;
         
-        // Fallback: try ProfileModule
-        if (window.ProfileModule && window.ProfileModule.openTemplateSelection) {
-            console.log('📋 Trying ProfileModule.openTemplateSelection');
-            window.ProfileModule.openTemplateSelection();
-        } else {
-            console.log('❌ No way to open template selection found');
-            alert('Template selection modal not found. The modal HTML may not be included in your page yet.');
+        const children = StateManager?.state?.children || StateManager?.state?.data?.children;
+        
+        if (window.StateManager && StateManager.state && children && children.length > 0) {
+            console.log('✅ Data found! Rendering UI...');
+            clearInterval(retryInterval);
+            renderSidebarAvatars();
+            updateHeaderBadge();
+            renderScheduleWithFocus();
+            renderCharacterGrowth();
+            renderWeeklyGoals();
+        } else if (retryCount >= maxRetries) {
+            console.log('❌ Max retries reached');
+            clearInterval(retryInterval);
         }
-    }
+    }, 200);
 }
 
-// Open specific tracker modal
-function openSpecificTracker(trackerId) {
-    console.log(`📊📊📊 openSpecificTracker('${trackerId}') CALLED 📊📊📊`);
-    
-    const currentChild = StateManager.getCurrentChild();
-    if (!currentChild) {
-        console.log('⚠️ No current child');
-        alert('Please select a child first');
-        return;
-    }
-    
-    console.log('👤 Current child:', currentChild.name);
-    console.log('📊 Looking for tracker:', trackerId);
-    console.log('📊 Available trackers:', currentChild.trackers);
-    
-    // Find the tracker
-    const tracker = currentChild.trackers?.find(t => t.id === trackerId);
-    if (!tracker) {
-        console.log(`❌ Tracker ${trackerId} not found`);
-        alert('Tracker not found');
-        return;
-    }
-    
-    console.log('✅ Tracker found:', tracker.templateName);
-    
-    // Check if tracker modal exists
-    const modal = document.getElementById('med-tracker-modal');
-    console.log('🔍 Looking for med-tracker-modal:', modal);
-    
-    if (modal) {
-        // Initialize the tracker with custom config
-        if (window.MedicationTracker) {
-            console.log('🔧 Initializing MedicationTracker...');
-            const config = tracker.customConfig || (window.TrackerTemplates?.getTemplate(tracker.templateId)?.config);
-            console.log('📋 Using config:', config ? 'custom/template config' : 'none');
-            
-            MedicationTracker.init(StateManager.state.currentChild, trackerId, config);
-            MedicationTracker.renderEntryForm();
-            
-            // Update modal title
-            const titleEl = document.getElementById('med-modal-title');
-            if (titleEl) {
-                titleEl.textContent = tracker.templateName || 'Health Tracker';
-            }
-            
-            // Show modal
-            modal.style.display = 'flex';
-            console.log('✅ Tracker modal opened');
-            
-            // Switch to entry tab
-            if (window.switchMedTab) {
-                switchMedTab('entry');
-            }
-        } else {
-            console.log('❌ MedicationTracker not available');
-            alert('Tracker module not loaded');
-        }
-    } else {
-        console.log('⚠️ med-tracker-modal not found in DOM');
-        console.log('🔍 Available modals:');
-        document.querySelectorAll('[id*="modal"]').forEach(el => {
-            console.log('  -', el.id);
-        });
-        alert('Tracker modal not found in the page. Please make sure the tracker modal HTML is included.');
-    }
-}
+// ========================================
+// GLOBAL EXPORTS
+// ========================================
 
-// Make everything globally available for debugging
 window.CompassUI = {
     renderSidebarAvatars,
     updateHeaderBadge,
     renderScheduleWithFocus,
+    renderCharacterGrowth,
+    renderWeeklyGoals,
     renderTrackerButtons,
-    openWellnessJournal: function() {
-        console.log('⚕️ CompassUI.openWellnessJournal called');
-        const actualFunction = typeof openWellnessJournal === 'function' ? openWellnessJournal : null;
-        if (actualFunction) {
-            actualFunction();
-        } else {
-            console.log('❌ openWellnessJournal function not found');
-        }
-    },
+    openWellnessJournal,
     selectScheduleItem,
-    patchProfileModule,
-    patchUICore,
-    initCompatibilityBridge,
     refresh: function() {
-        console.log('🔄 Manual refresh called');
         renderSidebarAvatars();
         updateHeaderBadge();
         renderScheduleWithFocus();
-        renderTrackerButtons();
+        renderCharacterGrowth();
+        renderWeeklyGoals();
     }
 };
 
-// Replace the stub functions with real implementations
-window.openWellnessJournal = openWellnessJournal;  // Reference the actual function defined above
+window.openWellnessJournal = openWellnessJournal;
 window.selectScheduleItem = selectScheduleItem;
 window.toggleScheduleComplete = toggleScheduleComplete;
 window.closeTrackerList = closeTrackerList;
 window.renderTrackerButtons = renderTrackerButtons;
-window.openTemplateSelection = openTemplateSelection;
-window.openSpecificTracker = openSpecificTracker;
+window.setTraitRating = setTraitRating;
+window.toggleWeeklyChore = toggleWeeklyChore;
 
-console.log('✅ All global functions assigned');
-console.log('✅ openWellnessJournal is now:', typeof window.openWellnessJournal);
-
-// Auto-initialize when DOM is ready
+// Auto-initialize
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initCompatibilityBridge);
 } else {
     initCompatibilityBridge();
 }
 
-console.log('✅ CompassUI object created and available globally');
+console.log('✅ Compass Compatibility Bridge Loaded');
