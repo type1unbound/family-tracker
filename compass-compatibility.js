@@ -227,6 +227,12 @@ function patchUICore() {
         renderSidebarAvatars();
         updateHeaderBadge();
         renderScheduleWithFocus();
+        
+        // Update tracker buttons if they're visible
+        const trackerContainer = document.getElementById('tracker-buttons-container');
+        if (trackerContainer && trackerContainer.style.display === 'block') {
+            renderTrackerButtons();
+        }
     };
     
     console.log('✅ UICore patched');
@@ -410,44 +416,161 @@ function toggleScheduleComplete(itemId) {
     renderScheduleWithFocus();
 }
 
-// Open wellness journal
+// Toggle wellness tracker list visibility
 function openWellnessJournal() {
-    console.log('⚕️ Opening wellness journal...');
+    console.log('⚕️ Toggling wellness tracker list...');
     
-    if (!window.TrackerModule) {
-        console.log('⚠️ TrackerModule not available');
-        alert('Wellness tracker feature is loading. Please try again in a moment.');
+    const container = document.getElementById('tracker-buttons-container');
+    if (!container) {
+        console.log('⚠️ tracker-buttons-container not found');
+        return;
+    }
+    
+    // Toggle visibility
+    if (container.style.display === 'none' || container.style.display === '') {
+        container.style.display = 'block';
+        renderTrackerButtons();
+        
+        // Add click-outside-to-close handler
+        setTimeout(() => {
+            document.addEventListener('click', closeTrackerListOnClickOutside);
+        }, 100);
+    } else {
+        closeTrackerList();
+    }
+}
+
+// Close tracker list
+function closeTrackerList() {
+    const container = document.getElementById('tracker-buttons-container');
+    if (container) {
+        container.style.display = 'none';
+    }
+    document.removeEventListener('click', closeTrackerListOnClickOutside);
+}
+
+// Close tracker list when clicking outside
+function closeTrackerListOnClickOutside(event) {
+    const container = document.getElementById('tracker-buttons-container');
+    const wellnessBtn = event.target.closest('.sidebar-action-btn.wellness');
+    
+    if (container && 
+        !container.contains(event.target) && 
+        !wellnessBtn) {
+        closeTrackerList();
+    }
+}
+
+// Render tracker buttons for current child
+function renderTrackerButtons() {
+    console.log('📊 renderTrackerButtons() called');
+    
+    const container = document.getElementById('tracker-buttons-container');
+    if (!container) {
+        console.log('⚠️ tracker-buttons-container not found');
         return;
     }
     
     const currentChild = StateManager.getCurrentChild();
     if (!currentChild) {
-        console.log('⚠️ No current child selected');
+        console.log('⚠️ No current child');
+        container.innerHTML = `
+            <div style="padding: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 style="font-size: 14px; font-weight: 700; color: #111827; margin: 0;">Wellness Trackers</h3>
+                    <button onclick="closeTrackerList()" style="background: none; border: none; font-size: 20px; color: #9ca3af; cursor: pointer; padding: 0; line-height: 1;">×</button>
+                </div>
+                <p style="color: #6b7280; font-size: 12px; text-align: center;">No child selected</p>
+            </div>
+        `;
         return;
     }
     
-    // Get trackers for this child
     const trackers = currentChild.trackers || [];
     
+    console.log(`📊 Rendering ${trackers.length} trackers for ${currentChild.name}`);
+    
+    // Header
+    let html = `
+        <div style="padding: 16px; border-bottom: 1px solid #e5e7eb;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 14px; font-weight: 700; color: #111827; margin: 0;">Wellness Trackers</h3>
+                <button onclick="closeTrackerList()" style="background: none; border: none; font-size: 20px; color: #9ca3af; cursor: pointer; padding: 0; line-height: 1;">×</button>
+            </div>
+            <p style="font-size: 11px; color: #6b7280; margin: 4px 0 0 0;">${currentChild.name}'s trackers</p>
+        </div>
+    `;
+    
     if (trackers.length === 0) {
-        console.log('ℹ️ No trackers found, opening template selection');
-        if (TrackerModule.openTemplateSelection) {
-            TrackerModule.openTemplateSelection();
-        } else {
-            alert('No wellness trackers configured yet. Please set up a tracker first.');
-        }
-        return;
+        html += `
+            <div style="padding: 16px; text-align: center;">
+                <p style="color: #6b7280; font-size: 13px; margin-bottom: 12px;">No wellness trackers yet</p>
+                <button onclick="openTemplateSelection(); closeTrackerList();" 
+                        style="padding: 8px 16px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">
+                    ➕ Add Tracker
+                </button>
+            </div>
+        `;
+    } else {
+        html += '<div style="padding: 12px;">';
+        
+        trackers.forEach(tracker => {
+            // Get template icon if available
+            const template = window.TrackerTemplates ? 
+                TrackerTemplates.getTemplateList().find(t => t.id === tracker.templateId) : null;
+            const icon = template ? template.icon : '📊';
+            
+            html += `
+                <button onclick="openSpecificTracker('${tracker.id}'); closeTrackerList();" 
+                        class="tracker-list-btn"
+                        style="width: 100%; padding: 12px; margin-bottom: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.2s; display: flex; align-items: center; gap: 8px; font-size: 13px;"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.4)'"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <span style="font-size: 18px;">${icon}</span>
+                    <span>${tracker.templateName || 'Health Tracker'}</span>
+                </button>
+            `;
+        });
+        
+        // Add button to create new tracker
+        html += `
+            <button onclick="openTemplateSelection(); closeTrackerList();" 
+                    style="width: 100%; padding: 10px; margin-top: 4px; background: rgba(99, 102, 241, 0.1); color: #6366f1; border: 2px dashed #6366f1; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;"
+                    onmouseover="this.style.background='rgba(99, 102, 241, 0.2)'"
+                    onmouseout="this.style.background='rgba(99, 102, 241, 0.1)'">
+                ➕ Add New Tracker
+            </button>
+        `;
+        
+        html += '</div>';
     }
     
-    // Open the first tracker
-    console.log(`📊 Opening tracker: ${trackers[0].id}`);
-    if (TrackerModule.openSpecificTracker) {
-        TrackerModule.openSpecificTracker(trackers[0].id);
-    } else if (window.openSpecificTracker) {
-        openSpecificTracker(trackers[0].id);
+    container.innerHTML = html;
+    
+    console.log('✅ Tracker buttons rendered');
+}
+
+// Open template selection modal
+function openTemplateSelection() {
+    console.log('📋 Opening template selection...');
+    
+    if (window.TrackerModule && TrackerModule.openTemplateSelection) {
+        TrackerModule.openTemplateSelection();
     } else {
-        console.log('⚠️ openSpecificTracker function not found');
-        alert('Tracker feature is still loading. Please try again.');
+        alert('Template selection is loading. Please try again in a moment.');
+    }
+}
+
+// Open specific tracker modal
+function openSpecificTracker(trackerId) {
+    console.log(`📊 Opening tracker: ${trackerId}`);
+    
+    if (window.TrackerModule && TrackerModule.openSpecificTracker) {
+        TrackerModule.openSpecificTracker(trackerId);
+    } else if (window.openSpecificTracker) {
+        window.openSpecificTracker(trackerId);
+    } else {
+        alert('Tracker is loading. Please try again in a moment.');
     }
 }
 
@@ -456,6 +579,7 @@ window.CompassUI = {
     renderSidebarAvatars,
     updateHeaderBadge,
     renderScheduleWithFocus,
+    renderTrackerButtons,
     selectScheduleItem,
     patchProfileModule,
     patchUICore,
@@ -465,6 +589,7 @@ window.CompassUI = {
         renderSidebarAvatars();
         updateHeaderBadge();
         renderScheduleWithFocus();
+        renderTrackerButtons();
     }
 };
 
@@ -472,6 +597,10 @@ window.CompassUI = {
 window.selectScheduleItem = selectScheduleItem;
 window.toggleScheduleComplete = toggleScheduleComplete;
 window.openWellnessJournal = openWellnessJournal;
+window.closeTrackerList = closeTrackerList;
+window.renderTrackerButtons = renderTrackerButtons;
+window.openTemplateSelection = openTemplateSelection;
+window.openSpecificTracker = openSpecificTracker;
 
 // Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
