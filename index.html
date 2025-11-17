@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compass - Family Growth Tracker</title>
+    
+    <!-- Compass CSS -->
+    <link rel="stylesheet" href="https://type1unbound.github.io/family-tracker/styles.css">
+    
+    <!-- Spinning animation for loading -->
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
+
+    <!-- Consolidated JavaScript - Load in correct order -->
+    <script src="https://type1unbound.github.io/family-tracker/app.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/tracker.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/firebase.js"></script>
+</head>
+
+<body>
+    <!-- Login Overlay -->
+    <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+        <div style="background: white; border-radius: 20px; padding: 40px; max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center;">
+            <h1 style="font-size: 28px; margin-bottom: 8px; color: #1a202c;">Compass</h1>
+            <p style="color: #6b7280; margin-bottom: 32px; font-style: italic;">Guiding families toward their true North</p>
+            
+            <div id="login-content">
+                <button id="google-signin-btn" style="width: 100%; padding: 14px 24px; background: white; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; font-weight: 600; color: #1a202c; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: all 0.2s;">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Sign in with Google
+                </button>
+                
+                <div style="margin-top: 24px; font-size: 14px; color: #6b7280;">
+                    <p>🔒 Secure authentication</p>
+                    <p style="margin-top: 8px;">☁️ Your data syncs across devices</p>
+                    <p style="margin-top: 8px;">👨‍👩‍👧‍👦 Share your family code to invite members</p>
+                </div>
+            </div>
+            
+            <div id="loading-content" style="display: none;">
+                <div style="width: 50px; height: 50px; border: 4px solid #e5e7eb; border-top-color: #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                <p style="margin-top: 20px; color: #6b7280;">Loading your family data...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="app-container">
+        <!-- Sidebar - Family Member Selection -->
+        <div class="sidebar">
+            <div class="sidebar-title">Family</div>
+            
+            <!-- Family member avatars will be inserted here by JavaScript -->
+            <div id="sidebar-avatars-container"></div>
+            
+            <div class="sidebar-divider"></div>
+            
+            <!-- Wellness Journal Button -->
+            <div class="sidebar-section-title">Wellness Trackers</div>
+            <div id="sidebar-trackers-container"></div>
+
+            <div class="sidebar-divider"></div>         
+            <!-- Bottom Controls -->
+            <div class="sidebar-controls">
+                <button class="sidebar-btn" onclick="UICore.toggleEditMode()" id="sidebar-edit-btn">
+                    <span id="sidebar-edit-icon">✏️</span>
+                    <span id="sidebar-edit-text">Edit</span>
+                </button>
+                <button class="sidebar-btn" onclick="ProfileModule.openProfileModal()">👤 Profile</button>
+                <button class="sidebar-btn" onclick="logout()">🔒 Logout</button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Utility Bar - Header -->
+            <div class="utility-bar">
+                <div class="app-title-section">
+                    <div class="app-title">
+                        <svg class="compass-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="compassGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M 50 5 A 45 45 0 1 0 50 95" 
+                                  fill="none" 
+                                  stroke="url(#compassGradient)" 
+                                  stroke-width="8" 
+                                  stroke-linecap="round"/>
+                            <circle cx="50" cy="50" r="20" fill="none" stroke="url(#compassGradient)" stroke-width="2" opacity="0.3"/>
+                            <path d="M 50 30 L 45 45 L 50 42 L 55 45 Z" 
+                                  fill="url(#compassGradient)"/>
+                            <path d="M 50 70 L 45 55 L 50 58 L 55 55 Z" 
+                                  fill="url(#compassGradient)" 
+                                  opacity="0.4"/>
+                            <line x1="70" y1="50" x2="65" y2="50" stroke="url(#compassGradient)" stroke-width="2" opacity="0.3"/>
+                            <line x1="30" y1="50" x2="35" y2="50" stroke="url(#compassGradient)" stroke-width="2" opacity="0.3"/>
+                            <circle cx="50" cy="50" r="3" fill="url(#compassGradient)"/>
+                        </svg>
+                        <span>Compass</span>
+                    </div>
+                    <div class="app-tagline">Guiding families toward their true North</div>
+                </div>
+                
+                <div class="utility-right">
+                    <input type="date" id="date-picker" class="date-picker-mini" onchange="UICore.selectDate(this.value)">
+                    <div id="date-display" style="display: none;"></div>
+                    <div class="member-badge">
+                        <div class="member-avatar-mini" id="header-member-avatar">👧</div>
+                        <span class="member-name" id="header-member-name">Sarah's Dashboard</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Score Bar - Point Cards -->
+            <div class="score-bar">
+                <div class="score-item">
+                    <div class="score-label">Point Balance</div>
+                    <div class="score-value" id="base-points">0</div>
+                    <div class="score-subtext" id="balance-sublabel">+0 today</div>
+                    <button class="score-action-btn" onclick="PointsModule.openSpendPointsModal()">💸 Spend Points</button>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Daily Progress</div>
+                    <div class="score-value" id="daily-percent">0%</div>
+                    <div class="score-subtext" id="daily-goal-label">0/0 points</div>
+                    <div id="total-points" style="display: none;">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Weekly Progress</div>
+                    <div class="score-value" id="weekly-percent">0%</div>
+                    <div class="score-subtext" id="weekly-goal-label">0/0 points</div>
+                    <div id="weekly-points" style="display: none;">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Growth Bonus</div>
+                    <div class="score-value" id="multiplier">1.0x</div>
+                    <div class="score-subtext" id="multiplier-label">Standard</div>
+                </div>
+                <div class="score-item" style="display: none;">
+                    <div id="chores-multiplier">1.0x</div>
+                    <div id="chores-label">0/0 goals</div>
+                </div>
+            </div>
+            
+            <!-- Dashboard Content - 3 Columns -->
+            <div class="dashboard-content">
+                <!-- LEFT COLUMN - Daily Routine Schedule -->
+                <div class="schedule-section">
+                    <div class="section-header">
+                        <span class="section-header-icon">📅</span>
+                        Daily Routine
+                    </div>
+                    <div id="schedule-list">
+                        <!-- Schedule items will be inserted here by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- CENTER COLUMN - Detail View & Progress -->
+                <div class="detail-section">
+                    <!-- Progress Bars -->
+                    <div class="progress-section">
+                        <div class="progress-label">
+                            <span>Daily Progress</span>
+                            <span id="daily-progress-text">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="daily-progress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-section" style="margin-bottom: 0;">
+                        <div class="progress-label">
+                            <span>Weekly Progress</span>
+                            <span id="weekly-progress-text">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill weekly" id="weekly-progress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Streak Card -->
+                    <div id="streak-container"></div>
+                    
+                    <!-- Notes Section -->
+                    <div style="margin-top: 24px;">
+                        <div class="section-subtitle">📝 Daily Notes & Reflection</div>
+                        <textarea id="daily-notes" 
+                                  rows="6" 
+                                  placeholder="General notes about the day, celebrations, challenges, or things to work on..." 
+                                  onchange="CharacterModule.updateNotes(this.value)"
+                                  style="width: 100%; padding: 12px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; resize: vertical;"></textarea>
+                    </div>
+                </div>
+                
+                <!-- RIGHT COLUMN - Weekly Goals & Character Development -->
+                <div class="goals-section">
+                    <!-- Weekly Goals -->
+                    <div class="goals-group">
+                        <div class="goals-header">
+                            <span class="section-header-icon">🎯</span>
+                            Weekly Goals
+                        </div>
+                        
+                        <div id="chores-completion-badge"></div>
+                        
+                        <div class="week-range" id="week-range">Mon-Sun · Resets Weekly</div>
+                        
+                        <div id="weekly-chores-list">
+                            <!-- Weekly goals will be inserted here by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Personal Growth / Character Development -->
+                    <div class="goals-group">
+                        <div class="goals-header">
+                            <span class="section-header-icon">⭐</span>
+                            Personal Growth
+                        </div>
+                        
+                        <div id="character-sections">
+                            <!-- Character categories will be inserted here by JavaScript -->
+                        </div>
+                        
+                        <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); padding: 12px; border-radius: 10px; border: 1px solid #86efac; margin-top: 12px;">
+                            <div style="font-size: 11px; font-weight: 700; color: #166534; margin-bottom: 4px;">💡 Growth Multipliers</div>
+                            <div style="font-size: 10px; color: #166534; line-height: 1.4;">
+                                <strong>Starting</strong> 1.0x · <strong>Progress</strong> 1.5x · <strong>Excelling</strong> 2.0x
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals Container -->
+    <div id="modals-container">
+        <!-- Profile Modal -->
+        <div id="profile-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Edit Profile</h2>
+                    <button class="close-btn" onclick="ProfileModule.closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div style="margin-bottom: 16px;">
+                        <label>Name:</label>
+                        <input type="text" id="modal-profile-name" class="edit-input" placeholder="Family member's name">
+                    </div>
+                    
+                    <div style="margin-bottom: 16px;">
+                        <label>Profile Photo:</label>
+                        <div id="upload-area" style="border: 2px dashed #d1d5db; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; margin-top: 8px;" onclick="document.getElementById('photo-upload').click()">
+                            <div id="photo-preview-container">
+                                <div style="font-size: 48px; margin-bottom: 8px;">📷</div>
+                                <div style="color: #6b7280; font-size: 14px;">Click to upload photo</div>
+                                <div style="color: #9ca3af; font-size: 12px; margin-top: 4px;">JPG, PNG or GIF</div>
+                            </div>
+                        </div>
+                        <input type="file" id="photo-upload" accept="image/*" onchange="handlePhotoUpload(event)" style="display: none;">
+                        <button id="remove-photo-btn" onclick="removePhoto()" style="margin-top: 8px; padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; display: none;">Remove Photo</button>
+                        
+                        <div id="crop-area" style="display: none; margin-top: 16px;">
+                            <div id="crop-container" style="position: relative; max-width: 100%; margin: 0 auto;">
+                                <img id="crop-image" style="max-width: 100%; display: block;">
+                                <div id="crop-overlay" style="position: absolute; border: 2px solid #3b82f6; cursor: move;">
+                                    <div class="crop-handle nw" style="position: absolute; top: -5px; left: -5px; width: 10px; height: 10px; background: #3b82f6; cursor: nw-resize;"></div>
+                                    <div class="crop-handle ne" style="position: absolute; top: -5px; right: -5px; width: 10px; height: 10px; background: #3b82f6; cursor: ne-resize;"></div>
+                                    <div class="crop-handle sw" style="position: absolute; bottom: -5px; left: -5px; width: 10px; height: 10px; background: #3b82f6; cursor: sw-resize;"></div>
+                                    <div class="crop-handle se" style="position: absolute; bottom: -5px; right: -5px; width: 10px; height: 10px; background: #3b82f6; cursor: se-resize;"></div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px; margin-top: 12px;">
+                                <button onclick="applyCrop()" class="btn btn-primary">Apply Crop</button>
+                                <button onclick="cancelCrop()" class="btn btn-secondary">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 16px;">
+                        <label>Color Theme:</label>
+                        <div id="color-palette-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px;">
+                            <!-- Color palette options will be rendered here by ProfileModule -->
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 16px;">
+                        <label>Health Trackers:</label>
+                        <div id="tracker-list-container" style="margin-top: 8px;">
+                            <!-- Tracker list will be rendered here -->
+                        </div>
+                        <button onclick="TrackerTemplates.openAddTrackerModal()" style="margin-top: 8px; padding: 8px 16px; background: #6366f1; color: white; border: none; border-radius: 6px; cursor: pointer; width: 100%;">+ Add Health Tracker</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="delete-child-btn" onclick="ProfileModule.deleteCurrentChild()" class="btn" style="background: #ef4444; color: white; margin-right: auto;">Delete Profile</button>
+                    <button class="btn btn-secondary" onclick="ProfileModule.closeModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveProfile()">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Modal -->
+        <div id="schedule-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Edit Routine Item</h2>
+                    <button class="close-btn" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div style="margin-bottom: 12px;">
+                        <label>Time:</label>
+                        <input type="time" id="modal-time" class="edit-input">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label>Activity Name:</label>
+                        <input type="text" id="modal-name" class="edit-input" placeholder="e.g., Morning Routine">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label>Days of Week:</label>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+                            <label style="display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" id="day-sun" value="0"> Sun
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" id="day-mon" value="1"> Mon
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" id="day-tue" value="2"> Tue
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" id="day-wed" value="3"> Wed
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" id="day-thu" value="4"> Thu
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" id="day-fri" value="5"> Fri
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" id="day-sat" value="6"> Sat
+                            </label>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label>Tasks/Expectations:</label>
+                        <ul id="modal-tasks" style="list-style: none; padding: 0; margin-top: 8px;"></ul>
+                        <button class="btn btn-secondary" onclick="addModalTask()" style="margin-top: 8px; width: 100%;">+ Add Task</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveScheduleItem()">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Character Category Modal -->
+        <div id="character-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Edit Character Category</h2>
+                    <button class="close-btn" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div style="margin-bottom: 12px;">
+                        <label>Category Name:</label>
+                        <input type="text" id="modal-character-category" class="edit-input" placeholder="e.g., Respect">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label>Character Traits:</label>
+                        <ul id="modal-character-items" style="list-style: none; padding: 0; margin-top: 8px;"></ul>
+                        <button class="btn btn-secondary" onclick="addModalCharacterItem()" style="margin-top: 8px; width: 100%;">+ Add Trait</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveCharacterCategory()">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chore/Goal Modal -->
+        <div id="chore-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Edit Weekly Goal</h2>
+                    <button class="close-btn" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div style="margin-bottom: 12px;">
+                        <label>Goal Name:</label>
+                        <input type="text" id="modal-chore-name" class="edit-input" placeholder="e.g., Clean bedroom">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveChore()">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Spend Points Modal -->
+        <div id="spend-points-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Spend Points</h2>
+                    <button class="close-btn" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div style="margin-bottom: 16px; text-align: center;">
+                        <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">Current Balance</div>
+                        <div style="font-size: 36px; font-weight: bold; color: #6366f1;" id="spend-modal-balance">0</div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label>Amount to Spend:</label>
+                        <input type="number" id="modal-spend-amount" class="edit-input" placeholder="Enter points amount" min="1">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label>Reason (Optional):</label>
+                        <input type="text" id="modal-spend-reason" class="edit-input" placeholder="e.g., Bought a toy">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="spendPoints()">Spend Points</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="delete-confirm-modal" class="modal">
+            <div class="modal-content" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h2>⚠️ Confirm Delete</h2>
+                    <button class="close-btn" onclick="closeDeleteConfirm()">×</button>
+                </div>
+                <div class="modal-body">
+                    <p id="delete-child-name" style="font-size: 16px; margin-bottom: 16px;"></p>
+                    <p style="color: #ef4444; font-weight: 600;">This action cannot be undone!</p>
+                    <p style="color: #6b7280; font-size: 14px;">All data for this family member will be permanently deleted.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeDeleteConfirm()">Cancel</button>
+                    <button class="btn" style="background: #ef4444; color: white;" onclick="confirmDeleteChild()">Delete Forever</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Goal Confirmation Modal -->
+        <div id="delete-goal-confirm-modal" class="modal">
+            <div class="modal-content" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h2>⚠️ Confirm Delete</h2>
+                    <button class="close-btn" onclick="closeDeleteGoalConfirm()">×</button>
+                </div>
+                <div class="modal-body">
+                    <p id="delete-goal-name" style="font-size: 16px; margin-bottom: 16px;"></p>
+                    <p style="color: #6b7280; font-size: 14px;">This goal will be removed from the weekly goals list.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeDeleteGoalConfirm()">Cancel</button>
+                    <button class="btn" style="background: #ef4444; color: white;" onclick="confirmDeleteGoal()">Delete Goal</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medication/Health Tracker Modal -->
+        <div id="med-tracker-modal" class="modal">
+            <div class="modal-content" style="max-width: 900px;">
+                <div class="modal-header">
+                    <h2 id="med-tracker-member-name">Health Tracker</h2>
+                    <button class="close-btn" onclick="closeMedicationTracker()">×</button>
+                </div>
+                
+                <!-- Tabs -->
+                <div style="display: flex; gap: 8px; border-bottom: 2px solid #e5e7eb; margin-bottom: 20px;">
+                    <button id="med-tab-entry" onclick="switchMedTab('entry')" style="padding: 12px 24px; border: none; background: none; cursor: pointer; border-bottom: 2px solid #6366f1; color: #6366f1; font-weight: 600;">Entry</button>
+                    <button id="med-tab-history" onclick="switchMedTab('history')" style="padding: 12px 24px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; color: #6b7280; font-weight: 600;">History</button>
+                    <button id="med-tab-analytics" onclick="switchMedTab('analytics')" style="padding: 12px 24px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; color: #6b7280; font-weight: 600;">Analytics</button>
+                    <button id="med-tab-settings" onclick="switchMedTab('settings')" style="padding: 12px 24px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; color: #6b7280; font-weight: 600;">Settings</button>
+                </div>
+                
+                <!-- Tab Contents -->
+                <div id="med-content-entry">
+                    <div style="margin-bottom: 16px;">
+                        <label>Date:</label>
+                        <input type="date" id="med-entry-date" class="edit-input">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label>Observer Name:</label>
+                        <input type="text" id="med-observer" class="edit-input" placeholder="Who is filling this out?">
+                    </div>
+                    <div id="med-period-types-container" style="margin-bottom: 16px;"></div>
+                    <div id="med-rating-categories"></div>
+                    <div style="margin-top: 20px; margin-bottom: 16px;">
+                        <label>Notes (optional):</label>
+                        <textarea id="med-entry-notes" class="edit-input" rows="4" placeholder="Any additional observations or notes..."></textarea>
+                    </div>
+                    <button onclick="saveMedEntry()" class="btn btn-primary" style="width: 100%; margin-top: 20px;">Save Entry</button>
+                </div>
+                
+                <div id="med-content-history" style="display: none;">
+                    <div id="med-history-list"></div>
+                </div>
+                
+                <div id="med-content-analytics" style="display: none;">
+                    <div id="med-analytics-content"></div>
+                </div>
+                
+                <div id="med-content-settings" style="display: none;">
+                    <div id="med-settings-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Rendering Scripts -->
+<script>
+// Render sidebar avatars
+function renderSidebarAvatars() {
+    const container = document.getElementById('sidebar-avatars-container');
+    if (!container) {
+        console.warn('sidebar-avatars-container not found');
+        return;
+    }
+    
+    if (!window.StateManager || !window.StateManager.state) {
+        console.warn('StateManager not available yet');
+        return;
+    }
+    
+    const children = window.StateManager.state.children;
+    const currentChildId = window.StateManager.state.currentChild;
+    
+    container.innerHTML = children.map(childId => {
+        const child = window.StateManager.getChild(childId);
+        if (!child) return '';
+        
+        const isActive = childId === currentChildId;
+        
+        let avatarContent;
+        if (child.photo) {
+            avatarContent = `<img src="${child.photo}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+        } else {
+            avatarContent = '<span style="font-size: 24px;">👤</span>';
+        }
+        
+        return `
+            <button class="sidebar-avatar ${isActive ? 'active' : ''}" 
+                    onclick="UICore.selectChild('${childId}')"
+                    title="${child.name}"
+                    style="width: 48px; height: 48px; border-radius: 50%; border: 3px solid ${isActive ? '#6366f1' : 'transparent'}; background: ${isActive ? '#f0f0f0' : '#fff'}; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; overflow: hidden;">
+                ${avatarContent}
+            </button>
+        `;
+    }).join('');
+    
+    console.log('✅ Sidebar avatars rendered');
+}
+
+// Render sidebar trackers
+function renderSidebarTrackers() {
+    const container = document.getElementById('sidebar-trackers-container');
+    if (!container) return;
+    
+    const currentChild = window.StateManager?.getCurrentChild();
+    if (!currentChild) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    const trackers = currentChild.trackers || [];
+    
+    if (trackers.length === 0) {
+        container.innerHTML = '<div style="padding:12px 16px;font-size:12px;color:#9ca3af;text-align:center">No trackers yet</div>';
+        return;
+    }
+    
+    container.innerHTML = trackers.map(tracker => `
+        <button class="sidebar-tracker-btn" onclick="openSpecificTracker('${tracker.id}')">
+            <span style="font-size:16px">${tracker.icon || '📊'}</span>
+            <span>${tracker.templateName || 'Health Tracker'}</span>
+        </button>
+    `).join('');
+}
+
+window.openSpecificTracker = function(trackerId) {
+    const currentChild = window.StateManager?.getCurrentChild();
+    if (!currentChild) return alert('Please select a child first');
+    
+    const tracker = currentChild.trackers?.find(t => t.id === trackerId);
+    if (!tracker) return alert('Tracker not found');
+    
+    const modal = document.getElementById('med-tracker-modal');
+    if (!modal) return alert('Tracker modal not found');
+    
+    if (window.MedicationTracker) {
+        const config = tracker.customConfig || (window.TrackerTemplates?.getTemplate(tracker.templateId)?.config);
+        window.MedicationTracker.init(window.StateManager.state.currentChild, trackerId, config);
+        window.MedicationTracker.renderEntryForm();
+        
+        const titleEl = document.getElementById('med-tracker-member-name');
+        if (titleEl) titleEl.textContent = tracker.templateName || 'Health Tracker';
+        
+        modal.style.display = 'flex';
+        if (window.switchMedTab) window.switchMedTab('entry');
+    } else {
+        alert('Tracker module not loaded');
+    }
+};
+
+// Make functions globally available
+window.renderSidebarAvatars = renderSidebarAvatars;
+window.renderSidebarTrackers = renderSidebarTrackers;
+
+// Auto-update on child changes
+let lastChildId = null;
+let lastChildrenCount = 0;
+
+setInterval(() => {
+    if (!window.StateManager) return;
+    
+    const currentChildId = window.StateManager.state.currentChild;
+    const childrenCount = window.StateManager.state.children.length;
+    
+    // Re-render if child changed OR if number of children changed (added/deleted)
+    if (currentChildId !== lastChildId || childrenCount !== lastChildrenCount) {
+        lastChildId = currentChildId;
+        lastChildrenCount = childrenCount;
+        renderSidebarAvatars();
+        renderSidebarTrackers();
+    }
+}, 500);
+
+// Initial render after delay to ensure everything is loaded
+setTimeout(() => {
+    if (window.StateManager) {
+        renderSidebarAvatars();
+        renderSidebarTrackers();
+    }
+}, 1500);
+</script>
+
+    <!-- Helper Functions Script -->
+    <script>
+    function openWellnessJournal() {
+        if (window.StateManager && StateManager.state.currentChildId) {
+            const currentChild = StateManager.getCurrentChild();
+            if (currentChild && currentChild.trackers && currentChild.trackers.length > 0) {
+                if (window.MedicationTracker) {
+                    openSpecificTracker(currentChild.trackers[0].id);
+                }
+            } else {
+                alert('No wellness trackers configured. Add one in the profile settings!');
+            }
+        }
+    }
+
+    function logout() {
+        if (confirm('Are you sure you want to log out?')) {
+            firebase.auth().signOut();
+        }
+    }
+    
+    function closeMedicationTracker() {
+        const modal = document.getElementById('med-tracker-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+    
+    function switchMedTab(tab) {
+        const tabs = ['entry', 'history', 'analytics', 'settings'];
+        tabs.forEach(t => {
+            const tabBtn = document.getElementById(`med-tab-${t}`);
+            const content = document.getElementById(`med-content-${t}`);
+            if (tabBtn) {
+                tabBtn.style.borderBottomColor = tab === t ? '#6366f1' : 'transparent';
+                tabBtn.style.color = tab === t ? '#6366f1' : '#6b7280';
+            }
+            if (content) {
+                content.style.display = tab === t ? 'block' : 'none';
+            }
+        });
+        
+        if (window.MedicationTracker) {
+            if (tab === 'history') {
+                MedicationTracker.renderHistory();
+            } else if (tab === 'analytics') {
+                MedicationTracker.renderAnalytics();
+            } else if (tab === 'settings') {
+                MedicationTracker.renderSettings();
+            }
+        }
+    }
+    
+    function saveMedEntry() {
+        if (window.MedicationTracker) {
+            MedicationTracker.saveEntry();
+        }
+    }
+    </script>
+</body>
+</html>
