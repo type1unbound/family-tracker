@@ -1222,7 +1222,7 @@ const ProfileModule = {
         }
         
         this.closeModal();
-        this.updateChildButtons();
+        this.updateSidebarAvatars();
         this.updateTrackerButtons();
         if (window.UICore) {
             UICore.applyColorPalette();
@@ -1449,8 +1449,7 @@ const ProfileModule = {
         StateManager.state.currentChild = childId;
         
         saveData();
-        this.renderChildButtons();
-        this.updateChildButtons();
+        this.updateSidebarAvatars();
         if (window.UICore) {
             UICore.updateUI();
             UICore.applyColorPalette();
@@ -1486,63 +1485,17 @@ const ProfileModule = {
         document.getElementById('delete-confirm-modal').classList.remove('active');
         this.closeModal();
         
-        this.renderChildButtons();
-        this.updateChildButtons();
+        this.updateSidebarAvatars();
         if (window.UICore) {
             UICore.updateUI();
             UICore.applyColorPalette();
         }
     },
 
-    updateChildButtons() {
-        this.renderChildButtons();
-        
-        StateManager.state.children.forEach(childId => {
-            const btn = document.getElementById(childId + '-btn');
-            if (btn) {
-                btn.classList.toggle('btn-active', childId === StateManager.state.currentChild);
-            }
-        });
-        
-        StateManager.state.children.forEach(childId => {
-            const child = StateManager.getChild(childId);
-            if (!child) return;
-            
-            const photoContainer = document.getElementById(childId + '-photo-btn');
-            const nameSpan = document.getElementById(childId + '-name-btn');
-            
-            if (nameSpan) {
-                nameSpan.textContent = child.name;
-            }
-            
-            if (photoContainer) {
-                if (child.photo) {
-                    photoContainer.innerHTML = `<img src="${child.photo}" class="profile-photo" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">`;
-                } else {
-                    photoContainer.innerHTML = `<div class="profile-photo-placeholder" style="width: 40px; height: 40px; font-size: 20px;">👤</div>`;
-                }
-            }
-        });
-    },
-
-    renderChildButtons() {
-        const container = document.getElementById('child-buttons-container');
-        const gridClass = StateManager.state.children.length <= 2 ? 'grid-2' : 
-                         StateManager.state.children.length === 3 ? 'grid-3' : 'grid-4';
-        
-        container.innerHTML = `
-            <div class="grid ${gridClass}" style="margin-bottom: 16px;">
-                ${StateManager.state.children.map(childId => {
-                    const child = StateManager.getChild(childId);
-                    return `
-                        <button class="btn btn-secondary" id="${childId}-btn" onclick="UICore.selectChild('${childId}')" style="display: flex; align-items: center; gap: 8px; justify-content: center;">
-                            <div id="${childId}-photo-btn"></div>
-                            <span id="${childId}-name-btn">${child.name}</span>
-                        </button>
-                    `;
-                }).join('')}
-            </div>
-        `;
+    updateSidebarAvatars() {
+        if (window.renderSidebarAvatars) {
+            renderSidebarAvatars();
+        }
     },
 
     renderTrackerList(childId) {
@@ -1602,35 +1555,9 @@ const ProfileModule = {
     },
 
     updateTrackerButtons() {
-        const child = StateManager.getCurrentChild();
-        const container = document.getElementById('tracker-buttons-container');
-        
-        if (!container) return;
-        
-        if (!child.trackers || child.trackers.length === 0) {
-            container.innerHTML = '';
-            return;
+        if (window.renderSidebarTrackers) {
+            renderSidebarTrackers();
         }
-        
-        let html = '<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">';
-        html += '<label style="font-weight: 600; font-size: 14px; color: #374151;">Health Trackers:</label>';
-        
-        child.trackers.forEach(tracker => {
-            const template = window.TrackerTemplates ? TrackerTemplates.getTemplateList().find(t => t.id === tracker.templateId) : null;
-            const icon = template ? template.icon : '📊';
-            
-            html += `
-                <button onclick="openSpecificTracker('${tracker.id}')" 
-                        style="padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-align: left; transition: transform 0.2s;"
-                        onmouseover="this.style.transform='translateY(-2px)'"
-                        onmouseout="this.style.transform='translateY(0)'">
-                    ${icon} ${tracker.templateName}
-                </button>
-            `;
-        });
-        
-        html += '</div>';
-        container.innerHTML = html;
     },
 
     closeModal() {
@@ -1710,6 +1637,20 @@ const UICore = {
             streakContainer.innerHTML = '';
         }
         
+        // Update header member name
+        const headerName = document.getElementById('header-member-name');
+        const headerAvatar = document.getElementById('header-member-avatar');
+        if (headerName) {
+            headerName.textContent = child.name + "'s Dashboard";
+        }
+        if (headerAvatar) {
+            if (child.photo) {
+                headerAvatar.innerHTML = `<img src="${child.photo}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+            } else {
+                headerAvatar.textContent = '👤';
+            }
+        }
+        
         ScheduleModule.renderSchedule();
         CharacterModule.renderWeeklyChores();
         
@@ -1735,29 +1676,6 @@ const UICore = {
             card.style.color = 'white';
         });
         
-        const activeBtn = document.getElementById(StateManager.state.currentChild + '-btn');
-        if (activeBtn) {
-            activeBtn.style.background = palette.profileButton;
-            activeBtn.style.borderColor = palette.profileButton;
-            activeBtn.style.color = 'white';
-        }
-        
-        StateManager.state.children.forEach(childId => {
-            if (childId !== StateManager.state.currentChild) {
-                const btn = document.getElementById(childId + '-btn');
-                if (btn) {
-                    btn.style.background = '#e5e7eb';
-                    btn.style.color = '#374151';
-                    btn.style.borderColor = '#e5e7eb';
-                }
-            }
-        });
-        
-        const editBtn = document.getElementById('edit-mode-toggle');
-        if (editBtn && !StateManager.state.editMode) {
-            editBtn.style.background = palette.profileButton;
-        }
-        
         const progressFills = document.querySelectorAll('.progress-fill');
         progressFills.forEach(fill => {
             fill.style.background = `linear-gradient(135deg, ${palette.bgGradient1} 0%, ${palette.bgGradient2} 100%)`;
@@ -1769,7 +1687,7 @@ const UICore = {
     selectChild(childId) {
         StateManager.state.currentChild = childId;
         if (window.ProfileModule) {
-            ProfileModule.updateChildButtons();
+            ProfileModule.updateSidebarAvatars();
             ProfileModule.updateTrackerButtons();
         }
         this.updateUI();
@@ -1790,53 +1708,23 @@ const UICore = {
 
     toggleEditMode() {
         StateManager.state.editMode = !StateManager.state.editMode;
-        const btn = document.getElementById('edit-mode-toggle');
-        const text = document.getElementById('edit-mode-text');
-        const addChildBtn = document.getElementById('add-child-btn');
+        const btn = document.getElementById('sidebar-edit-btn');
+        const icon = document.getElementById('sidebar-edit-icon');
+        const text = document.getElementById('sidebar-edit-text');
         
         if (StateManager.state.editMode) {
-            btn.classList.add('active');
-            text.textContent = '✓ Done Editing';
+            if (icon) icon.textContent = '✓';
+            if (text) text.textContent = 'Done';
             document.body.classList.add('edit-mode');
-            if (addChildBtn) addChildBtn.style.display = 'inline-block';
         } else {
-            btn.classList.remove('active');
-            text.textContent = '✏️ Edit Mode';
+            if (icon) icon.textContent = '✏️';
+            if (text) text.textContent = 'Edit';
             document.body.classList.remove('edit-mode');
-            if (addChildBtn) addChildBtn.style.display = 'none';
         }
         
         this.updateUI();
     }
 };
-
-// ========================================
-// Sidebar Avatars
-// ========================================
-
-function renderSidebarAvatars() {
-    const container = document.getElementById('sidebar-avatars-container');
-    if (!container) return;
-    
-    const children = window.StateManager.state.children;
-    container.innerHTML = children.map(childId => {
-        const child = window.StateManager.getChild(childId);
-        const isActive = childId === window.StateManager.state.currentChild;
-        const photo = child.photo ? `<img src="${child.photo}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">` : '👤';
-        
-        return `
-            <button class="sidebar-avatar ${isActive ? 'active' : ''}" 
-                    onclick="UICore.selectChild('${childId}')"
-                    title="${child.name}">
-                ${photo}
-            </button>
-        `;
-    }).join('');
-}
-
-window.renderSidebarAvatars = renderSidebarAvatars;
-
-
 
 // ========================================
 // PLACEHOLDER FUNCTIONS (Firebase overrides these)
