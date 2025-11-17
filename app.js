@@ -594,6 +594,110 @@ const ScheduleModule = {
         }
     },
 
+    renderFocusedScheduleItem() {
+    const schedule = StateManager.getSchedule();
+    const dayData = StateManager.getDayData();
+    const container = document.getElementById('schedule-detail-container');
+    
+    if (schedule.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    // Get current time in minutes
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    // Find the next incomplete item or current time item
+    let focusedItem = null;
+    let focusedIndex = -1;
+    
+    for (let i = 0; i < schedule.length; i++) {
+        const item = schedule[i];
+        const itemMinutes = StateManager.convertTimeToMinutes(item.time);
+        const isComplete = dayData.schedule[item.id] === true;
+        
+        // If this item is not yet complete and is current or upcoming
+        if (!isComplete) {
+            if (!focusedItem || itemMinutes <= currentMinutes + 120) { // Within 2 hours
+                focusedItem = item;
+                focusedIndex = i;
+                if (itemMinutes <= currentMinutes) {
+                    break; // This is the current item
+                }
+            }
+        }
+    }
+    
+    // If all items complete, show the last item
+    if (!focusedItem && schedule.length > 0) {
+        focusedItem = schedule[schedule.length - 1];
+        focusedIndex = schedule.length - 1;
+    }
+    
+    if (!focusedItem) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    // Store focused item ID for completion
+    this.currentFocusedItemId = focusedItem.id;
+    
+    // Render the focused item
+    container.style.display = 'block';
+    document.getElementById('focused-time').textContent = focusedItem.time;
+    document.getElementById('focused-name').textContent = focusedItem.name;
+    
+    const tasksContainer = document.getElementById('focused-tasks');
+    const isComplete = dayData.schedule[focusedItem.id] === true;
+    
+    tasksContainer.innerHTML = focusedItem.tasks.map(task => `
+        <div class="task-item ${isComplete ? 'completed' : ''}">
+            <div class="task-text">${task}</div>
+        </div>
+    `).join('');
+    
+    // Update complete button
+    const completeBtn = document.getElementById('focused-complete-btn');
+    if (isComplete) {
+        completeBtn.textContent = '✓ Completed';
+        completeBtn.classList.add('completed');
+    } else {
+        completeBtn.textContent = '✓ Mark Complete';
+        completeBtn.classList.remove('completed');
+    }
+    
+    // Update schedule list focus states
+    this.updateScheduleFocusStates(focusedIndex);
+},
+
+updateScheduleFocusStates(focusedIndex) {
+    const scheduleItems = document.querySelectorAll('.timeline-item .schedule-item');
+    scheduleItems.forEach((item, index) => {
+        item.classList.remove('in-focus', 'out-of-focus');
+        if (index === focusedIndex) {
+            item.classList.add('in-focus');
+        } else {
+            item.classList.add('out-of-focus');
+        }
+    });
+},
+
+completeFocusedItem() {
+    if (this.currentFocusedItemId) {
+        const dayData = StateManager.getDayData();
+        const isCurrentlyComplete = dayData.schedule[this.currentFocusedItemId] === true;
+        
+        // Toggle completion
+        dayData.schedule[this.currentFocusedItemId] = !isCurrentlyComplete;
+        
+        saveData();
+        if (window.UICore) {
+            UICore.updateUI();
+        }
+    }
+},
+
     setScheduleStatus(scheduleId, status) {
         const dayData = StateManager.getDayData();
         if (dayData.schedule[scheduleId] === status) {
@@ -1579,6 +1683,7 @@ const UICore = {
         }
         
         ScheduleModule.renderSchedule();
+        ScheduleModule.renderFocusedScheduleItem();
         CharacterModule.renderWeeklyChores();
         
         document.getElementById('daily-notes').value = dayData.notes || '';
@@ -1761,3 +1866,10 @@ function confirmDeleteGoal() {
 function spendPoints() {
     PointsModule.spendPoints();
 }
+
+// Auto-refresh focused schedule item every minute
+setInterval(() => {
+    if (window.ScheduleModule && window.StateManager) {
+        ScheduleModule.renderFocusedScheduleItem();
+    }
+}, 60000); // Update every 60 seconds
