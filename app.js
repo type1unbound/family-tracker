@@ -604,6 +604,23 @@ renderSchedule() {
         container.style.display = 'none';
         return;
     }
+
+    focusScheduleItem(itemId, index) {
+    // Store the focused item
+    this.currentFocusedItemId = itemId;
+    
+    // Update the center column
+    this.renderFocusedScheduleItemById(itemId);
+    
+    // Update focus states
+    this.updateScheduleFocusStates(index);
+    
+    // Scroll the item into view
+    const items = document.querySelectorAll('.timeline-item');
+    if (items[index]) {
+        items[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+},
     
     // Get current time in minutes
     const now = new Date();
