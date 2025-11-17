@@ -1929,6 +1929,36 @@ function spendPoints() {
     PointsModule.spendPoints();
 }
 
+// tracker tab buttons
+
+
+function switchMedTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tracker-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    
+    // Update content
+    document.querySelectorAll('.tracker-tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.getElementById(`tracker-${tabName}-content`).classList.add('active');
+    
+    // Render appropriate content
+    if (tabName === 'history') {
+        MedicationTracker.renderHistory();
+    } else if (tabName === 'analytics') {
+        MedicationTracker.renderAnalytics();
+    } else if (tabName === 'settings') {
+        MedicationTracker.renderSettings();
+    }
+}
+
+function closeMedTrackerModal() {
+    document.getElementById('med-tracker-modal').classList.remove('active');
+}
+
 // Auto-refresh focused schedule item every minute
 setInterval(() => {
     if (window.ScheduleModule && window.StateManager) {
