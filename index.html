@@ -176,6 +176,26 @@
                 
 <!-- CENTER COLUMN - Detail View & Progress -->
 <div class="detail-section">
+        <!-- Progress Bars -->
+    <div class="progress-section">
+        <div class="progress-label">
+            <span>Daily Progress</span>
+            <span id="daily-progress-text">0%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="daily-progress" style="width: 0%"></div>
+        </div>
+    </div>
+    
+    <div class="progress-section" style="margin-bottom: 24px;">
+        <div class="progress-label">
+            <span>Weekly Progress</span>
+            <span id="weekly-progress-text">0%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill weekly" id="weekly-progress" style="width: 0%"></div>
+        </div>
+    </div>
     <!-- Focused Schedule Item Detail -->
     <div id="schedule-detail-container" style="display: none; margin-bottom: 24px;">
         <div class="detail-header">
@@ -191,26 +211,7 @@
         </button>
     </div>
     
-    <!-- Progress Bars -->
-    <div class="progress-section">
-        <div class="progress-label">
-            <span>Daily Progress</span>
-            <span id="daily-progress-text">0%</span>
-        </div>
-        <div class="progress-bar">
-            <div class="progress-fill" id="daily-progress" style="width: 0%"></div>
-        </div>
-    </div>
-    
-    <div class="progress-section" style="margin-bottom: 0;">
-        <div class="progress-label">
-            <span>Weekly Progress</span>
-            <span id="weekly-progress-text">0%</span>
-        </div>
-        <div class="progress-bar">
-            <div class="progress-fill weekly" id="weekly-progress" style="width: 0%"></div>
-        </div>
-    </div>
+
     
     <!-- Streak Card -->
     <div id="streak-container"></div>
