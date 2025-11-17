@@ -502,54 +502,48 @@
 
         <!-- Medication/Health Tracker Modal -->
         <div id="med-tracker-modal" class="modal">
-            <div class="modal-content" style="max-width: 900px;">
-                <div class="modal-header">
-                    <h2 id="med-tracker-member-name">Health Tracker</h2>
-                    <button class="close-btn" onclick="closeMedicationTracker()">×</button>
-                </div>
-                
-                <!-- Tabs -->
-                <div style="display: flex; gap: 8px; border-bottom: 2px solid #e5e7eb; margin-bottom: 20px;">
-                    <button id="med-tab-entry" onclick="switchMedTab('entry')" style="padding: 12px 24px; border: none; background: none; cursor: pointer; border-bottom: 2px solid #6366f1; color: #6366f1; font-weight: 600;">Entry</button>
-                    <button id="med-tab-history" onclick="switchMedTab('history')" style="padding: 12px 24px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; color: #6b7280; font-weight: 600;">History</button>
-                    <button id="med-tab-analytics" onclick="switchMedTab('analytics')" style="padding: 12px 24px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; color: #6b7280; font-weight: 600;">Analytics</button>
-                    <button id="med-tab-settings" onclick="switchMedTab('settings')" style="padding: 12px 24px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; color: #6b7280; font-weight: 600;">Settings</button>
-                </div>
-                
-                <!-- Tab Contents -->
-                <div id="med-content-entry">
-                    <div style="margin-bottom: 16px;">
-                        <label>Date:</label>
-                        <input type="date" id="med-entry-date" class="edit-input">
-                    </div>
-                    <div style="margin-bottom: 16px;">
-                        <label>Observer Name:</label>
-                        <input type="text" id="med-observer" class="edit-input" placeholder="Who is filling this out?">
-                    </div>
-                    <div id="med-period-types-container" style="margin-bottom: 16px;"></div>
-                    <div id="med-rating-categories"></div>
-                    <div style="margin-top: 20px; margin-bottom: 16px;">
-                        <label>Notes (optional):</label>
-                        <textarea id="med-entry-notes" class="edit-input" rows="4" placeholder="Any additional observations or notes..."></textarea>
-                    </div>
-                    <button onclick="saveMedEntry()" class="btn btn-primary" style="width: 100%; margin-top: 20px;">Save Entry</button>
-                </div>
-                
-                <div id="med-content-history" style="display: none;">
-                    <div id="med-history-list"></div>
-                </div>
-                
-                <div id="med-content-analytics" style="display: none;">
-                    <div id="med-analytics-content"></div>
-                </div>
-                
-                <div id="med-content-settings" style="display: none;">
-                    <div id="med-settings-content"></div>
-                </div>
+    <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
+        <div class="modal-header">
+            <h2 id="med-tracker-title">📊 Health Tracker</h2>
+            <button class="close-btn" onclick="closeMedTrackerModal()">×</button>
+        </div>
+        
+        <!-- Tabs -->
+        <div style="display: flex; border-bottom: 2px solid #e5e7eb; margin-bottom: 20px;">
+            <button class="tracker-tab active" data-tab="entry" onclick="switchMedTab('entry')">
+                📝 Entry
+            </button>
+            <button class="tracker-tab" data-tab="history" onclick="switchMedTab('history')">
+                📋 History
+            </button>
+            <button class="tracker-tab" data-tab="analytics" onclick="switchMedTab('analytics')">
+                📊 Analytics
+            </button>
+            <button class="tracker-tab" data-tab="settings" onclick="switchMedTab('settings')">
+                ⚙️ Settings
+            </button>
+        </div>
+        
+        <!-- Tab Contents -->
+        <div style="flex: 1; overflow-y: auto;">
+            <div id="tracker-entry-content" class="tracker-tab-content active">
+                <div id="med-content-entry"></div>
+            </div>
+            
+            <div id="tracker-history-content" class="tracker-tab-content">
+                <div id="med-history-list"></div>
+            </div>
+            
+            <div id="tracker-analytics-content" class="tracker-tab-content">
+                <div id="med-analytics-content"></div>
+            </div>
+            
+            <div id="tracker-settings-content" class="tracker-tab-content">
+                <div id="med-settings-content"></div>
             </div>
         </div>
     </div>
-
+</div>
     <!-- Sidebar Rendering Scripts -->
 <script>
 // Render sidebar avatars
