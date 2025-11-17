@@ -571,20 +571,26 @@ body {
 }
 
 .schedule-list {
-    max-height: 700px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     overflow-y: auto;
-    padding-right: 8px;
+    overflow-x: hidden;
+    padding: 8px;
+    scroll-behavior: smooth;
+    align-items: center;
 }
 
-/* Individual Schedule Items */
+/* Individual Schedule Items - Clickable Cards */
 .schedule-item {
     background: white;
     border: 2px solid #e5e7eb;
     border-radius: 12px;
     padding: 14px 16px;
-    margin-bottom: 10px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    max-width: 340px;
 }
 
 .schedule-item:hover {
@@ -594,32 +600,27 @@ body {
 
 /* Schedule Item Focus States */
 .schedule-item.in-focus {
-    transform: scale(1.02);
+    transform: scale(1.05);
     box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
     border-color: #6366f1;
+    border-width: 3px;
     background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
 }
 
 .schedule-item.out-of-focus {
-    opacity: 0.35;
-    transform: scale(0.96);
+    opacity: 0.5;
+    transform: scale(0.92);
     background: #fafafa;
-}
-
-.schedule-item.out-of-focus .schedule-time {
-    font-size: 13px;
-    color: #9ca3af;
-}
-
-.schedule-item.out-of-focus .schedule-name {
-    font-size: 12px;
-    color: #6b7280;
 }
 
 .schedule-item.completed {
     background: #ecfdf5;
     border-color: #10b981;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.schedule-item.completed.in-focus {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border-color: #10b981;
 }
 
 .schedule-time {
@@ -630,6 +631,10 @@ body {
     letter-spacing: -0.3px;
 }
 
+.schedule-item.completed .schedule-time {
+    color: #10b981;
+}
+
 .schedule-name {
     font-size: 14px;
     font-weight: 600;
@@ -638,121 +643,89 @@ body {
     letter-spacing: -0.2px;
 }
 
-.schedule-status {
-    font-size: 11px;
-    color: #6b7280;
-    display: flex;
+.schedule-item.completed .schedule-name {
+    color: #059669;
+}
+
+/* Status Badge (replaces yes/no buttons) */
+.schedule-status-badge {
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-weight: 500;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.schedule-status-badge.completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.schedule-status-badge.incomplete {
+    background: #fef3c7;
+    color: #78350f;
+}
+
+.schedule-status-badge.pending {
+    background: #e0e7ff;
+    color: #3730a3;
 }
 
 /* Schedule Item Header */
 .schedule-header {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 8px;
+    flex-direction: column;
+    gap: 8px;
 }
 
-/* Status Badges */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 10px;
-    font-weight: 600;
-}
-
-.status-badge.completed {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.status-badge.in-progress {
-    background: #fef3c7;
-    color: #78350f;
-}
-
-.status-badge.upcoming {
-    background: #e0e7ff;
-    color: #3730a3;
-}
-
-/* Yes/No Completion Buttons */
+/* Remove yes-no buttons from regular items */
 .yes-no-buttons {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    margin-top: 8px;
+    display: none !important;
 }
 
-.yes-no-btn {
-    padding: 6px 12px;
-    border: 2px solid #e5e7eb;
-    border-radius: 6px;
-    background: white;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.2s;
-    min-width: 45px;
-}
-
-.yes-no-btn:hover {
-    border-color: #6366f1;
-}
-
-.yes-no-btn.yes {
-    background: #10b981;
-    border-color: #10b981;
-    color: white;
-}
-
-.yes-no-btn.no {
-    background: #ef4444;
-    border-color: #ef4444;
-    color: white;
-}
-
-/* Timeline Items */
+/* Timeline styling - simplified */
 .timeline-item {
     position: relative;
-    padding-left: 32px;
-    margin-bottom: 16px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
 
 .timeline-item::before {
-    content: '';
-    position: absolute;
-    left: 8px;
-    top: 0;
-    bottom: -16px;
-    width: 2px;
-    background: #e5e7eb;
-}
-
-.timeline-item:last-child::before {
     display: none;
 }
 
 .timeline-dot {
-    position: absolute;
-    left: 0;
-    top: 8px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: white;
-    border: 3px solid #e5e7eb;
-    transition: all 0.2s;
+    display: none;
 }
 
-.timeline-dot.completed {
-    background: #10b981;
-    border-color: #10b981;
+/* Task list in schedule items - compact */
+.schedule-item .task-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.schedule-item .task-list li {
+    padding: 2px 0;
+    padding-left: 16px;
+    position: relative;
+}
+
+.schedule-item .task-list li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #9ca3af;
+}
+
+.schedule-item.in-focus .task-list {
+    display: none; /* Hide tasks in focused item since they show in center */
 }
 
 /* Scroll Hint */
