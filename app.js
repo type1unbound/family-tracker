@@ -128,6 +128,25 @@ const CONFIG = {
     ]
 };
 
+/ ========================================
+// SCHEDULE CENTER HELPER
+// ========================================
+
+function centerScheduleItem(clickedItem) {
+    const scheduleList = document.querySelector('.schedule-list');
+    const listRect = scheduleList.getBoundingClientRect();
+    const itemRect = clickedItem.getBoundingClientRect();
+    
+    const listCenter = listRect.height / 2;
+    const itemCenter = itemRect.top - listRect.top + (itemRect.height / 2);
+    const scrollOffset = itemCenter - listCenter;
+    
+    scheduleList.scrollBy({
+        top: scrollOffset,
+        behavior: 'smooth'
+    });
+}
+
 // ========================================
 // STATE MANAGEMENT
 // ========================================
