@@ -838,45 +838,8 @@ CharacterModule.renderCharacterSections = function() {
     }
 };
         
-        const child = StateManager.getCurrentChild();
-        const palette = CONFIG.COLOR_PALETTES[child.colorPalette] || CONFIG.COLOR_PALETTES.lavender;
-        this.updateCharacterButtonColors(palette);
-    },
 
-    updateCharacterButtonColors(palette) {
-        const multiplierButtons = document.querySelectorAll('.btn-multiplier-1, .btn-multiplier-15, .btn-multiplier-2');
-        
-        multiplierButtons.forEach(btn => {
-            if (btn.classList.contains('btn-multiplier-1')) {
-                btn.style.background = palette.characterButton1;
-                btn.style.borderColor = palette.characterButton1;
-                btn.style.color = '#1f2937';
-                if (btn.classList.contains('active')) {
-                    btn.style.background = palette.characterButton1;
-                    btn.style.borderColor = palette.profileButton;
-                    btn.style.borderWidth = '3px';
-                }
-            } else if (btn.classList.contains('btn-multiplier-15')) {
-                btn.style.background = palette.characterButton15;
-                btn.style.borderColor = palette.characterButton15;
-                btn.style.color = '#1f2937';
-                if (btn.classList.contains('active')) {
-                    btn.style.background = palette.characterButton15;
-                    btn.style.borderColor = palette.profileButton;
-                    btn.style.borderWidth = '3px';
-                }
-            } else if (btn.classList.contains('btn-multiplier-2')) {
-                btn.style.background = palette.characterButton2;
-                btn.style.borderColor = palette.characterButton2;
-                btn.style.color = 'white';
-                if (btn.classList.contains('active')) {
-                    btn.style.background = palette.characterButton2;
-                    btn.style.borderColor = palette.profileButton;
-                    btn.style.borderWidth = '3px';
-                }
-            }
-        });
-    },
+
 
     setCategoryMultiplier(categoryId, value) {
         const dayData = StateManager.getDayData();
