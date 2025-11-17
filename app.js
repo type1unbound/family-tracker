@@ -1833,7 +1833,6 @@ window.ScheduleModule = ScheduleModule;
 window.CharacterModule = CharacterModule;
 window.ProfileModule = ProfileModule;
 window.UICore = UICore;
-window.TrackerTemplates = TrackerTemplates;
 window.state = StateManager.state;
 window.saveData = saveData;
 window.loadData = loadData;
