@@ -44,7 +44,8 @@ body {
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
     padding: 0;
     margin: 0;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -55,9 +56,10 @@ body {
 .app-container {
     background: #fafafa;
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
     max-width: none;
     margin: 0;
+    overflow: hidden;
 }
 
 .container {
@@ -79,6 +81,7 @@ body {
     gap: 24px;
     border-right: 1px solid rgba(255,255,255,0.1);
     flex-shrink: 0;
+    overflow-y: auto;
 }
 
 .sidebar-title {
@@ -279,6 +282,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    height: 100%;
 }
 
 /* ========================================
@@ -291,6 +295,7 @@ body {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
 }
 
 .app-title-section {
@@ -436,6 +441,7 @@ body {
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
     border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
 }
 
 .score-item {
@@ -511,6 +517,8 @@ body {
     padding: 16px;
     overflow: hidden;
     background: #f9fafb;
+    height: 0;
+    min-height: 0;
 }
 
 /* All three columns have independent scrolling */
@@ -1300,8 +1308,6 @@ body {
     background: rgba(255, 255, 255, 0.3);
 }
 
-
-
 /* Profile & Theme Buttons */
 .profile-edit-btn,
 button[onclick*="openMedicationTracker"],
@@ -1889,18 +1895,23 @@ h3 {
 @media (max-width: 767px) {
     body {
         padding: 0;
+        height: auto;
+        overflow: auto;
+        min-height: 100vh;
     }
     
-.app-container {
-    background: #fafafa;
-    display: flex;
-    min-height: 100vh;
-    max-width: none;
-    width: 100vw;
-    margin: 0;
-    margin-left: calc(-50vw + 50%);
-    margin-right: calc(-50vw + 50%);
-}
+    .app-container {
+        background: #fafafa;
+        display: flex;
+        height: auto;
+        min-height: 100vh;
+        max-width: none;
+        width: 100vw;
+        margin: 0;
+        margin-left: calc(-50vw + 50%);
+        margin-right: calc(-50vw + 50%);
+        overflow: visible;
+    }
     
     .sidebar {
         width: 90px;
@@ -1937,6 +1948,14 @@ h3 {
         grid-template-columns: 1fr;
         padding: 12px;
         gap: 12px;
+        height: auto;
+        min-height: auto;
+    }
+    
+    .schedule-section,
+    .detail-section,
+    .goals-section {
+        overflow-y: visible;
     }
     
     .container {
@@ -2101,9 +2120,16 @@ h3 {
     }
 }
 
-/* Desktop (1024px+) */
+/* Desktop (1024px+) - Maintain viewport height locking */
 @media (min-width: 1024px) {
     body {
+        height: 100vh;
+        overflow: hidden;
+    }
+    
+    .app-container {
+        height: 100vh;
+        overflow: hidden;
     }
     
     .container {
@@ -2215,7 +2241,6 @@ h3 {
 }
 
 /* Tracker modal tabs */
-
 .tracker-tab {
     flex: 1;
     padding: 12px 20px;
