@@ -238,6 +238,27 @@ const StateManager = {
         return hours * 60 + minutes;
     },
 
+    formatTime12Hour(timeStr) {
+        if (!timeStr) return '';
+        
+        // If already in 12h format (has am/pm), return as-is
+        if (timeStr.toLowerCase().includes('am') || timeStr.toLowerCase().includes('pm')) {
+            return timeStr;
+        }
+        
+        // Parse 24h time
+        const match = timeStr.match(/(\d+):?(\d*)/);
+        if (!match) return timeStr;
+        
+        let hours = parseInt(match[1]);
+        const minutes = match[2] ? match[2].padStart(2, '0') : '00';
+        
+        const period = hours >= 12 ? 'pm' : 'am';
+        hours = hours % 12 || 12; // Convert 0 to 12, and 13-23 to 1-11
+        
+        return `${hours}:${minutes}${period}`;
+    },
+
     getCharacterValues() {
         return this.getCurrentChild().characterValues;
     },
@@ -533,197 +554,211 @@ const PointsModule = {
 // ========================================
 // SCHEDULE MODULE
 // ========================================
-renderSchedule() {
-    const dayData = StateManager.getDayData();
-    const list = document.getElementById('schedule-list');
-    const isEditMode = StateManager.state.editMode;
-    
-    const schedule = StateManager.getSchedule(!isEditMode);
-    
-    list.innerHTML = schedule.map((item, index) => {
-        const status = dayData.schedule[item.id];
-        const isYes = status === true;
-        const isNo = status === false;
-        const completed = isYes;
+const ScheduleModule = {
+    renderSchedule() {
+        const dayData = StateManager.getDayData();
+        const list = document.getElementById('schedule-list');
+        const isEditMode = StateManager.state.editMode;
         
-        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const itemDays = item.days || [0,1,2,3,4,5,6];
-        const dayLabels = itemDays.map(d => dayNames[d]).join(', ');
-        const showsAllDays = itemDays.length === 7;
+        const schedule = StateManager.getSchedule(!isEditMode);
         
-        // Determine status text
-        let statusBadge = '';
-        if (isYes) {
-            statusBadge = '<div class="schedule-status-badge completed">✓ Completed</div>';
-        } else if (isNo) {
-            statusBadge = '<div class="schedule-status-badge incomplete">✗ Not Done</div>';
-        } else {
-            statusBadge = '<div class="schedule-status-badge pending">⏳ Pending</div>';
-        }
-        
-        return `
-            <div class="timeline-item" data-schedule-index="${index}">
-                <div class="schedule-item ${completed ? 'completed' : ''}" 
-                     onclick="ScheduleModule.focusScheduleItem(${item.id}, ${index})"
-                     data-item-id="${item.id}">
-                    <div class="schedule-header">
-                        <div>
-                            <div class="schedule-time">${item.time}</div>
-                            <div class="schedule-name">${item.name}</div>
-                            ${isEditMode && !showsAllDays ? `<div style="font-size: 11px; color: #6b7280; margin-top: 4px;">📅 ${dayLabels}</div>` : ''}
+        list.innerHTML = schedule.map((item, index) => {
+            const status = dayData.schedule[item.id];
+            const isYes = status === true;
+            const isNo = status === false;
+            const completed = isYes;
+            
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const itemDays = item.days || [0,1,2,3,4,5,6];
+            const dayLabels = itemDays.map(d => dayNames[d]).join(', ');
+            const showsAllDays = itemDays.length === 7;
+            
+            // Determine status text
+            let statusBadge = '';
+            if (isYes) {
+                statusBadge = '<div class="schedule-status-badge completed">✓ Completed</div>';
+            } else if (isNo) {
+                statusBadge = '<div class="schedule-status-badge incomplete">✗ Not Done</div>';
+            } else {
+                statusBadge = '<div class="schedule-status-badge pending">⏳ Pending</div>';
+            }
+            
+            return `
+                <div class="timeline-item" data-schedule-index="${index}">
+                    <div class="schedule-item ${completed ? 'completed' : ''}" 
+                         onclick="ScheduleModule.focusScheduleItem(${item.id}, ${index})"
+                         data-item-id="${item.id}">
+                        <div class="schedule-header">
+                            <div>
+                                <div class="schedule-time">${StateManager.formatTime12Hour(item.time)}</div>
+                                <div class="schedule-name">${item.name}</div>
+                                ${isEditMode && !showsAllDays ? `<div style="font-size: 11px; color: #6b7280; margin-top: 4px;">📅 ${dayLabels}</div>` : ''}
+                            </div>
                         </div>
+                        ${!isEditMode ? statusBadge : ''}
+                        <ul class="task-list">
+                            ${item.tasks.map(task => `<li>${task}</li>`).join('')}
+                        </ul>
+                        ${isEditMode ? `
+                            <div class="edit-controls">
+                                <button class="edit-btn" onclick="event.stopPropagation(); ScheduleModule.editScheduleItem(${index})">✏️ Edit</button>
+                                <button class="edit-btn delete" onclick="event.stopPropagation(); ScheduleModule.deleteScheduleItem(${index})">🗑️ Delete</button>
+                            </div>
+                        ` : ''}
                     </div>
-                    ${!isEditMode ? statusBadge : ''}
-                    <ul class="task-list">
-                        ${item.tasks.map(task => `<li>${task}</li>`).join('')}
-                    </ul>
-                    ${isEditMode ? `
-                        <div class="edit-controls">
-                            <button class="edit-btn" onclick="event.stopPropagation(); ScheduleModule.editScheduleItem(${index})">✏️ Edit</button>
-                            <button class="edit-btn delete" onclick="event.stopPropagation(); ScheduleModule.deleteScheduleItem(${index})">🗑️ Delete</button>
-                        </div>
-                    ` : ''}
                 </div>
-            </div>
-        `;
-    }).join('');
-    
-    if (isEditMode) {
-        list.innerHTML += `
-            <button class="add-item-btn" onclick="ScheduleModule.addScheduleItem()">+ Add Routine Item</button>
-        `;
-    }
-},
+            `;
+        }).join('');
+        
+        if (isEditMode) {
+            list.innerHTML += `
+                <button class="add-item-btn" onclick="ScheduleModule.addScheduleItem()">+ Add Routine Item</button>
+            `;
+        }
+    },
+
+    focusScheduleItem(itemId, index) {
+        // Store the focused item
+        this.currentFocusedItemId = itemId;
+        
+        // Update the center column
+        this.renderFocusedScheduleItemById(itemId);
+        
+        // Update focus states
+        this.updateScheduleFocusStates(index);
+        
+        // Scroll the item into view
+        const items = document.querySelectorAll('.timeline-item');
+        if (items[index]) {
+            items[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    },
 
     renderFocusedScheduleItem() {
-    const schedule = StateManager.getSchedule();
-    const dayData = StateManager.getDayData();
-    const container = document.getElementById('schedule-detail-container');
-    
-    // Safety check
-    if (!container) {
-        console.warn('schedule-detail-container not found in HTML');
-        return;
-    }
-    
-    if (schedule.length === 0) {
-        container.style.display = 'none';
-        return;
-    }
-    
-    // Get current time in minutes
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    
-    // Find the current or next incomplete item
-    let focusedItem = null;
-    let focusedIndex = -1;
-    
-    for (let i = 0; i < schedule.length; i++) {
-        const item = schedule[i];
-        const itemMinutes = StateManager.convertTimeToMinutes(item.time);
-        const isComplete = dayData.schedule[item.id] === true;
+        const schedule = StateManager.getSchedule();
+        const dayData = StateManager.getDayData();
+        const container = document.getElementById('schedule-detail-container');
         
-        if (!isComplete) {
-            if (!focusedItem || itemMinutes <= currentMinutes + 120) {
-                focusedItem = item;
-                focusedIndex = i;
-                if (itemMinutes <= currentMinutes) {
-                    break;
+        // Safety check
+        if (!container) {
+            console.warn('schedule-detail-container not found in HTML');
+            return;
+        }
+        
+        if (schedule.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+        
+        // Get current time in minutes
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        
+        // Find the current or next incomplete item
+        let focusedItem = null;
+        let focusedIndex = -1;
+        
+        for (let i = 0; i < schedule.length; i++) {
+            const item = schedule[i];
+            const itemMinutes = StateManager.convertTimeToMinutes(item.time);
+            const isComplete = dayData.schedule[item.id] === true;
+            
+            if (!isComplete) {
+                if (!focusedItem || itemMinutes <= currentMinutes + 120) {
+                    focusedItem = item;
+                    focusedIndex = i;
+                    if (itemMinutes <= currentMinutes) {
+                        break;
+                    }
                 }
             }
         }
-    }
-    
-    // If all complete, show last item
-    if (!focusedItem && schedule.length > 0) {
-        focusedItem = schedule[schedule.length - 1];
-        focusedIndex = schedule.length - 1;
-    }
-    
-    if (!focusedItem) {
-        container.style.display = 'none';
-        return;
-    }
-    
-    // Render the focused item
-    this.renderFocusedScheduleItemById(focusedItem.id);
-    this.updateScheduleFocusStates(focusedIndex);
-    
-    // Auto-scroll to focused item
-    setTimeout(() => {
-        const items = document.querySelectorAll('.timeline-item');
-        if (items[focusedIndex]) {
-            items[focusedIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // If all complete, show last item
+        if (!focusedItem && schedule.length > 0) {
+            focusedItem = schedule[schedule.length - 1];
+            focusedIndex = schedule.length - 1;
         }
-    }, 100);
-},
-
-renderFocusedScheduleItemById(itemId) {
-    const schedule = StateManager.getSchedule();
-    const dayData = StateManager.getDayData();
-    const container = document.getElementById('schedule-detail-container');
-    
-    if (!container) return;
-    
-    const focusedItem = schedule.find(item => item.id === itemId);
-    if (!focusedItem) return;
-    
-    this.currentFocusedItemId = itemId;
-    
-    container.style.display = 'block';
-    document.getElementById('focused-time').textContent = focusedItem.time;
-    document.getElementById('focused-name').textContent = focusedItem.name;
-    
-    const tasksContainer = document.getElementById('focused-tasks');
-    const isComplete = dayData.schedule[itemId] === true;
-    
-    tasksContainer.innerHTML = focusedItem.tasks.map(task => `
-        <div class="task-item ${isComplete ? 'completed' : ''}">
-            <div class="task-text">${task}</div>
-        </div>
-    `).join('');
-    
-    const completeBtn = document.getElementById('focused-complete-btn');
-    if (isComplete) {
-        completeBtn.textContent = '✓ Completed';
-        completeBtn.classList.add('completed');
-    } else {
-        completeBtn.textContent = '✓ Mark Complete';
-        completeBtn.classList.remove('completed');
-    }
-},
-    
-    // Update schedule list focus states
-    this.updateScheduleFocusStates(focusedIndex);
-},
-
-updateScheduleFocusStates(focusedIndex) {
-    const scheduleItems = document.querySelectorAll('.timeline-item .schedule-item');
-    scheduleItems.forEach((item, index) => {
-        item.classList.remove('in-focus', 'out-of-focus');
-        if (index === focusedIndex) {
-            item.classList.add('in-focus');
-        } else {
-            item.classList.add('out-of-focus');
+        
+        if (!focusedItem) {
+            container.style.display = 'none';
+            return;
         }
-    });
-},
+        
+        // Render the focused item
+        this.renderFocusedScheduleItemById(focusedItem.id);
+        this.updateScheduleFocusStates(focusedIndex);
+        
+        // Auto-scroll to focused item
+        setTimeout(() => {
+            const items = document.querySelectorAll('.timeline-item');
+            if (items[focusedIndex]) {
+                items[focusedIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
+    },
 
-completeFocusedItem() {
-    if (this.currentFocusedItemId) {
+    renderFocusedScheduleItemById(itemId) {
+        const schedule = StateManager.getSchedule();
         const dayData = StateManager.getDayData();
-        const isCurrentlyComplete = dayData.schedule[this.currentFocusedItemId] === true;
+        const container = document.getElementById('schedule-detail-container');
         
-        // Toggle completion
-        dayData.schedule[this.currentFocusedItemId] = !isCurrentlyComplete;
+        if (!container) return;
         
-        saveData();
-        if (window.UICore) {
-            UICore.updateUI();
+        const focusedItem = schedule.find(item => item.id === itemId);
+        if (!focusedItem) return;
+        
+        this.currentFocusedItemId = itemId;
+        
+        container.style.display = 'block';
+        document.getElementById('focused-time').textContent = StateManager.formatTime12Hour(focusedItem.time);
+        document.getElementById('focused-name').textContent = focusedItem.name;
+        
+        const tasksContainer = document.getElementById('focused-tasks');
+        const isComplete = dayData.schedule[itemId] === true;
+        
+        tasksContainer.innerHTML = focusedItem.tasks.map(task => `
+            <div class="task-item ${isComplete ? 'completed' : ''}">
+                <div class="task-text">${task}</div>
+            </div>
+        `).join('');
+        
+        const completeBtn = document.getElementById('focused-complete-btn');
+        if (isComplete) {
+            completeBtn.textContent = '✓ Completed';
+            completeBtn.classList.add('completed');
+        } else {
+            completeBtn.textContent = '✓ Mark Complete';
+            completeBtn.classList.remove('completed');
         }
-    }
-},
+    },
+
+    updateScheduleFocusStates(focusedIndex) {
+        const scheduleItems = document.querySelectorAll('.timeline-item .schedule-item');
+        scheduleItems.forEach((item, index) => {
+            item.classList.remove('in-focus', 'out-of-focus');
+            if (index === focusedIndex) {
+                item.classList.add('in-focus');
+            } else {
+                item.classList.add('out-of-focus');
+            }
+        });
+    },
+
+    completeFocusedItem() {
+        if (this.currentFocusedItemId) {
+            const dayData = StateManager.getDayData();
+            const isCurrentlyComplete = dayData.schedule[this.currentFocusedItemId] === true;
+            
+            // Toggle completion
+            dayData.schedule[this.currentFocusedItemId] = !isCurrentlyComplete;
+            
+            saveData();
+            if (window.UICore) {
+                UICore.updateUI();
+            }
+        }
+    },
 
     setScheduleStatus(scheduleId, status) {
         const dayData = StateManager.getDayData();
