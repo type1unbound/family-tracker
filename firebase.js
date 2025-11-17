@@ -213,7 +213,7 @@ async function loadDataFromFirebase() {
         const userId = currentUser.uid;
         const userRef = db.collection('users').doc(userId);
 
-// Load user metadata
+        // Load user metadata
         const userDoc = await userRef.get();
         
         if (userDoc.exists) {
@@ -453,14 +453,20 @@ async function initializeDashboard() {
             console.log('✅ Date picker initialized');
         }
         
-        // Initialize ProfileModule
-        if (window.ProfileModule) {
-            console.log('✅ ProfileModule found, initializing...');
-            //window.ProfileModule.renderChildButtons();
-            //window.ProfileModule.updateChildButtons();
-            window.ProfileModule.updateTrackerButtons();
+        // Initialize sidebar avatars
+        if (window.renderSidebarAvatars) {
+            console.log('✅ Rendering sidebar avatars...');
+            window.renderSidebarAvatars();
         } else {
-            console.warn('⚠️ ProfileModule not found');
+            console.warn('⚠️ renderSidebarAvatars not found');
+        }
+        
+        // Initialize sidebar trackers
+        if (window.renderSidebarTrackers) {
+            console.log('✅ Rendering sidebar trackers...');
+            window.renderSidebarTrackers();
+        } else {
+            console.warn('⚠️ renderSidebarTrackers not found');
         }
         
         // Initialize UICore
@@ -519,7 +525,9 @@ auth.onAuthStateChanged(async (user) => {
         console.log('📦 Available modules:', {
             StateManager: !!window.StateManager,
             ProfileModule: !!window.ProfileModule,
-            UICore: !!window.UICore
+            UICore: !!window.UICore,
+            renderSidebarAvatars: !!window.renderSidebarAvatars,
+            renderSidebarTrackers: !!window.renderSidebarTrackers
         });
         
         // Initialize the dashboard
