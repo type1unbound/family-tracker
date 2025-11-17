@@ -456,8 +456,8 @@ async function initializeDashboard() {
         // Initialize ProfileModule
         if (window.ProfileModule) {
             console.log('✅ ProfileModule found, initializing...');
-            window.ProfileModule.renderChildButtons();
-            window.ProfileModule.updateChildButtons();
+            //window.ProfileModule.renderChildButtons();
+            //window.ProfileModule.updateChildButtons();
             window.ProfileModule.updateTrackerButtons();
         } else {
             console.warn('⚠️ ProfileModule not found');
