@@ -1810,40 +1810,7 @@ const UICore = {
     }
 };
 
-// ========================================
-// TRACKER TEMPLATES (Continuation in next file due to size)
-// ========================================
-const TrackerTemplates = {
-    getTemplateList: function() {
-        return [
-            { id: 'adhd', name: 'ADHD Medication', icon: '🧠', description: 'Track attention, hyperactivity, and impulse control' },
-            { id: 'physical_therapy', name: 'Physical Therapy', icon: '🦴', description: 'Track pain levels, mobility, and function' },
-            { id: 'substance_use', name: 'Substance Use Disorder', icon: '🎗️', description: 'Track cravings, triggers, and recovery progress' },
-            { id: 'speech_therapy', name: 'Speech Therapy', icon: '💬', description: 'Track articulation, fluency, and communication' },
-            { id: 'type2_diabetes', name: 'Type 2 Diabetes', icon: '🩸', description: 'Track blood sugar, diet, and symptoms' },
-            { id: 'type1_diabetes', name: 'Type 1 Diabetes', icon: '💉', description: 'Track blood sugar, insulin, and patterns' },
-            { id: 'anxiety', name: 'Anxiety', icon: '😰', description: 'Track anxiety symptoms and coping strategies' },
-            { id: 'depression', name: 'Depression', icon: '💙', description: 'Track mood, energy, and daily functioning' },
-            { id: 'blood_pressure', name: 'High Blood Pressure', icon: '❤️', description: 'Track BP readings and lifestyle factors' },
-            { id: 'weight_loss', name: 'Weight Loss', icon: '⚖️', description: 'Track weight, diet, and exercise habits' },
-            { id: 'social_media', name: 'Social Media Use', icon: '📱', description: 'Track screen time and digital wellness' },
-            { id: 'caffeine', name: 'Coffee/Caffeine', icon: '☕', description: 'Track intake and effects on sleep/mood' },
-            { id: 'occupational_therapy', name: 'Occupational Therapy', icon: '🖐️', description: 'Track daily living skills and independence' },
-            { id: 'blank', name: 'Custom Tracker', icon: '📝', description: 'Create your own tracking categories' }
-        ];
-    },
 
-    getTemplate: function(templateId) {
-        const template = this.templates[templateId];
-        if (!template) return this.templates.blank;
-        return JSON.parse(JSON.stringify(template));
-    },
-
-    templates: {
-        // Templates defined here (too long to include in this response)
-        // See tracker-templates.js for full template definitions
-    }
-};
 
 // ========================================
 // PLACEHOLDER FUNCTIONS (Firebase overrides these)
