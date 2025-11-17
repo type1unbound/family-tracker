@@ -783,66 +783,60 @@ const ScheduleModule = {
 // ========================================
 // CHARACTER MODULE
 // ========================================
-const CharacterModule = {
-    renderCharacterSections() {
-        const dayData = StateManager.getDayData();
-        const container = document.getElementById('character-sections');
-        const characterValues = StateManager.getCharacterValues();
-        const isEditMode = StateManager.state.editMode;
-        
-        container.innerHTML = characterValues.map((section, index) => {
-            const mult = dayData.categoryMultipliers[section.id] || 1.0;
-            return `
-            <div class="character-section">
-                <h3>${section.category}</h3>
-                <ul class="character-list">
-                    ${section.items.map(item => `<li>${item}</li>`).join('')}
-                </ul>
-                <div style="margin-bottom: 12px;">
-                    <label style="font-size: 12px; margin-bottom: 8px;">Performance Rating</label>
-                    <div class="grid grid-3" style="gap: 8px;">
-                        <button 
-                            class="btn btn-multiplier btn-multiplier-1 ${mult === 1.0 ? 'active' : ''}" 
-                            onclick="CharacterModule.setCategoryMultiplier('${section.id}', 1.0)"
-                            style="padding: 12px 8px;">
-                            <div class="value" style="font-size: 18px;">1.0x</div>
-                            <div class="label" style="font-size: 10px;">Standard</div>
-                        </button>
-                        <button 
-                            class="btn btn-multiplier btn-multiplier-15 ${mult === 1.5 ? 'active' : ''}" 
-                            onclick="CharacterModule.setCategoryMultiplier('${section.id}', 1.5)"
-                            style="padding: 12px 8px;">
-                            <div class="value" style="font-size: 18px;">1.5x</div>
-                            <div class="label" style="font-size: 10px;">Good</div>
-                        </button>
-                        <button 
-                            class="btn btn-multiplier btn-multiplier-2 ${mult === 2.0 ? 'active' : ''}" 
-                            onclick="CharacterModule.setCategoryMultiplier('${section.id}', 2.0)"
-                            style="padding: 12px 8px;">
-                            <div class="value" style="font-size: 18px;">2.0x</div>
-                            <div class="label" style="font-size: 10px;">Excellent</div>
-                        </button>
-                    </div>
+CharacterModule.renderCharacterSections = function() {
+    const dayData = StateManager.getDayData();
+    const container = document.getElementById('character-sections');
+    const characterValues = StateManager.getCharacterValues();
+    const isEditMode = StateManager.state.editMode;
+    
+    container.innerHTML = characterValues.map((section, index) => {
+        const mult = dayData.categoryMultipliers[section.id] || 1.0;
+        return `
+        <div class="character-section">
+            <h3>${section.category}</h3>
+            <ul class="character-list">
+                ${section.items.map(item => `<li>${item}</li>`).join('')}
+            </ul>
+            <div style="margin-bottom: 12px;">
+                <label style="font-size: 12px; margin-bottom: 8px;">Performance Rating</label>
+                <div class="rating-buttons">
+                    <button 
+                        class="rating-btn level-1 ${mult === 1.0 ? 'active' : ''}" 
+                        onclick="CharacterModule.setCategoryMultiplier('${section.id}', 1.0)">
+                        Starting
+                    </button>
+                    <button 
+                        class="rating-btn level-2 ${mult === 1.5 ? 'active' : ''}" 
+                        onclick="CharacterModule.setCategoryMultiplier('${section.id}', 1.5)">
+                        Progress
+                    </button>
+                    <button 
+                        class="rating-btn level-3 ${mult === 2.0 ? 'active' : ''}" 
+                        onclick="CharacterModule.setCategoryMultiplier('${section.id}', 2.0)">
+                        Excelling
+                    </button>
                 </div>
-                <textarea 
-                    rows="2" 
-                    placeholder="Notes about this area..."
-                    onchange="CharacterModule.updateCharacterNotes('${section.id}', this.value)"
-                >${dayData.characterNotes[section.id] || ''}</textarea>
-                ${isEditMode ? `
-                    <div class="edit-controls" style="margin-top: 8px;">
-                        <button class="edit-btn" onclick="CharacterModule.editCharacterCategory(${index})">✏️ Edit Category</button>
-                        <button class="edit-btn delete" onclick="CharacterModule.deleteCharacterCategory(${index})">🗑️ Delete</button>
-                    </div>
-                ` : ''}
             </div>
-        `}).join('');
-        
-        if (isEditMode) {
-            container.innerHTML += `
-                <button class="add-item-btn" onclick="CharacterModule.addCharacterCategory()">+ Add Character Category</button>
-            `;
-        }
+            <textarea 
+                rows="2" 
+                placeholder="Notes about this area..."
+                onchange="CharacterModule.updateCharacterNotes('${section.id}', this.value)"
+            >${dayData.characterNotes[section.id] || ''}</textarea>
+            ${isEditMode ? `
+                <div class="edit-controls" style="margin-top: 8px;">
+                    <button class="edit-btn" onclick="CharacterModule.editCharacterCategory(${index})">✏️ Edit Category</button>
+                    <button class="edit-btn delete" onclick="CharacterModule.deleteCharacterCategory(${index})">🗑️ Delete</button>
+                </div>
+            ` : ''}
+        </div>
+    `}).join('');
+    
+    if (isEditMode) {
+        container.innerHTML += `
+            <button class="add-item-btn" onclick="CharacterModule.addCharacterCategory()">+ Add Character Category</button>
+        `;
+    }
+};
         
         const child = StateManager.getCurrentChild();
         const palette = CONFIG.COLOR_PALETTES[child.colorPalette] || CONFIG.COLOR_PALETTES.lavender;
@@ -1681,7 +1675,6 @@ const UICore = {
             fill.style.background = `linear-gradient(135deg, ${palette.bgGradient1} 0%, ${palette.bgGradient2} 100%)`;
         });
         
-        CharacterModule.updateCharacterButtonColors(palette);
     },
 
     selectChild(childId) {
