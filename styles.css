@@ -2213,3 +2213,36 @@ h3 {
         transition: none !important;
     }
 }
+
+/* Tracker modal tabs */
+
+.tracker-tab {
+    flex: 1;
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    transition: all 0.2s;
+}
+
+.tracker-tab:hover {
+    color: #374151;
+    background: #f9fafb;
+}
+
+.tracker-tab.active {
+    color: #6366f1;
+    border-bottom-color: #6366f1;
+}
+
+.tracker-tab-content {
+    display: none;
+}
+
+.tracker-tab-content.active {
+    display: block;
+}
