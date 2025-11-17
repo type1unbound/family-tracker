@@ -533,66 +533,67 @@ const PointsModule = {
 // ========================================
 // SCHEDULE MODULE
 // ========================================
-const ScheduleModule = {
-    renderSchedule() {
-        const dayData = StateManager.getDayData();
-        const list = document.getElementById('schedule-list');
-        const isEditMode = StateManager.state.editMode;
+renderSchedule() {
+    const dayData = StateManager.getDayData();
+    const list = document.getElementById('schedule-list');
+    const isEditMode = StateManager.state.editMode;
+    
+    const schedule = StateManager.getSchedule(!isEditMode);
+    
+    list.innerHTML = schedule.map((item, index) => {
+        const status = dayData.schedule[item.id];
+        const isYes = status === true;
+        const isNo = status === false;
+        const completed = isYes;
         
-        const schedule = StateManager.getSchedule(!isEditMode);
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const itemDays = item.days || [0,1,2,3,4,5,6];
+        const dayLabels = itemDays.map(d => dayNames[d]).join(', ');
+        const showsAllDays = itemDays.length === 7;
         
-        list.innerHTML = schedule.map((item, index) => {
-            const status = dayData.schedule[item.id];
-            const isYes = status === true;
-            const isNo = status === false;
-            const completed = isYes;
-            
-            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            const itemDays = item.days || [0,1,2,3,4,5,6];
-            const dayLabels = itemDays.map(d => dayNames[d]).join(', ');
-            const showsAllDays = itemDays.length === 7;
-            
-            return `
-                <div class="timeline-item">
-                    <div class="timeline-dot ${completed ? 'completed' : ''}"></div>
-                    <div class="schedule-item ${completed ? 'completed' : ''}">
-                        <div class="schedule-header">
-                            <div>
-                                <div class="schedule-time">${item.time}</div>
-                                <div class="schedule-name">${item.name}</div>
-                                ${isEditMode && !showsAllDays ? `<div style="font-size: 11px; color: #6b7280; margin-top: 4px;">📅 ${dayLabels}</div>` : ''}
-                            </div>
-                            <div class="yes-no-buttons">
-                                <button 
-                                    class="yes-no-btn ${isYes ? 'yes' : ''}" 
-                                    onclick="ScheduleModule.setScheduleStatus(${item.id}, true)"
-                                >✓ Yes</button>
-                                <button 
-                                    class="yes-no-btn ${isNo ? 'no' : ''}" 
-                                    onclick="ScheduleModule.setScheduleStatus(${item.id}, false)"
-                                >✗ No</button>
-                            </div>
-                        </div>
-                        <ul class="task-list">
-                            ${item.tasks.map(task => `<li>${task}</li>`).join('')}
-                        </ul>
-                        ${isEditMode ? `
-                            <div class="edit-controls">
-                                <button class="edit-btn" onclick="ScheduleModule.editScheduleItem(${index})">✏️ Edit</button>
-                                <button class="edit-btn delete" onclick="ScheduleModule.deleteScheduleItem(${index})">🗑️ Delete</button>
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-        }).join('');
-        
-        if (isEditMode) {
-            list.innerHTML += `
-                <button class="add-item-btn" onclick="ScheduleModule.addScheduleItem()">+ Add Routine Item</button>
-            `;
+        // Determine status text
+        let statusBadge = '';
+        if (isYes) {
+            statusBadge = '<div class="schedule-status-badge completed">✓ Completed</div>';
+        } else if (isNo) {
+            statusBadge = '<div class="schedule-status-badge incomplete">✗ Not Done</div>';
+        } else {
+            statusBadge = '<div class="schedule-status-badge pending">⏳ Pending</div>';
         }
-    },
+        
+        return `
+            <div class="timeline-item" data-schedule-index="${index}">
+                <div class="schedule-item ${completed ? 'completed' : ''}" 
+                     onclick="ScheduleModule.focusScheduleItem(${item.id}, ${index})"
+                     data-item-id="${item.id}">
+                    <div class="schedule-header">
+                        <div>
+                            <div class="schedule-time">${item.time}</div>
+                            <div class="schedule-name">${item.name}</div>
+                            ${isEditMode && !showsAllDays ? `<div style="font-size: 11px; color: #6b7280; margin-top: 4px;">📅 ${dayLabels}</div>` : ''}
+                        </div>
+                    </div>
+                    ${!isEditMode ? statusBadge : ''}
+                    <ul class="task-list">
+                        ${item.tasks.map(task => `<li>${task}</li>`).join('')}
+                    </ul>
+                    ${isEditMode ? `
+                        <div class="edit-controls">
+                            <button class="edit-btn" onclick="event.stopPropagation(); ScheduleModule.editScheduleItem(${index})">✏️ Edit</button>
+                            <button class="edit-btn delete" onclick="event.stopPropagation(); ScheduleModule.deleteScheduleItem(${index})">🗑️ Delete</button>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    if (isEditMode) {
+        list.innerHTML += `
+            <button class="add-item-btn" onclick="ScheduleModule.addScheduleItem()">+ Add Routine Item</button>
+        `;
+    }
+},
 
     renderFocusedScheduleItem() {
     const schedule = StateManager.getSchedule();
