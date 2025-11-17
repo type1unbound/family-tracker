@@ -600,33 +600,22 @@ renderSchedule() {
     const dayData = StateManager.getDayData();
     const container = document.getElementById('schedule-detail-container');
     
+    // Safety check
+    if (!container) {
+        console.warn('schedule-detail-container not found in HTML');
+        return;
+    }
+    
     if (schedule.length === 0) {
         container.style.display = 'none';
         return;
     }
-
-    focusScheduleItem(itemId, index) {
-    // Store the focused item
-    this.currentFocusedItemId = itemId;
-    
-    // Update the center column
-    this.renderFocusedScheduleItemById(itemId);
-    
-    // Update focus states
-    this.updateScheduleFocusStates(index);
-    
-    // Scroll the item into view
-    const items = document.querySelectorAll('.timeline-item');
-    if (items[index]) {
-        items[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-},
     
     // Get current time in minutes
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     
-    // Find the next incomplete item or current time item
+    // Find the current or next incomplete item
     let focusedItem = null;
     let focusedIndex = -1;
     
@@ -635,19 +624,18 @@ renderSchedule() {
         const itemMinutes = StateManager.convertTimeToMinutes(item.time);
         const isComplete = dayData.schedule[item.id] === true;
         
-        // If this item is not yet complete and is current or upcoming
         if (!isComplete) {
-            if (!focusedItem || itemMinutes <= currentMinutes + 120) { // Within 2 hours
+            if (!focusedItem || itemMinutes <= currentMinutes + 120) {
                 focusedItem = item;
                 focusedIndex = i;
                 if (itemMinutes <= currentMinutes) {
-                    break; // This is the current item
+                    break;
                 }
             }
         }
     }
     
-    // If all items complete, show the last item
+    // If all complete, show last item
     if (!focusedItem && schedule.length > 0) {
         focusedItem = schedule[schedule.length - 1];
         focusedIndex = schedule.length - 1;
@@ -658,16 +646,37 @@ renderSchedule() {
         return;
     }
     
-    // Store focused item ID for completion
-    this.currentFocusedItemId = focusedItem.id;
-    
     // Render the focused item
+    this.renderFocusedScheduleItemById(focusedItem.id);
+    this.updateScheduleFocusStates(focusedIndex);
+    
+    // Auto-scroll to focused item
+    setTimeout(() => {
+        const items = document.querySelectorAll('.timeline-item');
+        if (items[focusedIndex]) {
+            items[focusedIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, 100);
+},
+
+renderFocusedScheduleItemById(itemId) {
+    const schedule = StateManager.getSchedule();
+    const dayData = StateManager.getDayData();
+    const container = document.getElementById('schedule-detail-container');
+    
+    if (!container) return;
+    
+    const focusedItem = schedule.find(item => item.id === itemId);
+    if (!focusedItem) return;
+    
+    this.currentFocusedItemId = itemId;
+    
     container.style.display = 'block';
     document.getElementById('focused-time').textContent = focusedItem.time;
     document.getElementById('focused-name').textContent = focusedItem.name;
     
     const tasksContainer = document.getElementById('focused-tasks');
-    const isComplete = dayData.schedule[focusedItem.id] === true;
+    const isComplete = dayData.schedule[itemId] === true;
     
     tasksContainer.innerHTML = focusedItem.tasks.map(task => `
         <div class="task-item ${isComplete ? 'completed' : ''}">
@@ -675,7 +684,6 @@ renderSchedule() {
         </div>
     `).join('');
     
-    // Update complete button
     const completeBtn = document.getElementById('focused-complete-btn');
     if (isComplete) {
         completeBtn.textContent = '✓ Completed';
@@ -684,6 +692,7 @@ renderSchedule() {
         completeBtn.textContent = '✓ Mark Complete';
         completeBtn.classList.remove('completed');
     }
+},
     
     // Update schedule list focus states
     this.updateScheduleFocusStates(focusedIndex);
