@@ -1810,6 +1810,32 @@ const UICore = {
     }
 };
 
+// ========================================
+// Sidebar Avatars
+// ========================================
+
+function renderSidebarAvatars() {
+    const container = document.getElementById('sidebar-avatars-container');
+    if (!container) return;
+    
+    const children = window.StateManager.state.children;
+    container.innerHTML = children.map(childId => {
+        const child = window.StateManager.getChild(childId);
+        const isActive = childId === window.StateManager.state.currentChild;
+        const photo = child.photo ? `<img src="${child.photo}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">` : '👤';
+        
+        return `
+            <button class="sidebar-avatar ${isActive ? 'active' : ''}" 
+                    onclick="UICore.selectChild('${childId}')"
+                    title="${child.name}">
+                ${photo}
+            </button>
+        `;
+    }).join('');
+}
+
+window.renderSidebarAvatars = renderSidebarAvatars;
+
 
 
 // ========================================
