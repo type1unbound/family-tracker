@@ -13,90 +13,63 @@ const CONFIG = {
             bgGradient1: '#a78bfa',
             bgGradient2: '#6366f1',
             statCard: '#4c1d95',
-            profileButton: '#7c3aed',
-            characterButton1: '#e9d5ff',
-            characterButton15: '#c4b5fd',
-            characterButton2: '#a78bfa'
+            profileButton: '#7c3aed'
         },
         peach: {
             name: 'Peach Blossom',
             bgGradient1: '#fda4af',
             bgGradient2: '#fb923c',
             statCard: '#9a3412',
-            profileButton: '#f97316',
-            characterButton1: '#fed7aa',
-            characterButton15: '#fdba74',
-            characterButton2: '#fb923c'
+            profileButton: '#f97316'
         },
         sage: {
             name: 'Sage Meadow',
             bgGradient1: '#86efac',
             bgGradient2: '#059669',
             statCard: '#064e3b',
-            profileButton: '#10b981',
-            characterButton1: '#d1fae5',
-            characterButton15: '#86efac',
-            characterButton2: '#34d399'
+            profileButton: '#10b981'
         },
         sky: {
             name: 'Clear Sky',
             bgGradient1: '#7dd3fc',
             bgGradient2: '#2563eb',
             statCard: '#1e3a8a',
-            profileButton: '#3b82f6',
-            characterButton1: '#dbeafe',
-            characterButton15: '#93c5fd',
-            characterButton2: '#60a5fa'
+            profileButton: '#3b82f6'
         },
         honey: {
             name: 'Honey Gold',
             bgGradient1: '#fcd34d',
             bgGradient2: '#d97706',
             statCard: '#78350f',
-            profileButton: '#f59e0b',
-            characterButton1: '#fef3c7',
-            characterButton15: '#fde68a',
-            characterButton2: '#fbbf24'
+            profileButton: '#f59e0b'
         },
         rose: {
             name: 'Rose Garden',
             bgGradient1: '#f9a8d4',
             bgGradient2: '#db2777',
             statCard: '#831843',
-            profileButton: '#ec4899',
-            characterButton1: '#fce7f3',
-            characterButton15: '#f9a8d4',
-            characterButton2: '#f472b6'
+            profileButton: '#ec4899'
         },
         slate: {
             name: 'Soft Slate',
             bgGradient1: '#94a3b8',
             bgGradient2: '#475569',
             statCard: '#1e293b',
-            profileButton: '#64748b',
-            characterButton1: '#f1f5f9',
-            characterButton15: '#cbd5e1',
-            characterButton2: '#94a3b8'
+            profileButton: '#64748b'
         },
         aqua: {
             name: 'Aqua Marine',
             bgGradient1: '#5eead4',
             bgGradient2: '#0891b2',
             statCard: '#134e4a',
-            profileButton: '#14b8a6',
-            characterButton1: '#ccfbf1',
-            characterButton15: '#5eead4',
-            characterButton2: '#2dd4bf'
+            profileButton: '#14b8a6'
         },
         terracotta: {
             name: 'Terracotta',
             bgGradient1: '#fb923c',
             bgGradient2: '#c2410c',
             statCard: '#7c2d12',
-            profileButton: '#ea580c',
-            characterButton1: '#fed7aa',
-            characterButton15: '#fdba74',
-            characterButton2: '#fb923c'
+            profileButton: '#ea580c'
         }
     },
 
@@ -783,63 +756,61 @@ const ScheduleModule = {
 // ========================================
 // CHARACTER MODULE
 // ========================================
-CharacterModule.renderCharacterSections = function() {
-    const dayData = StateManager.getDayData();
-    const container = document.getElementById('character-sections');
-    const characterValues = StateManager.getCharacterValues();
-    const isEditMode = StateManager.state.editMode;
-    
-    container.innerHTML = characterValues.map((section, index) => {
-        const mult = dayData.categoryMultipliers[section.id] || 1.0;
-        return `
-        <div class="character-section">
-            <h3>${section.category}</h3>
-            <ul class="character-list">
-                ${section.items.map(item => `<li>${item}</li>`).join('')}
-            </ul>
-            <div style="margin-bottom: 12px;">
-                <label style="font-size: 12px; margin-bottom: 8px;">Performance Rating</label>
-                <div class="rating-buttons">
-                    <button 
-                        class="rating-btn level-1 ${mult === 1.0 ? 'active' : ''}" 
-                        onclick="CharacterModule.setCategoryMultiplier('${section.id}', 1.0)">
-                        Starting
-                    </button>
-                    <button 
-                        class="rating-btn level-2 ${mult === 1.5 ? 'active' : ''}" 
-                        onclick="CharacterModule.setCategoryMultiplier('${section.id}', 1.5)">
-                        Progress
-                    </button>
-                    <button 
-                        class="rating-btn level-3 ${mult === 2.0 ? 'active' : ''}" 
-                        onclick="CharacterModule.setCategoryMultiplier('${section.id}', 2.0)">
-                        Excelling
-                    </button>
-                </div>
-            </div>
-            <textarea 
-                rows="2" 
-                placeholder="Notes about this area..."
-                onchange="CharacterModule.updateCharacterNotes('${section.id}', this.value)"
-            >${dayData.characterNotes[section.id] || ''}</textarea>
-            ${isEditMode ? `
-                <div class="edit-controls" style="margin-top: 8px;">
-                    <button class="edit-btn" onclick="CharacterModule.editCharacterCategory(${index})">✏️ Edit Category</button>
-                    <button class="edit-btn delete" onclick="CharacterModule.deleteCharacterCategory(${index})">🗑️ Delete</button>
-                </div>
-            ` : ''}
-        </div>
-    `}).join('');
-    
-    if (isEditMode) {
-        container.innerHTML += `
-            <button class="add-item-btn" onclick="CharacterModule.addCharacterCategory()">+ Add Character Category</button>
-        `;
-    }
-};
+const CharacterModule = {
+    renderCharacterSections() {
+        const dayData = StateManager.getDayData();
+        const container = document.getElementById('character-sections');
+        const characterValues = StateManager.getCharacterValues();
+        const isEditMode = StateManager.state.editMode;
         
-
-
+        container.innerHTML = characterValues.map((section, index) => {
+            const mult = dayData.categoryMultipliers[section.id] || 1.0;
+            return `
+            <div class="character-section">
+                <h3>${section.category}</h3>
+                <ul class="character-list">
+                    ${section.items.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+                <div style="margin-bottom: 12px;">
+                    <label style="font-size: 12px; margin-bottom: 8px;">Performance Rating</label>
+                    <div class="rating-buttons">
+                        <button 
+                            class="rating-btn level-1 ${mult === 1.0 ? 'active' : ''}" 
+                            onclick="CharacterModule.setCategoryMultiplier('${section.id}', 1.0)">
+                            Starting
+                        </button>
+                        <button 
+                            class="rating-btn level-2 ${mult === 1.5 ? 'active' : ''}" 
+                            onclick="CharacterModule.setCategoryMultiplier('${section.id}', 1.5)">
+                            Progress
+                        </button>
+                        <button 
+                            class="rating-btn level-3 ${mult === 2.0 ? 'active' : ''}" 
+                            onclick="CharacterModule.setCategoryMultiplier('${section.id}', 2.0)">
+                            Excelling
+                        </button>
+                    </div>
+                </div>
+                <textarea 
+                    rows="2" 
+                    placeholder="Notes about this area..."
+                    onchange="CharacterModule.updateCharacterNotes('${section.id}', this.value)"
+                >${dayData.characterNotes[section.id] || ''}</textarea>
+                ${isEditMode ? `
+                    <div class="edit-controls" style="margin-top: 8px;">
+                        <button class="edit-btn" onclick="CharacterModule.editCharacterCategory(${index})">✏️ Edit Category</button>
+                        <button class="edit-btn delete" onclick="CharacterModule.deleteCharacterCategory(${index})">🗑️ Delete</button>
+                    </div>
+                ` : ''}
+            </div>
+        `}).join('');
+        
+        if (isEditMode) {
+            container.innerHTML += `
+                <button class="add-item-btn" onclick="CharacterModule.addCharacterCategory()">+ Add Character Category</button>
+            `;
+        }
+    },
 
     setCategoryMultiplier(categoryId, value) {
         const dayData = StateManager.getDayData();
@@ -1594,7 +1565,6 @@ const UICore = {
             streakContainer.innerHTML = '';
         }
         
-        // Update header member name
         const headerName = document.getElementById('header-member-name');
         const headerAvatar = document.getElementById('header-member-avatar');
         if (headerName) {
@@ -1637,7 +1607,6 @@ const UICore = {
         progressFills.forEach(fill => {
             fill.style.background = `linear-gradient(135deg, ${palette.bgGradient1} 0%, ${palette.bgGradient2} 100%)`;
         });
-        
     },
 
     selectChild(childId) {
