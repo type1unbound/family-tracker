@@ -174,42 +174,57 @@
                     </div>
                 </div>
                 
-                <!-- CENTER COLUMN - Detail View & Progress -->
-                <div class="detail-section">
-                    <!-- Progress Bars -->
-                    <div class="progress-section">
-                        <div class="progress-label">
-                            <span>Daily Progress</span>
-                            <span id="daily-progress-text">0%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="daily-progress" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="progress-section" style="margin-bottom: 0;">
-                        <div class="progress-label">
-                            <span>Weekly Progress</span>
-                            <span id="weekly-progress-text">0%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill weekly" id="weekly-progress" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Streak Card -->
-                    <div id="streak-container"></div>
-                    
-                    <!-- Notes Section -->
-                    <div style="margin-top: 24px;">
-                        <div class="section-subtitle">📝 Daily Notes & Reflection</div>
-                        <textarea id="daily-notes" 
-                                  rows="6" 
-                                  placeholder="General notes about the day, celebrations, challenges, or things to work on..." 
-                                  onchange="CharacterModule.updateNotes(this.value)"
-                                  style="width: 100%; padding: 12px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; resize: vertical;"></textarea>
-                    </div>
-                </div>
+<!-- CENTER COLUMN - Detail View & Progress -->
+<div class="detail-section">
+    <!-- Focused Schedule Item Detail -->
+    <div id="schedule-detail-container" style="display: none; margin-bottom: 24px;">
+        <div class="detail-header">
+            <div class="detail-time" id="focused-time">7:00am</div>
+            <div class="detail-name" id="focused-name">Morning Routine</div>
+        </div>
+        <div class="section-subtitle">Tasks & Expectations</div>
+        <div class="detail-tasks" id="focused-tasks">
+            <!-- Focused item tasks will be inserted here -->
+        </div>
+        <button id="focused-complete-btn" class="complete-btn" onclick="ScheduleModule.completeFocusedItem()">
+            ✓ Mark Complete
+        </button>
+    </div>
+    
+    <!-- Progress Bars -->
+    <div class="progress-section">
+        <div class="progress-label">
+            <span>Daily Progress</span>
+            <span id="daily-progress-text">0%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="daily-progress" style="width: 0%"></div>
+        </div>
+    </div>
+    
+    <div class="progress-section" style="margin-bottom: 0;">
+        <div class="progress-label">
+            <span>Weekly Progress</span>
+            <span id="weekly-progress-text">0%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill weekly" id="weekly-progress" style="width: 0%"></div>
+        </div>
+    </div>
+    
+    <!-- Streak Card -->
+    <div id="streak-container"></div>
+    
+    <!-- Notes Section -->
+    <div style="margin-top: 24px;">
+        <div class="section-subtitle">📝 Daily Notes & Reflection</div>
+        <textarea id="daily-notes" 
+                  rows="6" 
+                  placeholder="General notes about the day, celebrations, challenges, or things to work on..." 
+                  onchange="CharacterModule.updateNotes(this.value)"
+                  style="width: 100%; padding: 12px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; resize: vertical;"></textarea>
+    </div>
+</div>
                 
                 <!-- RIGHT COLUMN - Weekly Goals & Character Development -->
                 <div class="goals-section">
