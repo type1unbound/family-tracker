@@ -704,21 +704,40 @@ const ScheduleModule = {
         let focusedItem = null;
         let focusedIndex = -1;
         
-        for (let i = 0; i < schedule.length; i++) {
-            const item = schedule[i];
-            const itemMinutes = StateManager.convertTimeToMinutes(item.time);
-            const isComplete = dayData.schedule[item.id] === true;
-            
-            if (!isComplete) {
-                if (!focusedItem || itemMinutes <= currentMinutes + 120) {
-                    focusedItem = item;
-                    focusedIndex = i;
-                    if (itemMinutes <= currentMinutes) {
-                        break;
-                    }
-                }
+// Find the current or next incomplete item closest to current time
+let firstIncompleteAtOrAfter = null;
+let firstIncompleteAtOrAfterIndex = -1;
+let lastIncompleteBefore = null;
+let lastIncompleteBeforeIndex = -1;
+
+for (let i = 0; i < schedule.length; i++) {
+    const item = schedule[i];
+    const itemMinutes = StateManager.convertTimeToMinutes(item.time);
+    const isComplete = dayData.schedule[item.id] === true;
+    
+    if (!isComplete) {
+        if (itemMinutes >= currentMinutes) {
+            // First incomplete item at or after current time
+            if (firstIncompleteAtOrAfter === null) {
+                firstIncompleteAtOrAfter = item;
+                firstIncompleteAtOrAfterIndex = i;
             }
+        } else {
+            // Keep track of the most recent incomplete item before current time
+            lastIncompleteBefore = item;
+            lastIncompleteBeforeIndex = i;
         }
+    }
+}
+
+// Prioritize upcoming/current incomplete items, then fall back to most recent
+if (firstIncompleteAtOrAfter) {
+    focusedItem = firstIncompleteAtOrAfter;
+    focusedIndex = firstIncompleteAtOrAfterIndex;
+} else if (lastIncompleteBefore) {
+    focusedItem = lastIncompleteBefore;
+    focusedIndex = lastIncompleteBeforeIndex;
+}
         
         // If all complete, show last item
         if (!focusedItem && schedule.length > 0) {
