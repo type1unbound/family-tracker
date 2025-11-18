@@ -1010,7 +1010,7 @@ const CharacterModule = {
                     ${section.items.map(item => `<li>${item}</li>`).join('')}
                 </ul>
                 <div style="margin-bottom: 12px;">
-                    <label style="font-size: 12px; margin-bottom: 8px;">Performance Rating</label>
+                    <label style="font-size: 12px; margin-bottom: 8px;">Growth Rating</label>
                     <div class="rating-buttons">
                         <button 
                             class="rating-btn level-1 ${mult === 1.0 ? 'active' : ''}" 
