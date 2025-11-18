@@ -81,7 +81,9 @@ body {
     gap: 24px;
     border-right: 1px solid rgba(255,255,255,0.1);
     flex-shrink: 0;
-    overflow-y: auto;
+    overflow-y: visible;
+    position: relative;
+    z-index: 9999;
 }
 
 .sidebar-title {
