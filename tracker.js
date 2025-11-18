@@ -1349,6 +1349,51 @@ function closeMedTrackerModal() {
     }
 }
 
+renderHistory: function() {
+        const container = document.getElementById('med-history-list');
+        if (!container) return;
+
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        const entries = tracker?.entries || [];
+
+        if (entries.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 40px;">No entries yet. Add your first entry in the Entry tab!</p>';
+            return;
+        }
+
+        // Sort by date, newest first
+        const sortedEntries = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        let html = '<div style="display: flex; flex-direction: column; gap: 16px;">';
+        sortedEntries.forEach((entry, index) => {
+            const avgRating = Object.values(entry.ratings).length > 0
+                ? (Object.values(entry.ratings).reduce((a, b) => a + b, 0) / Object.values(entry.ratings).length).toFixed(1)
+                : 'N/A';
+
+            html += `
+                <div style="background: #f9fafb; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <strong style="font-size: 16px;">${new Date(entry.date).toLocaleDateString()}</strong>
+                        <span style="background: #6366f1; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px;">
+                            Avg: ${avgRating}
+                        </span>
+                    </div>
+                    ${entry.observer ? `<p style="font-size: 14px; color: #6b7280; margin-bottom: 4px;">Observer: ${entry.observer}</p>` : ''}
+                    ${entry.periodType ? `<p style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">Phase: ${entry.periodType}</p>` : ''}
+                    ${entry.notes ? `<p style="font-size: 14px; margin-top: 8px; padding: 8px; background: white; border-radius: 4px;">${entry.notes}</p>` : ''}
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button onclick="MedicationTracker.editEntry(${index})" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">✏️ Edit</button>
+                        <button onclick="MedicationTracker.deleteEntry(${index})" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">🗑️ Delete</button>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        container.innerHTML = html;
+    },
+
 // Auto-refresh focused schedule item every minute
 setInterval(() => {
     if (window.ScheduleModule && window.StateManager) {
