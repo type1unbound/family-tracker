@@ -1183,5 +1183,263 @@ const MedicationTracker = {
                     <button onclick="MedicationTracker.addSelfReportCategory()" class="add-item-btn" style="margin-top: 8px;">+ Add Self-Report Category</button>
                 </div>
 
-                <!-- Save Button -->
+ <!-- Save Button -->
                 <button onclick="MedicationTracker.saveSettings()" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">💾 Save Changes</button>
+                
+                <!-- Export/Delete -->
+                <button onclick="MedicationTracker.exportData()" class="btn btn-secondary" style="margin-bottom: 8px; width: 100%;">📥 Export Data (CSV)</button>
+                <button onclick="MedicationTracker.deleteAllData()" class="btn" style="background: #ef4444; color: white; width: 100%;">🗑️ Delete All Data</button>
+            </div>
+        `;
+    },
+
+    // Helper functions for settings editing
+    addPeriodType: function() {
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) return;
+        
+        tracker.customConfig.periodTypes.push({ value: 'new', label: 'New Period' });
+        this.renderSettings();
+    },
+
+    removePeriodType: function(idx) {
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) return;
+        
+        tracker.customConfig.periodTypes.splice(idx, 1);
+        this.renderSettings();
+    },
+
+    addObservedCategory: function() {
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) return;
+        
+        tracker.customConfig.observedCategories.push({
+            name: 'New Category',
+            items: [{ id: 'new_' + Date.now(), label: 'New question', description: 'Description' }]
+        });
+        this.renderSettings();
+    },
+
+    removeObservedCategory: function(catIdx) {
+        if (!confirm('Remove this entire category?')) return;
+        
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) return;
+        
+        tracker.customConfig.observedCategories.splice(catIdx, 1);
+        this.renderSettings();
+    },
+
+    addObservedItem: function(catIdx) {
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) return;
+        
+        tracker.customConfig.observedCategories[catIdx].items.push({
+            id: 'item_' + Date.now(),
+            label: 'New question',
+            description: 'Description'
+        });
+        this.renderSettings();
+    },
+
+    removeObservedItem: function(catIdx, itemIdx) {
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) return;
+        
+        tracker.customConfig.observedCategories[catIdx].items.splice(itemIdx, 1);
+        this.renderSettings();
+    },
+
+    updateObservedCategoryName: function(catIdx, value) {
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) return;
+        
+        tracker.customConfig.observedCategories[catIdx].name = value;
+    },
+
+    updateObservedItem: function(catIdx, itemIdx, field, value) {
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) return;
+        
+        tracker.customConfig.observedCategories[catIdx].items[itemIdx][field] = value;
+    },
+
+    addSelfReportCategory: function() {
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) return;
+        
+        tracker.customConfig.selfReportCategories.push({
+            name: 'New Category',
+            items: [{ id: 'new_' + Date.now(), label: 'New question', description: 'Description' }]
+        });
+        this.renderSettings();
+    },
+
+    removeSelfReportCategory: function(catIdx) {
+        if (!confirm('Remove this entire category?')) return;
+        
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) return;
+        
+        tracker.customConfig.selfReportCategories.splice(catIdx, 1);
+        this.renderSettings();
+    },
+
+    addSelfReportItem: function(catIdx) {
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) return;
+        
+        tracker.customConfig.selfReportCategories[catIdx].items.push({
+            id: 'item_' + Date.now(),
+            label: 'New question',
+            description: 'Description'
+        });
+        this.renderSettings();
+    },
+
+    removeSelfReportItem: function(catIdx, itemIdx) {
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) return;
+        
+        tracker.customConfig.selfReportCategories[catIdx].items.splice(itemIdx, 1);
+        this.renderSettings();
+    },
+
+    updateSelfReportCategoryName: function(catIdx, value) {
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) return;
+        
+        tracker.customConfig.selfReportCategories[catIdx].name = value;
+    },
+
+    updateSelfReportItem: function(catIdx, itemIdx, field, value) {
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) return;
+        
+        tracker.customConfig.selfReportCategories[catIdx].items[itemIdx][field] = value;
+    },
+
+    saveSettings: function() {
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) return;
+        
+        // Update basic settings
+        const name = document.getElementById('tracker-name')?.value;
+        const observerTitle = document.getElementById('observer-title')?.value;
+        const selfReportTitle = document.getElementById('self-report-title')?.value;
+        
+        if (name) tracker.customConfig.name = name;
+        if (observerTitle) tracker.customConfig.observerSectionTitle = observerTitle;
+        if (selfReportTitle) tracker.customConfig.selfReportSectionTitle = selfReportTitle;
+        
+        // Update period types
+        const periodInputs = document.querySelectorAll('[data-period-idx]');
+        periodInputs.forEach(input => {
+            const idx = parseInt(input.getAttribute('data-period-idx'));
+            const field = input.getAttribute('data-period-field');
+            if (tracker.customConfig.periodTypes[idx]) {
+                tracker.customConfig.periodTypes[idx][field] = input.value;
+            }
+        });
+        
+        // Save to database
+        if (window.saveData) {
+            window.saveData();
+        }
+        
+        alert('✅ Settings saved successfully!');
+        
+        // Re-render entry form with new config
+        this.renderEntryForm();
+    },
+
+    exportData: function() {
+        // TODO: Implement CSV export
+        alert('Export feature coming soon!');
+    },
+
+    deleteAllData: function() {
+        if (!confirm('Delete ALL entries for this tracker? This cannot be undone!')) return;
+        
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        
+        if (tracker) {
+            tracker.entries = [];
+            
+            if (window.saveData) {
+                window.saveData();
+            }
+            
+            this.renderHistory();
+            this.renderAnalytics();
+            alert('✅ All data deleted');
+        }
+    }
+};
+
+// Export to window
+window.MedicationTracker = MedicationTracker;
+
+// ========================================
+// GLOBAL HELPER FUNCTIONS FOR TRACKER
+// ========================================
+
+function switchMedTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tracker-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    const targetTab = document.querySelector(`[data-tab="${tabName}"]`);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+    
+    // Update content
+    document.querySelectorAll('.tracker-tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    const targetContent = document.getElementById(`tracker-${tabName}-content`);
+    if (targetContent) {
+        targetContent.classList.add('active');
+    }
+    
+    // Render appropriate content
+    if (tabName === 'history') {
+        MedicationTracker.renderHistory();
+    } else if (tabName === 'analytics') {
+        MedicationTracker.renderAnalytics();
+    } else if (tabName === 'settings') {
+        MedicationTracker.renderSettings();
+    }
+}
+
+function closeMedTrackerModal() {
+    const modal = document.getElementById('med-tracker-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Auto-refresh focused schedule item every minute
+setInterval(() => {
+    if (window.ScheduleModule && window.StateManager) {
+        ScheduleModule.renderFocusedScheduleItem();
+    }
+}, 60000); // Update every 60 seconds                <button onclick="MedicationTracker.saveSettings()" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">💾 Save Changes</button>
