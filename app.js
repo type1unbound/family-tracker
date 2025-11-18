@@ -1045,7 +1045,7 @@ const CharacterModule = {
         
         if (isEditMode) {
             container.innerHTML += `
-                <button class="add-item-btn" onclick="CharacterModule.addCharacterCategory()">+ Add Character Category</button>
+                <button class="add-item-btn" onclick="CharacterModule.addCharacterCategory()">+ Add Growth Area</button>
             `;
         }
     },
@@ -1210,7 +1210,7 @@ const CharacterModule = {
         
         if (isEditMode) {
             list.innerHTML += `
-                <button class="add-item-btn" onclick="CharacterModule.addChore()">+ Add Chore</button>
+                <button class="add-item-btn" onclick="CharacterModule.addChore()">+ Add Responsibility</button>
             `;
         }
     },
