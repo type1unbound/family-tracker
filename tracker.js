@@ -891,7 +891,7 @@ const MedicationTracker = {
         document.getElementById('med-entry-notes').value = '';
     },
 
-    renderHistory: function() {
+ renderHistory: function() {
         const container = document.getElementById('med-history-list');
         if (!container) return;
 
@@ -924,7 +924,10 @@ const MedicationTracker = {
                     ${entry.observer ? `<p style="font-size: 14px; color: #6b7280; margin-bottom: 4px;">Observer: ${entry.observer}</p>` : ''}
                     ${entry.periodType ? `<p style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">Phase: ${entry.periodType}</p>` : ''}
                     ${entry.notes ? `<p style="font-size: 14px; margin-top: 8px; padding: 8px; background: white; border-radius: 4px;">${entry.notes}</p>` : ''}
-                    <button onclick="MedicationTracker.deleteEntry(${index})" style="margin-top: 8px; padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">Delete</button>
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button onclick="MedicationTracker.editEntry(${index})" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">✏️ Edit</button>
+                        <button onclick="MedicationTracker.deleteEntry(${index})" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">🗑️ Delete</button>
+                    </div>
                 </div>
             `;
         });
