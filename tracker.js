@@ -690,11 +690,13 @@ const MedicationTracker = {
     currentChildId: null,
     currentTrackerId: null,
     currentConfig: null,
+    editingEntryIndex: null,
 
     init: function(childId, trackerId, config) {
         this.currentChildId = childId;
         this.currentTrackerId = trackerId;
         this.currentConfig = config || TrackerTemplates.getTemplate('blank');
+        this.editingEntryIndex = null;
         console.log('MedicationTracker initialized:', { childId, trackerId, config: this.currentConfig });
     },
 
@@ -844,17 +846,6 @@ const MedicationTracker = {
             ratings[itemId] = rating;
         });
 
-        // Create entry
-        const entry = {
-            date,
-            observer,
-            periodType,
-            ratings,
-            notes,
-            timestamp: Date.now()
-        };
-
-        // Save to child's tracker data
         const child = window.StateManager.getChild(this.currentChildId);
         if (!child) {
             alert('Error: Child not found');
@@ -871,14 +862,43 @@ const MedicationTracker = {
             tracker.entries = [];
         }
 
-        tracker.entries.push(entry);
+        // Check if we're editing an existing entry
+        if (this.editingEntryIndex !== undefined && this.editingEntryIndex !== null) {
+            // Update existing entry
+            const existingEntry = tracker.entries[this.editingEntryIndex];
+            tracker.entries[this.editingEntryIndex] = {
+                date,
+                observer,
+                periodType,
+                ratings,
+                notes,
+                timestamp: existingEntry.timestamp // Keep original timestamp
+            };
+            
+            alert('✅ Entry updated successfully!');
+            
+            // Clear editing state
+            this.editingEntryIndex = null;
+            
+        } else {
+            // Create new entry
+            const entry = {
+                date,
+                observer,
+                periodType,
+                ratings,
+                notes,
+                timestamp: Date.now()
+            };
+            
+            tracker.entries.push(entry);
+            alert('✅ Entry saved successfully!');
+        }
 
         // Save to database
         if (window.saveData) {
             window.saveData();
         }
-
-        alert('✅ Entry saved successfully!');
         
         // Clear form
         document.querySelectorAll('.rating-btn').forEach(btn => {
@@ -889,6 +909,21 @@ const MedicationTracker = {
         });
         document.getElementById('med-observer').value = '';
         document.getElementById('med-entry-notes').value = '';
+        
+        // Reset date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('med-entry-date').value = today;
+        
+        // Reset button text
+        const saveBtn = document.querySelector('#med-content-entry button[onclick*="saveEntry"]');
+        if (saveBtn) {
+            saveBtn.textContent = 'Save Entry';
+            saveBtn.style.background = '';
+        }
+        
+        // Update history and analytics
+        this.renderHistory();
+        this.renderAnalytics();
     },
 
     renderHistory: function() {
@@ -924,13 +959,65 @@ const MedicationTracker = {
                     ${entry.observer ? `<p style="font-size: 14px; color: #6b7280; margin-bottom: 4px;">Observer: ${entry.observer}</p>` : ''}
                     ${entry.periodType ? `<p style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">Phase: ${entry.periodType}</p>` : ''}
                     ${entry.notes ? `<p style="font-size: 14px; margin-top: 8px; padding: 8px; background: white; border-radius: 4px;">${entry.notes}</p>` : ''}
-                    <button onclick="MedicationTracker.deleteEntry(${index})" style="margin-top: 8px; padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">Delete</button>
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button onclick="MedicationTracker.editEntry(${index})" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">✏️ Edit</button>
+                        <button onclick="MedicationTracker.deleteEntry(${index})" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">🗑️ Delete</button>
+                    </div>
                 </div>
             `;
         });
         html += '</div>';
 
         container.innerHTML = html;
+    },
+
+    editEntry: function(index) {
+        const child = window.StateManager.getChild(this.currentChildId);
+        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
+        
+        if (!tracker?.entries) return;
+        
+        // Get the sorted entries to find the correct one to edit
+        const sortedEntries = [...tracker.entries].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const entryToEdit = sortedEntries[index];
+        const originalIndex = tracker.entries.findIndex(e => e.timestamp === entryToEdit.timestamp);
+        
+        if (originalIndex === -1) return;
+        
+        // Switch to entry tab
+        switchMedTab('entry');
+        
+        // Store the index being edited
+        this.editingEntryIndex = originalIndex;
+        
+        // Re-render the form
+        this.renderEntryForm();
+        
+        // Populate the form with existing data
+        setTimeout(() => {
+            // Set basic fields
+            document.getElementById('med-entry-date').value = entryToEdit.date;
+            document.getElementById('med-observer').value = entryToEdit.observer || '';
+            if (document.getElementById('med-period-type')) {
+                document.getElementById('med-period-type').value = entryToEdit.periodType || 'baseline';
+            }
+            document.getElementById('med-entry-notes').value = entryToEdit.notes || '';
+            
+            // Set ratings
+            Object.entries(entryToEdit.ratings).forEach(([itemId, rating]) => {
+                this.selectRating(itemId, rating);
+            });
+            
+            // Update save button text
+            const saveBtn = document.querySelector('#med-content-entry button[onclick*="saveEntry"]');
+            if (saveBtn) {
+                saveBtn.textContent = '💾 Update Entry';
+                saveBtn.style.background = '#f59e0b';
+            }
+            
+            // Scroll to top
+            document.getElementById('med-content-entry').scrollTop = 0;
+        }, 100);
     },
 
     deleteEntry: function(index) {
@@ -954,6 +1041,7 @@ const MedicationTracker = {
                 }
                 
                 this.renderHistory();
+                this.renderAnalytics();
                 alert('✅ Entry deleted');
             }
         }
@@ -1097,261 +1185,3 @@ const MedicationTracker = {
 
                 <!-- Save Button -->
                 <button onclick="MedicationTracker.saveSettings()" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">💾 Save Changes</button>
-                
-                <!-- Export/Delete -->
-                <button onclick="MedicationTracker.exportData()" class="btn btn-secondary" style="margin-bottom: 8px; width: 100%;">📥 Export Data (CSV)</button>
-                <button onclick="MedicationTracker.deleteAllData()" class="btn" style="background: #ef4444; color: white; width: 100%;">🗑️ Delete All Data</button>
-            </div>
-        `;
-    },
-
-    // Helper functions for settings editing
-    addPeriodType: function() {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.periodTypes.push({ value: 'new', label: 'New Period' });
-        this.renderSettings();
-    },
-
-    removePeriodType: function(idx) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.periodTypes.splice(idx, 1);
-        this.renderSettings();
-    },
-
-    addObservedCategory: function() {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.observedCategories.push({
-            name: 'New Category',
-            items: [{ id: 'new_' + Date.now(), label: 'New question', description: 'Description' }]
-        });
-        this.renderSettings();
-    },
-
-    removeObservedCategory: function(catIdx) {
-        if (!confirm('Remove this entire category?')) return;
-        
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.observedCategories.splice(catIdx, 1);
-        this.renderSettings();
-    },
-
-    addObservedItem: function(catIdx) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.observedCategories[catIdx].items.push({
-            id: 'item_' + Date.now(),
-            label: 'New question',
-            description: 'Description'
-        });
-        this.renderSettings();
-    },
-
-    removeObservedItem: function(catIdx, itemIdx) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.observedCategories[catIdx].items.splice(itemIdx, 1);
-        this.renderSettings();
-    },
-
-    updateObservedCategoryName: function(catIdx, value) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.observedCategories[catIdx].name = value;
-    },
-
-    updateObservedItem: function(catIdx, itemIdx, field, value) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.observedCategories[catIdx].items[itemIdx][field] = value;
-    },
-
-    addSelfReportCategory: function() {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.selfReportCategories.push({
-            name: 'New Category',
-            items: [{ id: 'new_' + Date.now(), label: 'New question', description: 'Description' }]
-        });
-        this.renderSettings();
-    },
-
-    removeSelfReportCategory: function(catIdx) {
-        if (!confirm('Remove this entire category?')) return;
-        
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.selfReportCategories.splice(catIdx, 1);
-        this.renderSettings();
-    },
-
-    addSelfReportItem: function(catIdx) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.selfReportCategories[catIdx].items.push({
-            id: 'item_' + Date.now(),
-            label: 'New question',
-            description: 'Description'
-        });
-        this.renderSettings();
-    },
-
-    removeSelfReportItem: function(catIdx, itemIdx) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.selfReportCategories[catIdx].items.splice(itemIdx, 1);
-        this.renderSettings();
-    },
-
-    updateSelfReportCategoryName: function(catIdx, value) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.selfReportCategories[catIdx].name = value;
-    },
-
-    updateSelfReportItem: function(catIdx, itemIdx, field, value) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.selfReportCategories[catIdx].items[itemIdx][field] = value;
-    },
-
-    saveSettings: function() {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        // Update basic settings
-        const name = document.getElementById('tracker-name')?.value;
-        const observerTitle = document.getElementById('observer-title')?.value;
-        const selfReportTitle = document.getElementById('self-report-title')?.value;
-        
-        if (name) tracker.customConfig.name = name;
-        if (observerTitle) tracker.customConfig.observerSectionTitle = observerTitle;
-        if (selfReportTitle) tracker.customConfig.selfReportSectionTitle = selfReportTitle;
-        
-        // Update period types
-        const periodInputs = document.querySelectorAll('[data-period-idx]');
-        periodInputs.forEach(input => {
-            const idx = parseInt(input.getAttribute('data-period-idx'));
-            const field = input.getAttribute('data-period-field');
-            if (tracker.customConfig.periodTypes[idx]) {
-                tracker.customConfig.periodTypes[idx][field] = input.value;
-            }
-        });
-        
-        // Save to database
-        if (window.saveData) {
-            window.saveData();
-        }
-        
-        alert('✅ Settings saved successfully!');
-        
-        // Re-render entry form with new config
-        this.renderEntryForm();
-    },
-
-    exportData: function() {
-        // TODO: Implement CSV export
-        alert('Export feature coming soon!');
-    },
-
-    deleteAllData: function() {
-        if (!confirm('Delete ALL entries for this tracker? This cannot be undone!')) return;
-        
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        
-        if (tracker) {
-            tracker.entries = [];
-            
-            if (window.saveData) {
-                window.saveData();
-            }
-            
-            this.renderHistory();
-            this.renderAnalytics();
-            alert('✅ All data deleted');
-        }
-    }
-};
-
-// Export to window
-window.MedicationTracker = MedicationTracker;
-
-// ========================================
-// GLOBAL HELPER FUNCTIONS FOR TRACKER
-// ========================================
-
-function switchMedTab(tabName) {
-    // Update tab buttons
-    document.querySelectorAll('.tracker-tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    const targetTab = document.querySelector(`[data-tab="${tabName}"]`);
-    if (targetTab) {
-        targetTab.classList.add('active');
-    }
-    
-    // Update content
-    document.querySelectorAll('.tracker-tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    const targetContent = document.getElementById(`tracker-${tabName}-content`);
-    if (targetContent) {
-        targetContent.classList.add('active');
-    }
-    
-    // Render appropriate content
-    if (tabName === 'history') {
-        MedicationTracker.renderHistory();
-    } else if (tabName === 'analytics') {
-        MedicationTracker.renderAnalytics();
-    } else if (tabName === 'settings') {
-        MedicationTracker.renderSettings();
-    }
-}
-
-function closeMedTrackerModal() {
-    const modal = document.getElementById('med-tracker-modal');
-    if (modal) {
-        modal.classList.remove('active');
-    }
-}
-
-// Auto-refresh focused schedule item every minute
-setInterval(() => {
-    if (window.ScheduleModule && window.StateManager) {
-        ScheduleModule.renderFocusedScheduleItem();
-    }
-}, 60000); // Update every 60 seconds
