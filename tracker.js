@@ -1437,9 +1437,9 @@ function closeMedTrackerModal() {
     }
 }
 
-// Auto-refresh focused schedule item every minute
+// Auto-refresh focused schedule item every 1.5 minutes
 setInterval(() => {
     if (window.ScheduleModule && window.StateManager) {
         ScheduleModule.renderFocusedScheduleItem();
     }
-}, 60000); // Update every 60 seconds                <button onclick="MedicationTracker.saveSettings()" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">💾 Save Changes</button>
+}, 90000); // Update every 60 seconds                
