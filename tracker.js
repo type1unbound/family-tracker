@@ -1,11 +1,12 @@
 // ========================================
 // TRACKER TEMPLATES - ALL 14 HEALTH TRACKING TEMPLATES
+// PART 1 OF 4 - PASTE THIS FIRST
 // ========================================
 
 const TrackerTemplates = {
     getTemplateList: function() {
         return [
-            { id: 'adhd', name: 'ADHD', icon: '🧠', description: 'Track attention, hyperactivity, and impulse control' },
+            { id: 'adhd', name: 'ADHD Medication', icon: '🧠', description: 'Track attention, hyperactivity, and impulse control' },
             { id: 'physical_therapy', name: 'Physical Therapy', icon: '🦴', description: 'Track pain levels, mobility, and function' },
             { id: 'substance_use', name: 'Substance Use Disorder', icon: '🎗️', description: 'Track cravings, triggers, and recovery progress' },
             { id: 'speech_therapy', name: 'Speech Therapy', icon: '💬', description: 'Track articulation, fluency, and communication' },
@@ -30,7 +31,7 @@ const TrackerTemplates = {
 
     templates: {
         adhd: {
-            name: 'ADHD Tracker',
+            name: 'ADHD Medication Tracker',
             observerSectionTitle: 'Observer Ratings',
             selfReportSectionTitle: 'Self-Report',
             periodTypes: [
@@ -221,6 +222,12 @@ const TrackerTemplates = {
                 }
             ]
         },
+
+// END OF PART 1 - CONTINUE WITH PART 2
+
+        // ========================================
+// PART 2 OF 4 - PASTE THIS AFTER PART 1
+// ========================================
 
         weight_loss: {
             name: 'Weight Loss Progress',
@@ -578,16 +585,22 @@ const TrackerTemplates = {
         }
     },
 
+// END OF PART 2 - CONTINUE WITH PART 3
+
+    // ========================================
+// PART 3 OF 4 - PASTE THIS AFTER PART 2
+// ========================================
+
     openAddTrackerModal: function() {
         const modalHtml = `
             <div id="add-tracker-modal" class="modal active">
                 <div class="modal-content" style="max-width: 700px;">
                     <div class="modal-header">
-                        <h2>➕ Add Journalr</h2>
+                        <h2>➕ Add Health Tracker</h2>
                         <button class="close-btn" onclick="TrackerTemplates.closeAddTrackerModal()">×</button>
                     </div>
                     <div class="modal-body">
-                        <p style="color: #6b7280; margin-bottom: 20px;">Choose a Wellness Journal template for ${window.StateManager?.getCurrentChild()?.name || 'family member'}:</p>
+                        <p style="color: #6b7280; margin-bottom: 20px;">Choose a health tracker template for ${window.StateManager?.getCurrentChild()?.name || 'family member'}:</p>
                         <div id="tracker-template-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
                             ${this.getTemplateList().map(template => `
                                 <div onclick="TrackerTemplates.selectTemplate('${template.id}')" 
@@ -683,7 +696,7 @@ if (typeof module !== 'undefined' && module.exports) {
 window.TrackerTemplates = TrackerTemplates;
 
 // ========================================
-// MEDICATION TRACKER MODULE
+// MEDICATION TRACKER MODULE - WITH EDIT FUNCTIONALITY
 // ========================================
 
 const MedicationTracker = {
@@ -698,19 +711,11 @@ const MedicationTracker = {
         this.currentConfig = config || TrackerTemplates.getTemplate('blank');
         this.editingEntryIndex = null;
         console.log('MedicationTracker initialized:', { childId, trackerId, config: this.currentConfig });
-        
-        // Render the initial entry form
-        setTimeout(() => {
-            this.renderEntryForm();
-        }, 100);
     },
 
     renderEntryForm: function() {
         const container = document.getElementById('med-content-entry');
-        if (!container) {
-            console.error('Entry container not found');
-            return;
-        }
+        if (!container) return;
 
         const today = new Date().toISOString().split('T')[0];
         
@@ -834,11 +839,17 @@ const MedicationTracker = {
         });
     },
 
+// END OF PART 3 - CONTINUE WITH PART 4
+
+    // ========================================
+// PART 4 OF 4 (FINAL) - PASTE THIS AFTER PART 3
+// ========================================
+
     saveEntry: function() {
-        const date = document.getElementById('med-entry-date')?.value;
-        const observer = document.getElementById('med-observer')?.value;
+        const date = document.getElementById('med-entry-date').value;
+        const observer = document.getElementById('med-observer').value;
         const periodType = document.getElementById('med-period-type')?.value || 'baseline';
-        const notes = document.getElementById('med-entry-notes')?.value;
+        const notes = document.getElementById('med-entry-notes').value;
 
         if (!date) {
             alert('Please select a date');
@@ -915,12 +926,12 @@ const MedicationTracker = {
             btn.style.color = '#374151';
             btn.removeAttribute('data-selected');
         });
-        if (document.getElementById('med-observer')) document.getElementById('med-observer').value = '';
-        if (document.getElementById('med-entry-notes')) document.getElementById('med-entry-notes').value = '';
+        document.getElementById('med-observer').value = '';
+        document.getElementById('med-entry-notes').value = '';
         
         // Reset date to today
         const today = new Date().toISOString().split('T')[0];
-        if (document.getElementById('med-entry-date')) document.getElementById('med-entry-date').value = today;
+        document.getElementById('med-entry-date').value = today;
         
         // Reset button text
         const saveBtn = document.querySelector('#med-content-entry button[onclick*="saveEntry"]');
@@ -936,10 +947,7 @@ const MedicationTracker = {
 
     renderHistory: function() {
         const container = document.getElementById('med-history-list');
-        if (!container) {
-            console.error('History container not found');
-            return;
-        }
+        if (!container) return;
 
         const child = window.StateManager.getChild(this.currentChildId);
         const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
@@ -1007,12 +1015,12 @@ const MedicationTracker = {
         // Populate the form with existing data
         setTimeout(() => {
             // Set basic fields
-            if (document.getElementById('med-entry-date')) document.getElementById('med-entry-date').value = entryToEdit.date;
-            if (document.getElementById('med-observer')) document.getElementById('med-observer').value = entryToEdit.observer || '';
+            document.getElementById('med-entry-date').value = entryToEdit.date;
+            document.getElementById('med-observer').value = entryToEdit.observer || '';
             if (document.getElementById('med-period-type')) {
                 document.getElementById('med-period-type').value = entryToEdit.periodType || 'baseline';
             }
-            if (document.getElementById('med-entry-notes')) document.getElementById('med-entry-notes').value = entryToEdit.notes || '';
+            document.getElementById('med-entry-notes').value = entryToEdit.notes || '';
             
             // Set ratings
             Object.entries(entryToEdit.ratings).forEach(([itemId, rating]) => {
@@ -1027,8 +1035,7 @@ const MedicationTracker = {
             }
             
             // Scroll to top
-            const entryContainer = document.getElementById('med-content-entry');
-            if (entryContainer) entryContainer.scrollTop = 0;
+            document.getElementById('med-content-entry').scrollTop = 0;
         }, 100);
     },
 
@@ -1061,10 +1068,7 @@ const MedicationTracker = {
 
     renderAnalytics: function() {
         const container = document.getElementById('med-analytics-content');
-        if (!container) {
-            console.error('Analytics container not found');
-            return;
-        }
+        if (!container) return;
 
         const child = window.StateManager.getChild(this.currentChildId);
         const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
@@ -1101,10 +1105,7 @@ const MedicationTracker = {
 
     renderSettings: function() {
         const container = document.getElementById('med-settings-content');
-        if (!container) {
-            console.error('Settings container not found');
-            return;
-        }
+        if (!container) return;
 
         const child = window.StateManager.getChild(this.currentChildId);
         const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
@@ -1120,236 +1121,27 @@ const MedicationTracker = {
             <div style="background: #f9fafb; padding: 20px; border-radius: 8px;">
                 <h3 style="margin-bottom: 16px;">Tracker Settings</h3>
                 
-                <!-- Journal Name -->
                 <div style="margin-bottom: 20px;">
-                    <label style="font-weight: 600; display: block; margin-bottom: 8px;">Journal Name:</label>
+                    <label style="font-weight: 600; display: block; margin-bottom: 8px;">Tracker Name:</label>
                     <input type="text" id="tracker-name" value="${config.name}" class="edit-input" placeholder="Tracker name">
                 </div>
 
-                <!-- Observer Section Title -->
                 <div style="margin-bottom: 20px;">
                     <label style="font-weight: 600; display: block; margin-bottom: 8px;">Observer Section Title:</label>
                     <input type="text" id="observer-title" value="${config.observerSectionTitle}" class="edit-input" placeholder="e.g., Observer Ratings">
                 </div>
 
-                <!-- Self-Report Section Title -->
                 <div style="margin-bottom: 20px;">
                     <label style="font-weight: 600; display: block; margin-bottom: 8px;">Self-Report Section Title:</label>
                     <input type="text" id="self-report-title" value="${config.selfReportSectionTitle}" class="edit-input" placeholder="e.g., Self-Report">
                 </div>
 
-                <!-- Period Types -->
-                <div style="margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 12px;">Period/Phase Types:</h4>
-                    <div id="period-types-list">
-                        ${config.periodTypes.map((pt, idx) => `
-                            <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
-                                <input type="text" value="${pt.value}" class="edit-input" style="flex: 1;" placeholder="Value" data-period-idx="${idx}" data-period-field="value">
-                                <input type="text" value="${pt.label}" class="edit-input" style="flex: 2;" placeholder="Label" data-period-idx="${idx}" data-period-field="label">
-                                <button onclick="MedicationTracker.removePeriodType(${idx})" class="edit-btn delete">🗑️</button>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <button onclick="MedicationTracker.addPeriodType()" class="add-item-btn" style="margin-top: 8px;">+ Add Period Type</button>
-                </div>
-
-                <!-- Observer Categories -->
-                <div style="margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 12px;">Observer Categories & Questions:</h4>
-                    <div id="observer-categories-list">
-                        ${config.observedCategories.map((cat, catIdx) => `
-                            <div style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #e5e7eb;">
-                                <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
-                                    <input type="text" value="${cat.name}" class="edit-input" style="flex: 1; font-weight: 600;" placeholder="Category name" onchange="MedicationTracker.updateObservedCategoryName(${catIdx}, this.value)">
-                                    <button onclick="MedicationTracker.removeObservedCategory(${catIdx})" class="edit-btn delete">🗑️</button>
-                                </div>
-                                ${cat.items.map((item, itemIdx) => `
-                                    <div style="background: #f9fafb; padding: 8px; border-radius: 6px; margin-bottom: 8px;">
-                                        <input type="text" value="${item.label}" class="edit-input" placeholder="Question" style="margin-bottom: 4px; font-weight: 500;" onchange="MedicationTracker.updateObservedItem(${catIdx}, ${itemIdx}, 'label', this.value)">
-                                        <input type="text" value="${item.description}" class="edit-input" placeholder="Description" style="font-size: 12px;" onchange="MedicationTracker.updateObservedItem(${catIdx}, ${itemIdx}, 'description', this.value)">
-                                        <button onclick="MedicationTracker.removeObservedItem(${catIdx}, ${itemIdx})" class="edit-btn delete" style="margin-top: 4px; font-size: 11px;">Remove Question</button>
-                                    </div>
-                                `).join('')}
-                                <button onclick="MedicationTracker.addObservedItem(${catIdx})" class="add-item-btn" style="font-size: 12px; width: 100%;">+ Add Question</button>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <button onclick="MedicationTracker.addObservedCategory()" class="add-item-btn" style="margin-top: 8px;">+ Add Observer Category</button>
-                </div>
-
-                <!-- Self-Report Categories -->
-                <div style="margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 12px;">Self-Report Categories & Questions:</h4>
-                    <div id="self-report-categories-list">
-                        ${config.selfReportCategories.map((cat, catIdx) => `
-                            <div style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #e5e7eb;">
-                                <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
-                                    <input type="text" value="${cat.name}" class="edit-input" style="flex: 1; font-weight: 600;" placeholder="Category name" onchange="MedicationTracker.updateSelfReportCategoryName(${catIdx}, this.value)">
-                                    <button onclick="MedicationTracker.removeSelfReportCategory(${catIdx})" class="edit-btn delete">🗑️</button>
-                                </div>
-                                ${cat.items.map((item, itemIdx) => `
-                                    <div style="background: #f0f9ff; padding: 8px; border-radius: 6px; margin-bottom: 8px;">
-                                        <input type="text" value="${item.label}" class="edit-input" placeholder="Question" style="margin-bottom: 4px; font-weight: 500;" onchange="MedicationTracker.updateSelfReportItem(${catIdx}, ${itemIdx}, 'label', this.value)">
-                                        <input type="text" value="${item.description}" class="edit-input" placeholder="Description" style="font-size: 12px;" onchange="MedicationTracker.updateSelfReportItem(${catIdx}, ${itemIdx}, 'description', this.value)">
-                                        <button onclick="MedicationTracker.removeSelfReportItem(${catIdx}, ${itemIdx})" class="edit-btn delete" style="margin-top: 4px; font-size: 11px;">Remove Question</button>
-                                    </div>
-                                `).join('')}
-                                <button onclick="MedicationTracker.addSelfReportItem(${catIdx})" class="add-item-btn" style="font-size: 12px; width: 100%;">+ Add Question</button>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <button onclick="MedicationTracker.addSelfReportCategory()" class="add-item-btn" style="margin-top: 8px;">+ Add Self-Report Category</button>
-                </div>
-
-                <!-- Save Button -->
                 <button onclick="MedicationTracker.saveSettings()" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">💾 Save Changes</button>
                 
-                <!-- Export/Delete -->
                 <button onclick="MedicationTracker.exportData()" class="btn btn-secondary" style="margin-bottom: 8px; width: 100%;">📥 Export Data (CSV)</button>
                 <button onclick="MedicationTracker.deleteAllData()" class="btn" style="background: #ef4444; color: white; width: 100%;">🗑️ Delete All Data</button>
             </div>
         `;
-    },
-
-    // Helper functions for settings editing
-    addPeriodType: function() {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.periodTypes.push({ value: 'new', label: 'New Period' });
-        this.renderSettings();
-    },
-
-    removePeriodType: function(idx) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.periodTypes.splice(idx, 1);
-        this.renderSettings();
-    },
-
-    addObservedCategory: function() {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.observedCategories.push({
-            name: 'New Category',
-            items: [{ id: 'new_' + Date.now(), label: 'New question', description: 'Description' }]
-        });
-        this.renderSettings();
-    },
-
-    removeObservedCategory: function(catIdx) {
-        if (!confirm('Remove this entire category?')) return;
-        
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.observedCategories.splice(catIdx, 1);
-        this.renderSettings();
-    },
-
-    addObservedItem: function(catIdx) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.observedCategories[catIdx].items.push({
-            id: 'item_' + Date.now(),
-            label: 'New question',
-            description: 'Description'
-        });
-        this.renderSettings();
-    },
-
-    removeObservedItem: function(catIdx, itemIdx) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.observedCategories[catIdx].items.splice(itemIdx, 1);
-        this.renderSettings();
-    },
-
-    updateObservedCategoryName: function(catIdx, value) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.observedCategories[catIdx].name = value;
-    },
-
-    updateObservedItem: function(catIdx, itemIdx, field, value) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.observedCategories[catIdx].items[itemIdx][field] = value;
-    },
-
-    addSelfReportCategory: function() {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.selfReportCategories.push({
-            name: 'New Category',
-            items: [{ id: 'new_' + Date.now(), label: 'New question', description: 'Description' }]
-        });
-        this.renderSettings();
-    },
-
-    removeSelfReportCategory: function(catIdx) {
-        if (!confirm('Remove this entire category?')) return;
-        
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.selfReportCategories.splice(catIdx, 1);
-        this.renderSettings();
-    },
-
-    addSelfReportItem: function(catIdx) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.selfReportCategories[catIdx].items.push({
-            id: 'item_' + Date.now(),
-            label: 'New question',
-            description: 'Description'
-        });
-        this.renderSettings();
-    },
-
-    removeSelfReportItem: function(catIdx, itemIdx) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.selfReportCategories[catIdx].items.splice(itemIdx, 1);
-        this.renderSettings();
-    },
-
-    updateSelfReportCategoryName: function(catIdx, value) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.selfReportCategories[catIdx].name = value;
-    },
-
-    updateSelfReportItem: function(catIdx, itemIdx, field, value) {
-        const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        if (!tracker) return;
-        
-        tracker.customConfig.selfReportCategories[catIdx].items[itemIdx][field] = value;
     },
 
     saveSettings: function() {
@@ -1357,7 +1149,6 @@ const MedicationTracker = {
         const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
         if (!tracker) return;
         
-        // Update basic settings
         const name = document.getElementById('tracker-name')?.value;
         const observerTitle = document.getElementById('observer-title')?.value;
         const selfReportTitle = document.getElementById('self-report-title')?.value;
@@ -1366,30 +1157,15 @@ const MedicationTracker = {
         if (observerTitle) tracker.customConfig.observerSectionTitle = observerTitle;
         if (selfReportTitle) tracker.customConfig.selfReportSectionTitle = selfReportTitle;
         
-        // Update period types
-        const periodInputs = document.querySelectorAll('[data-period-idx]');
-        periodInputs.forEach(input => {
-            const idx = parseInt(input.getAttribute('data-period-idx'));
-            const field = input.getAttribute('data-period-field');
-            if (tracker.customConfig.periodTypes[idx]) {
-                tracker.customConfig.periodTypes[idx][field] = input.value;
-            }
-        });
-        
-        // Save to database
         if (window.saveData) {
             window.saveData();
         }
         
         alert('✅ Settings saved successfully!');
-        
-        // Re-render entry form with new config
-        this.currentConfig = tracker.customConfig;
         this.renderEntryForm();
     },
 
     exportData: function() {
-        // TODO: Implement CSV export
         alert('Export feature coming soon!');
     },
 
@@ -1421,9 +1197,6 @@ window.MedicationTracker = MedicationTracker;
 // ========================================
 
 function switchMedTab(tabName) {
-    console.log('Switching to tab:', tabName);
-    
-    // Update tab buttons
     document.querySelectorAll('.tracker-tab').forEach(tab => {
         tab.classList.remove('active');
     });
@@ -1432,39 +1205,15 @@ function switchMedTab(tabName) {
         targetTab.classList.add('active');
     }
     
-    // Hide all content sections
-    const contentSections = ['med-content-entry', 'med-content-history', 'med-content-analytics', 'med-content-settings'];
-    contentSections.forEach(sectionId => {
-        const section = document.getElementById(sectionId);
-        if (section) {
-            section.style.display = 'none';
-        }
+    document.querySelectorAll('.tracker-tab-content').forEach(content => {
+        content.classList.remove('active');
     });
-    
-    // Show the correct content section based on tab name
-    let contentId;
-    if (tabName === 'entry') {
-        contentId = 'med-content-entry';
-    } else if (tabName === 'history') {
-        contentId = 'med-content-history';
-    } else if (tabName === 'analytics') {
-        contentId = 'med-content-analytics';
-    } else if (tabName === 'settings') {
-        contentId = 'med-content-settings';
-    }
-    
-    const targetContent = document.getElementById(contentId);
+    const targetContent = document.getElementById(`tracker-${tabName}-content`);
     if (targetContent) {
-        targetContent.style.display = 'block';
-        console.log('Showing content:', contentId);
-    } else {
-        console.error('Content section not found:', contentId);
+        targetContent.classList.add('active');
     }
     
-    // Render appropriate content
-    if (tabName === 'entry') {
-        MedicationTracker.renderEntryForm();
-    } else if (tabName === 'history') {
+    if (tabName === 'history') {
         MedicationTracker.renderHistory();
     } else if (tabName === 'analytics') {
         MedicationTracker.renderAnalytics();
@@ -1474,18 +1223,9 @@ function switchMedTab(tabName) {
 }
 
 function closeMedTrackerModal() {
-    console.log('Attempting to close modal');
     const modal = document.getElementById('med-tracker-modal');
     if (modal) {
         modal.classList.remove('active');
-        // Also try removing it completely
-        setTimeout(() => {
-            if (modal.parentNode) {
-                modal.parentNode.removeChild(modal);
-            }
-        }, 300); // Wait for any CSS transition
-    } else {
-        console.error('Modal not found: med-tracker-modal');
     }
 }
 
@@ -1494,4 +1234,6 @@ setInterval(() => {
     if (window.ScheduleModule && window.StateManager) {
         ScheduleModule.renderFocusedScheduleItem();
     }
-}, 60000); // Update every 60 seconds
+}, 60000);
+
+// END OF PART 4 - FILE COMPLETE!
