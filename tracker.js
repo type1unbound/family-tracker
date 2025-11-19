@@ -1397,7 +1397,7 @@ const MedicationTracker = {
 // Export to window
 window.MedicationTracker = MedicationTracker;
 
-// ========================================
+/// ========================================
 // GLOBAL HELPER FUNCTIONS FOR TRACKER
 // ========================================
 
@@ -1437,9 +1437,9 @@ function closeMedTrackerModal() {
     }
 }
 
-// Auto-refresh focused schedule item every 1.5 minutes
+// Auto-refresh focused schedule item every minute
 setInterval(() => {
     if (window.ScheduleModule && window.StateManager) {
         ScheduleModule.renderFocusedScheduleItem();
     }
-}, 90000); // Update every 60 seconds                
+}, 60000); // Update every 60 seconds
