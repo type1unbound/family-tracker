@@ -698,11 +698,19 @@ const MedicationTracker = {
         this.currentConfig = config || TrackerTemplates.getTemplate('blank');
         this.editingEntryIndex = null;
         console.log('MedicationTracker initialized:', { childId, trackerId, config: this.currentConfig });
+        
+        // Render the initial entry form
+        setTimeout(() => {
+            this.renderEntryForm();
+        }, 100);
     },
 
     renderEntryForm: function() {
         const container = document.getElementById('med-content-entry');
-        if (!container) return;
+        if (!container) {
+            console.error('Entry container not found');
+            return;
+        }
 
         const today = new Date().toISOString().split('T')[0];
         
@@ -827,10 +835,10 @@ const MedicationTracker = {
     },
 
     saveEntry: function() {
-        const date = document.getElementById('med-entry-date').value;
-        const observer = document.getElementById('med-observer').value;
+        const date = document.getElementById('med-entry-date')?.value;
+        const observer = document.getElementById('med-observer')?.value;
         const periodType = document.getElementById('med-period-type')?.value || 'baseline';
-        const notes = document.getElementById('med-entry-notes').value;
+        const notes = document.getElementById('med-entry-notes')?.value;
 
         if (!date) {
             alert('Please select a date');
@@ -907,12 +915,12 @@ const MedicationTracker = {
             btn.style.color = '#374151';
             btn.removeAttribute('data-selected');
         });
-        document.getElementById('med-observer').value = '';
-        document.getElementById('med-entry-notes').value = '';
+        if (document.getElementById('med-observer')) document.getElementById('med-observer').value = '';
+        if (document.getElementById('med-entry-notes')) document.getElementById('med-entry-notes').value = '';
         
         // Reset date to today
         const today = new Date().toISOString().split('T')[0];
-        document.getElementById('med-entry-date').value = today;
+        if (document.getElementById('med-entry-date')) document.getElementById('med-entry-date').value = today;
         
         // Reset button text
         const saveBtn = document.querySelector('#med-content-entry button[onclick*="saveEntry"]');
@@ -928,7 +936,10 @@ const MedicationTracker = {
 
     renderHistory: function() {
         const container = document.getElementById('med-history-list');
-        if (!container) return;
+        if (!container) {
+            console.error('History container not found');
+            return;
+        }
 
         const child = window.StateManager.getChild(this.currentChildId);
         const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
@@ -996,12 +1007,12 @@ const MedicationTracker = {
         // Populate the form with existing data
         setTimeout(() => {
             // Set basic fields
-            document.getElementById('med-entry-date').value = entryToEdit.date;
-            document.getElementById('med-observer').value = entryToEdit.observer || '';
+            if (document.getElementById('med-entry-date')) document.getElementById('med-entry-date').value = entryToEdit.date;
+            if (document.getElementById('med-observer')) document.getElementById('med-observer').value = entryToEdit.observer || '';
             if (document.getElementById('med-period-type')) {
                 document.getElementById('med-period-type').value = entryToEdit.periodType || 'baseline';
             }
-            document.getElementById('med-entry-notes').value = entryToEdit.notes || '';
+            if (document.getElementById('med-entry-notes')) document.getElementById('med-entry-notes').value = entryToEdit.notes || '';
             
             // Set ratings
             Object.entries(entryToEdit.ratings).forEach(([itemId, rating]) => {
@@ -1016,7 +1027,8 @@ const MedicationTracker = {
             }
             
             // Scroll to top
-            document.getElementById('med-content-entry').scrollTop = 0;
+            const entryContainer = document.getElementById('med-content-entry');
+            if (entryContainer) entryContainer.scrollTop = 0;
         }, 100);
     },
 
@@ -1049,7 +1061,10 @@ const MedicationTracker = {
 
     renderAnalytics: function() {
         const container = document.getElementById('med-analytics-content');
-        if (!container) return;
+        if (!container) {
+            console.error('Analytics container not found');
+            return;
+        }
 
         const child = window.StateManager.getChild(this.currentChildId);
         const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
@@ -1086,7 +1101,10 @@ const MedicationTracker = {
 
     renderSettings: function() {
         const container = document.getElementById('med-settings-content');
-        if (!container) return;
+        if (!container) {
+            console.error('Settings container not found');
+            return;
+        }
 
         const child = window.StateManager.getChild(this.currentChildId);
         const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
@@ -1183,7 +1201,7 @@ const MedicationTracker = {
                     <button onclick="MedicationTracker.addSelfReportCategory()" class="add-item-btn" style="margin-top: 8px;">+ Add Self-Report Category</button>
                 </div>
 
- <!-- Save Button -->
+                <!-- Save Button -->
                 <button onclick="MedicationTracker.saveSettings()" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">💾 Save Changes</button>
                 
                 <!-- Export/Delete -->
@@ -1366,6 +1384,7 @@ const MedicationTracker = {
         alert('✅ Settings saved successfully!');
         
         // Re-render entry form with new config
+        this.currentConfig = tracker.customConfig;
         this.renderEntryForm();
     },
 
@@ -1397,11 +1416,13 @@ const MedicationTracker = {
 // Export to window
 window.MedicationTracker = MedicationTracker;
 
-/// ========================================
+// ========================================
 // GLOBAL HELPER FUNCTIONS FOR TRACKER
 // ========================================
 
 function switchMedTab(tabName) {
+    console.log('Switching to tab:', tabName);
+    
     // Update tab buttons
     document.querySelectorAll('.tracker-tab').forEach(tab => {
         tab.classList.remove('active');
@@ -1411,17 +1432,39 @@ function switchMedTab(tabName) {
         targetTab.classList.add('active');
     }
     
-    // Update content
-    document.querySelectorAll('.tracker-tab-content').forEach(content => {
-        content.classList.remove('active');
+    // Hide all content sections
+    const contentSections = ['med-content-entry', 'med-content-history', 'med-content-analytics', 'med-content-settings'];
+    contentSections.forEach(sectionId => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.style.display = 'none';
+        }
     });
-    const targetContent = document.getElementById(`tracker-${tabName}-content`);
+    
+    // Show the correct content section based on tab name
+    let contentId;
+    if (tabName === 'entry') {
+        contentId = 'med-content-entry';
+    } else if (tabName === 'history') {
+        contentId = 'med-content-history';
+    } else if (tabName === 'analytics') {
+        contentId = 'med-content-analytics';
+    } else if (tabName === 'settings') {
+        contentId = 'med-content-settings';
+    }
+    
+    const targetContent = document.getElementById(contentId);
     if (targetContent) {
-        targetContent.classList.add('active');
+        targetContent.style.display = 'block';
+        console.log('Showing content:', contentId);
+    } else {
+        console.error('Content section not found:', contentId);
     }
     
     // Render appropriate content
-    if (tabName === 'history') {
+    if (tabName === 'entry') {
+        MedicationTracker.renderEntryForm();
+    } else if (tabName === 'history') {
         MedicationTracker.renderHistory();
     } else if (tabName === 'analytics') {
         MedicationTracker.renderAnalytics();
@@ -1431,9 +1474,18 @@ function switchMedTab(tabName) {
 }
 
 function closeMedTrackerModal() {
+    console.log('Attempting to close modal');
     const modal = document.getElementById('med-tracker-modal');
     if (modal) {
         modal.classList.remove('active');
+        // Also try removing it completely
+        setTimeout(() => {
+            if (modal.parentNode) {
+                modal.parentNode.removeChild(modal);
+            }
+        }, 300); // Wait for any CSS transition
+    } else {
+        console.error('Modal not found: med-tracker-modal');
     }
 }
 
