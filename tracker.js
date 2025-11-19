@@ -1102,9 +1102,9 @@ const MedicationTracker = {
             <div style="background: #f9fafb; padding: 20px; border-radius: 8px;">
                 <h3 style="margin-bottom: 16px;">Tracker Settings</h3>
                 
-                <!-- Tracker Name -->
+                <!-- Journal Name -->
                 <div style="margin-bottom: 20px;">
-                    <label style="font-weight: 600; display: block; margin-bottom: 8px;">Tracker Name:</label>
+                    <label style="font-weight: 600; display: block; margin-bottom: 8px;">Journal Name:</label>
                     <input type="text" id="tracker-name" value="${config.name}" class="edit-input" placeholder="Tracker name">
                 </div>
 
