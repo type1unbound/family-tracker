@@ -5,7 +5,7 @@
 const TrackerTemplates = {
     getTemplateList: function() {
         return [
-            { id: 'adhd', name: 'ADHD Medication', icon: '🧠', description: 'Track attention, hyperactivity, and impulse control' },
+            { id: 'adhd', name: 'ADHD', icon: '🧠', description: 'Track attention, hyperactivity, and impulse control' },
             { id: 'physical_therapy', name: 'Physical Therapy', icon: '🦴', description: 'Track pain levels, mobility, and function' },
             { id: 'substance_use', name: 'Substance Use Disorder', icon: '🎗️', description: 'Track cravings, triggers, and recovery progress' },
             { id: 'speech_therapy', name: 'Speech Therapy', icon: '💬', description: 'Track articulation, fluency, and communication' },
@@ -30,7 +30,7 @@ const TrackerTemplates = {
 
     templates: {
         adhd: {
-            name: 'ADHD Medication Tracker',
+            name: 'ADHD Tracker',
             observerSectionTitle: 'Observer Ratings',
             selfReportSectionTitle: 'Self-Report',
             periodTypes: [
@@ -583,11 +583,11 @@ const TrackerTemplates = {
             <div id="add-tracker-modal" class="modal active">
                 <div class="modal-content" style="max-width: 700px;">
                     <div class="modal-header">
-                        <h2>➕ Add Health Tracker</h2>
+                        <h2>➕ Add Journalr</h2>
                         <button class="close-btn" onclick="TrackerTemplates.closeAddTrackerModal()">×</button>
                     </div>
                     <div class="modal-body">
-                        <p style="color: #6b7280; margin-bottom: 20px;">Choose a health tracker template for ${window.StateManager?.getCurrentChild()?.name || 'family member'}:</p>
+                        <p style="color: #6b7280; margin-bottom: 20px;">Choose a Wellness Journal template for ${window.StateManager?.getCurrentChild()?.name || 'family member'}:</p>
                         <div id="tracker-template-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
                             ${this.getTemplateList().map(template => `
                                 <div onclick="TrackerTemplates.selectTemplate('${template.id}')" 
