@@ -1,5 +1,5 @@
 // ========================================
-// FAMILY ROUTINE & VALUES TRACKERS
+// FAMILY ROUTINE & VALUES TRACKERS - Update Theme Colors 16:25 11/19/2025
 // Consolidated Single-File Application
 // ========================================
 
@@ -8,70 +8,72 @@
 // ========================================
 const CONFIG = {
     COLOR_PALETTES: {
-        lavender: {
-            name: 'Lavender Dreams',
-            bgGradient1: '#a78bfa',
-            bgGradient2: '#6366f1',
-            statCard: '#4c1d95',
-            profileButton: '#7c3aed'
+        purple: {
+            gradient1: '#a78bfa',
+            gradient2: '#6366f1',
+            accent: '#6366f1',
+            accentHover: '#4f46e5',
+            accentLight: '#f0f9ff',
+            gradientSecondary1: '#667eea',
+            gradientSecondary2: '#764ba2'
         },
-        peach: {
-            name: 'Peach Blossom',
-            bgGradient1: '#fda4af',
-            bgGradient2: '#fb923c',
-            statCard: '#9a3412',
-            profileButton: '#f97316'
+        blue: {
+            gradient1: '#60a5fa',
+            gradient2: '#3b82f6',
+            accent: '#3b82f6',
+            accentHover: '#2563eb',
+            accentLight: '#eff6ff',
+            gradientSecondary1: '#3b82f6',
+            gradientSecondary2: '#1e40af'
         },
-        sage: {
-            name: 'Sage Meadow',
-            bgGradient1: '#86efac',
-            bgGradient2: '#059669',
-            statCard: '#064e3b',
-            profileButton: '#10b981'
+        green: {
+            gradient1: '#4ade80',
+            gradient2: '#22c55e',
+            accent: '#22c55e',
+            accentHover: '#16a34a',
+            accentLight: '#f0fdf4',
+            gradientSecondary1: '#10b981',
+            gradientSecondary2: '#059669'
         },
-        sky: {
-            name: 'Clear Sky',
-            bgGradient1: '#7dd3fc',
-            bgGradient2: '#2563eb',
-            statCard: '#1e3a8a',
-            profileButton: '#3b82f6'
+        pink: {
+            gradient1: '#f472b6',
+            gradient2: '#ec4899',
+            accent: '#ec4899',
+            accentHover: '#db2777',
+            accentLight: '#fdf2f8',
+            gradientSecondary1: '#ec4899',
+            gradientSecondary2: '#be185d'
         },
-        honey: {
-            name: 'Honey Gold',
-            bgGradient1: '#fcd34d',
-            bgGradient2: '#d97706',
-            statCard: '#78350f',
-            profileButton: '#f59e0b'
+        orange: {
+            gradient1: '#fb923c',
+            gradient2: '#f97316',
+            accent: '#f97316',
+            accentHover: '#ea580c',
+            accentLight: '#fff7ed',
+            gradientSecondary1: '#f97316',
+            gradientSecondary2: '#c2410c'
         },
-        rose: {
-            name: 'Rose Garden',
-            bgGradient1: '#f9a8d4',
-            bgGradient2: '#db2777',
-            statCard: '#831843',
-            profileButton: '#ec4899'
-        },
-        slate: {
-            name: 'Soft Slate',
-            bgGradient1: '#94a3b8',
-            bgGradient2: '#475569',
-            statCard: '#1e293b',
-            profileButton: '#64748b'
-        },
-        aqua: {
-            name: 'Aqua Marine',
-            bgGradient1: '#5eead4',
-            bgGradient2: '#0891b2',
-            statCard: '#134e4a',
-            profileButton: '#14b8a6'
-        },
-        terracotta: {
-            name: 'Terracotta',
-            bgGradient1: '#fb923c',
-            bgGradient2: '#c2410c',
-            statCard: '#7c2d12',
-            profileButton: '#ea580c'
+        teal: {
+            gradient1: '#2dd4bf',
+            gradient2: '#14b8a6',
+            accent: '#14b8a6',
+            accentHover: '#0d9488',
+            accentLight: '#f0fdfa',
+            gradientSecondary1: '#14b8a6',
+            gradientSecondary2: '#0f766e'
         }
-    },
+    };
+    
+    const colors = palettes[palette] || palettes.purple;
+    
+    root.style.setProperty('--theme-gradient-1', colors.gradient1);
+    root.style.setProperty('--theme-gradient-2', colors.gradient2);
+    root.style.setProperty('--theme-accent', colors.accent);
+    root.style.setProperty('--theme-accent-hover', colors.accentHover);
+    root.style.setProperty('--theme-accent-light', colors.accentLight);
+    root.style.setProperty('--theme-gradient-secondary-1', colors.gradientSecondary1);
+    root.style.setProperty('--theme-gradient-secondary-2', colors.gradientSecondary2);
+}
 
     DEFAULT_SCHEDULE: [
         { id: 1, time: '7:00am', name: 'Wake-up time', tasks: ['Wake up on time'], days: [0,1,2,3,4,5,6] },
