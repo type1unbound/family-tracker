@@ -9,58 +9,76 @@
 const CONFIG = {
     COLOR_PALETTES: {
         purple: {
+            name: 'Purple',
             bgGradient1: '#a78bfa',
-            bgGgradient2: '#6366f1',
+            bgGradient2: '#6366f1',
             accent: '#6366f1',
             accentHover: '#4f46e5',
             accentLight: '#f0f9ff',
             gradientSecondary1: '#667eea',
-            gradientSecondary2: '#764ba2'
+            gradientSecondary2: '#764ba2',
+            statCard: '#f3f4f6',
+            profileButton: '#6366f1'
         },
         blue: {
+            name: 'Blue',
             bgGradient1: '#60a5fa',
             bgGradient2: '#3b82f6',
             accent: '#3b82f6',
             accentHover: '#2563eb',
             accentLight: '#eff6ff',
             gradientSecondary1: '#3b82f6',
-            gradientSecondary2: '#1e40af'
+            gradientSecondary2: '#1e40af',
+            statCard: '#f3f4f6',
+            profileButton: '#3b82f6'
         },
         green: {
+            name: 'Green',
             bgGradient1: '#4ade80',
             bgGradient2: '#22c55e',
             accent: '#22c55e',
             accentHover: '#16a34a',
             accentLight: '#f0fdf4',
             gradientSecondary1: '#10b981',
-            gradientSecondary2: '#059669'
+            gradientSecondary2: '#059669',
+            statCard: '#f3f4f6',
+            profileButton: '#22c55e'
         },
         pink: {
+            name: 'Pink',
             bgGradient1: '#f472b6',
             bgGradient2: '#ec4899',
             accent: '#ec4899',
             accentHover: '#db2777',
             accentLight: '#fdf2f8',
             gradientSecondary1: '#ec4899',
-            gradientSecondary2: '#be185d'
+            gradientSecondary2: '#be185d',
+            statCard: '#f3f4f6',
+            profileButton: '#ec4899'
         },
         orange: {
+            name: 'Orange',
             bgGradient1: '#fb923c',
             bgGradient2: '#f97316',
             accent: '#f97316',
             accentHover: '#ea580c',
             accentLight: '#fff7ed',
             gradientSecondary1: '#f97316',
-            gradientSecondary2: '#c2410c'
+            gradientSecondary2: '#c2410c',
+            statCard: '#f3f4f6',
+            profileButton: '#f97316'
         },
         teal: {
+            name: 'Teal',
             bgGradient1: '#2dd4bf',
             bgGradient2: '#14b8a6',
             accent: '#14b8a6',
             accentHover: '#0d9488',
             accentLight: '#f0fdfa',
             gradientSecondary1: '#14b8a6',
-            gradientSecondary2: '#0f766e'
+            gradientSecondary2: '#0f766e',
+            statCard: '#f3f4f6',
+            profileButton: '#14b8a6'
         }
     },
 
