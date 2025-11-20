@@ -122,8 +122,8 @@ const CONFIG = {
 function applyTheme(palette, root) {
     const colors = CONFIG.COLOR_PALETTES[palette] || CONFIG.COLOR_PALETTES.purple;
     
-    root.style.setProperty('--theme-gradient-1', colors.gradient1);
-    root.style.setProperty('--theme-gradient-2', colors.gradient2);
+    root.style.setProperty('--theme-gradient-1', colors.bgGradient1);
+    root.style.setProperty('--theme-gradient-2', colors.bgGradient2);
     root.style.setProperty('--theme-accent', colors.accent);
     root.style.setProperty('--theme-accent-hover', colors.accentHover);
     root.style.setProperty('--theme-accent-light', colors.accentLight);
