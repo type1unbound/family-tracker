@@ -9,8 +9,8 @@
 const CONFIG = {
     COLOR_PALETTES: {
         purple: {
-            gradient1: '#a78bfa',
-            gradient2: '#6366f1',
+            bgGradient1: '#a78bfa',
+            bgGgradient2: '#6366f1',
             accent: '#6366f1',
             accentHover: '#4f46e5',
             accentLight: '#f0f9ff',
@@ -18,8 +18,8 @@ const CONFIG = {
             gradientSecondary2: '#764ba2'
         },
         blue: {
-            gradient1: '#60a5fa',
-            gradient2: '#3b82f6',
+            bgGradient1: '#60a5fa',
+            bgGradient2: '#3b82f6',
             accent: '#3b82f6',
             accentHover: '#2563eb',
             accentLight: '#eff6ff',
@@ -27,8 +27,8 @@ const CONFIG = {
             gradientSecondary2: '#1e40af'
         },
         green: {
-            gradient1: '#4ade80',
-            gradient2: '#22c55e',
+            bgGradient1: '#4ade80',
+            bgGradient2: '#22c55e',
             accent: '#22c55e',
             accentHover: '#16a34a',
             accentLight: '#f0fdf4',
@@ -36,8 +36,8 @@ const CONFIG = {
             gradientSecondary2: '#059669'
         },
         pink: {
-            gradient1: '#f472b6',
-            gradient2: '#ec4899',
+            bgGradient1: '#f472b6',
+            bgGradient2: '#ec4899',
             accent: '#ec4899',
             accentHover: '#db2777',
             accentLight: '#fdf2f8',
@@ -45,8 +45,8 @@ const CONFIG = {
             gradientSecondary2: '#be185d'
         },
         orange: {
-            gradient1: '#fb923c',
-            gradient2: '#f97316',
+            bgGradient1: '#fb923c',
+            bgGradient2: '#f97316',
             accent: '#f97316',
             accentHover: '#ea580c',
             accentLight: '#fff7ed',
@@ -54,8 +54,8 @@ const CONFIG = {
             gradientSecondary2: '#c2410c'
         },
         teal: {
-            gradient1: '#2dd4bf',
-            gradient2: '#14b8a6',
+            bgGradient1: '#2dd4bf',
+            bgGradient2: '#14b8a6',
             accent: '#14b8a6',
             accentHover: '#0d9488',
             accentLight: '#f0fdfa',
