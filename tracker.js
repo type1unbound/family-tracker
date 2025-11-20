@@ -1,5 +1,5 @@
 // ========================================
-// TRACKER TEMPLATES - ALL 14 HEALTH TRACKING TEMPLATES - Render Analytics Added - 11/20 11:41
+// TRACKER TEMPLATES - ALL 14 HEALTH TRACKING TEMPLATES - Render Analytics Added - 11/20 11:47
 // ========================================
 
 const TrackerTemplates = {
@@ -1067,6 +1067,9 @@ renderAnalytics: function() {
         return;
     }
 
+    // Sort entries by date
+    const sortedEntries = [...entries].sort((a, b) => new Date(a.date) - new Date(a.date));
+
     // Calculate statistics by period type
     const periodTypes = this.currentConfig.periodTypes || [
         { value: 'baseline', label: 'Baseline' },
@@ -1166,38 +1169,85 @@ renderAnalytics: function() {
     html += '</div>';
 
     // ========================================
-    // TIMELINE VISUALIZATION
+    // TREND LINE CHART (SVG)
     // ========================================
-    html += '<h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 16px;">📅 Timeline</h3>';
+    html += '<h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 16px;">📈 Progress Over Time</h3>';
     html += '<div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">';
 
-    const sortedEntries = [...entries].sort((a, b) => new Date(a.date) - new Date(b.date));
-    
-    sortedEntries.forEach((entry, index) => {
+    // Prepare data for chart
+    const chartData = sortedEntries.map(entry => {
         const allRatings = Object.values(entry.ratings || {});
         const avgRating = allRatings.length > 0 ? (allRatings.reduce((a, b) => a + b, 0) / allRatings.length) : 0;
-        const barWidth = (avgRating / 5) * 100;
-        
-        const periodColor = periodColors[periodTypes.findIndex(pt => pt.value === entry.periodType) % periodColors.length] || '#6b7280';
-        
-        html += `
-            <div style="margin-bottom: 12px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                    <span style="font-size: 13px; font-weight: 600; color: #6b7280;">${new Date(entry.date).toLocaleDateString()}</span>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 11px; padding: 2px 8px; background: ${periodColor}20; color: ${periodColor}; border-radius: 4px; font-weight: 600;">
-                            ${periodTypes.find(pt => pt.value === entry.periodType)?.label || entry.periodType}
-                        </span>
-                        <span style="font-size: 14px; font-weight: 700; color: #374151;">${avgRating.toFixed(1)}</span>
-                    </div>
-                </div>
-                <div style="height: 24px; background: #f3f4f6; border-radius: 4px; overflow: hidden;">
-                    <div style="height: 100%; background: ${periodColor}; width: ${barWidth}%; transition: width 0.3s;"></div>
-                </div>
-            </div>
-        `;
+        return {
+            date: entry.date,
+            average: avgRating,
+            periodType: entry.periodType
+        };
     });
+
+    // SVG Chart dimensions
+    const chartWidth = 800;
+    const chartHeight = 300;
+    const padding = { top: 20, right: 30, bottom: 60, left: 50 };
+    const innerWidth = chartWidth - padding.left - padding.right;
+    const innerHeight = chartHeight - padding.top - padding.bottom;
+
+    // Scale functions
+    const xStep = innerWidth / (chartData.length - 1 || 1);
+    const yScale = (value) => padding.top + innerHeight - (value / 5) * innerHeight;
+
+    // Build SVG
+    let svg = `<svg width="100%" height="${chartHeight}" viewBox="0 0 ${chartWidth} ${chartHeight}" style="max-width: 100%;">`;
     
+    // Grid lines (horizontal)
+    for (let i = 0; i <= 5; i++) {
+        const y = yScale(i);
+        svg += `<line x1="${padding.left}" y1="${y}" x2="${chartWidth - padding.right}" y2="${y}" stroke="#e5e7eb" stroke-width="1"/>`;
+        svg += `<text x="${padding.left - 10}" y="${y + 4}" text-anchor="end" font-size="12" fill="#6b7280">${i}</text>`;
+    }
+
+    // Build the path (trend line)
+    let pathD = '';
+    chartData.forEach((point, index) => {
+        const x = padding.left + (index * xStep);
+        const y = yScale(point.average);
+        
+        if (index === 0) {
+            pathD += `M ${x} ${y}`;
+        } else {
+            pathD += ` L ${x} ${y}`;
+        }
+    });
+
+    // Draw the trend line
+    svg += `<path d="${pathD}" fill="none" stroke="#6366f1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+    // Draw data points
+    chartData.forEach((point, index) => {
+        const x = padding.left + (index * xStep);
+        const y = yScale(point.average);
+        const periodIdx = periodTypes.findIndex(pt => pt.value === point.periodType);
+        const color = periodColors[periodIdx % periodColors.length] || '#6366f1';
+        
+        // Dot
+        svg += `<circle cx="${x}" cy="${y}" r="5" fill="${color}" stroke="white" stroke-width="2"/>`;
+        
+        // Value label above dot
+        svg += `<text x="${x}" y="${y - 10}" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">${point.average.toFixed(1)}</text>`;
+    });
+
+    // X-axis labels (dates)
+    chartData.forEach((point, index) => {
+        const x = padding.left + (index * xStep);
+        const dateLabel = new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        svg += `<text x="${x}" y="${chartHeight - padding.bottom + 20}" text-anchor="middle" font-size="11" fill="#6b7280" transform="rotate(-45 ${x} ${chartHeight - padding.bottom + 20})">${dateLabel}</text>`;
+    });
+
+    // Y-axis label
+    svg += `<text x="20" y="${chartHeight / 2}" text-anchor="middle" font-size="12" font-weight="600" fill="#374151" transform="rotate(-90 20 ${chartHeight / 2})">Average Rating</text>`;
+
+    svg += '</svg>';
+    html += svg;
     html += '</div>';
 
     // ========================================
@@ -1255,7 +1305,7 @@ renderAnalytics: function() {
     
     html += '<div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">';
     
-    categoryAverages.forEach(cat => {
+    categoryAverages.slice(0, 10).forEach(cat => {  // Show top 10
         const percentage = (cat.average / 5) * 100;
         const color = cat.average >= 4 ? '#22c55e' : cat.average >= 3 ? '#fbbf24' : '#ef4444';
         
@@ -1307,51 +1357,10 @@ renderAnalytics: function() {
     // TREND ANALYSIS
     // ========================================
     if (entries.length >= 5) {
-        // Calculate rolling 3-entry average
         const recentThree = sortedEntries.slice(-3);
         const olderThree = sortedEntries.slice(0, 3);
         
-        const getAvg = (entrySet) => {
-            let total = 0, count = 0;
-            entrySet.forEach(e => {
-                Object.values(e.ratings || {}).forEach(r => {
-                    total += r;
-                    count++;
-                });
-            });
-            return count > 0 ? total / count : 0;
-        };
-        
-        const recentAvg = getAvg(recentThree);
-        const olderAvg = getAvg(olderThree);
-        const trend = recentAvg - olderAvg;
-        
-        html += `
-            <div style="background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px;">
-                <h3 style="font-size: 18px; font-weight: 700; color: #1e40af; margin-bottom: 12px;">
-                    📈 Recent Trend
-                </h3>
-                <p style="font-size: 14px; color: #1e40af; line-height: 1.6;">
-                    ${trend > 0.2 ? '⬆️ <strong>Improving:</strong> Recent entries show an upward trend (+' + trend.toFixed(2) + ') compared to earlier data.' :
-                      trend < -0.2 ? '⬇️ <strong>Declining:</strong> Recent entries show a downward trend (' + trend.toFixed(2) + ') compared to earlier data.' :
-                      '➡️ <strong>Stable:</strong> Recent entries are consistent with earlier data (±' + Math.abs(trend).toFixed(2) + ').'}
-                </p>
-                <div style="margin-top: 12px; display: flex; gap: 16px;">
-                    <div>
-                        <p style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">First 3 entries avg</p>
-                        <p style="font-size: 20px; font-weight: 700; color: #1e40af;">${olderAvg.toFixed(1)}</p>
-                    </div>
-                    <div>
-                        <p style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Recent 3 entries avg</p>
-                        <p style="font-size: 20px; font-weight: 700; color: #1e40af;">${recentAvg.toFixed(1)}</p>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    container.innerHTML = html;
-},
+        const getAvg =
 
     renderSettings: function() {
         const container = document.getElementById('med-settings-content');
