@@ -1,5 +1,5 @@
 // ========================================
-// FAMILY ROUTINE & VALUES TRACKERS - Update Theme Colors 16:25 11/19/2025
+// FAMILY ROUTINE & VALUES TRACKERS - Update Theme Colors 16:46 11/19/2025
 // Consolidated Single-File Application
 // ========================================
 
@@ -62,9 +62,11 @@ const CONFIG = {
             gradientSecondary1: '#14b8a6',
             gradientSecondary2: '#0f766e'
         }
-    };
-    
-    const colors = palettes[palette] || palettes.purple;
+    }
+};
+
+function applyTheme(palette, root) {
+    const colors = CONFIG.COLOR_PALETTES[palette] || CONFIG.COLOR_PALETTES.purple;
     
     root.style.setProperty('--theme-gradient-1', colors.gradient1);
     root.style.setProperty('--theme-gradient-2', colors.gradient2);
