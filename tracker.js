@@ -1,5 +1,5 @@
 // ========================================
-// TRACKER TEMPLATES - ALL 14 HEALTH TRACKING TEMPLATES - Render Analytics Added - 11/20 11:47
+// TRACKER TEMPLATES - ALL 14 HEALTH TRACKING TEMPLATES - Analytics 11:55 11/20
 // ========================================
 
 const TrackerTemplates = {
@@ -1047,7 +1047,7 @@ const MedicationTracker = {
         }
     },
 
-renderAnalytics: function() {
+    renderAnalytics: function() {
     const container = document.getElementById('med-analytics-content');
     if (!container) return;
 
@@ -1360,7 +1360,47 @@ renderAnalytics: function() {
         const recentThree = sortedEntries.slice(-3);
         const olderThree = sortedEntries.slice(0, 3);
         
-        const getAvg =
+        const getAvg = (entrySet) => {
+            let total = 0, count = 0;
+            entrySet.forEach(e => {
+                Object.values(e.ratings || {}).forEach(r => {
+                    total += r;
+                    count++;
+                });
+            });
+            return count > 0 ? total / count : 0;
+        };
+        
+        const recentAvg = getAvg(recentThree);
+        const olderAvg = getAvg(olderThree);
+        const trend = recentAvg - olderAvg;
+        
+        html += `
+            <div style="background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px;">
+                <h3 style="font-size: 18px; font-weight: 700; color: #1e40af; margin-bottom: 12px;">
+                    📈 Recent Trend
+                </h3>
+                <p style="font-size: 14px; color: #1e40af; line-height: 1.6;">
+                    ${trend > 0.2 ? '⬆️ <strong>Improving:</strong> Recent entries show an upward trend (+' + trend.toFixed(2) + ') compared to earlier data.' :
+                      trend < -0.2 ? '⬇️ <strong>Declining:</strong> Recent entries show a downward trend (' + trend.toFixed(2) + ') compared to earlier data.' :
+                      '➡️ <strong>Stable:</strong> Recent entries are consistent with earlier data (±' + Math.abs(trend).toFixed(2) + ').'}
+                </p>
+                <div style="margin-top: 12px; display: flex; gap: 16px;">
+                    <div>
+                        <p style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">First 3 entries avg</p>
+                        <p style="font-size: 20px; font-weight: 700; color: #1e40af;">${olderAvg.toFixed(1)}</p>
+                    </div>
+                    <div>
+                        <p style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Recent 3 entries avg</p>
+                        <p style="font-size: 20px; font-weight: 700; color: #1e40af;">${recentAvg.toFixed(1)}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    container.innerHTML = html;
+},
 
     renderSettings: function() {
         const container = document.getElementById('med-settings-content');
