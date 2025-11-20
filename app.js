@@ -1,5 +1,5 @@
 // ========================================
-// FAMILY ROUTINE & VALUES TRACKERS - Update Theme Colors 16:46 11/19/2025
+// FAMILY ROUTINE & VALUES TRACKERS - Update Theme Colors 16:54 11/19/2025
 // Consolidated Single-File Application
 // ========================================
 
@@ -62,20 +62,7 @@ const CONFIG = {
             gradientSecondary1: '#14b8a6',
             gradientSecondary2: '#0f766e'
         }
-    }
-};
-
-function applyTheme(palette, root) {
-    const colors = CONFIG.COLOR_PALETTES[palette] || CONFIG.COLOR_PALETTES.purple;
-    
-    root.style.setProperty('--theme-gradient-1', colors.gradient1);
-    root.style.setProperty('--theme-gradient-2', colors.gradient2);
-    root.style.setProperty('--theme-accent', colors.accent);
-    root.style.setProperty('--theme-accent-hover', colors.accentHover);
-    root.style.setProperty('--theme-accent-light', colors.accentLight);
-    root.style.setProperty('--theme-gradient-secondary-1', colors.gradientSecondary1);
-    root.style.setProperty('--theme-gradient-secondary-2', colors.gradientSecondary2);
-}
+    },
 
     DEFAULT_SCHEDULE: [
         { id: 1, time: '7:00am', name: 'Wake-up time', tasks: ['Wake up on time'], days: [0,1,2,3,4,5,6] },
@@ -131,6 +118,18 @@ function applyTheme(palette, root) {
         { id: 'shoes', name: 'Cleaning up shoe/backpack area' }
     ]
 };
+
+function applyTheme(palette, root) {
+    const colors = CONFIG.COLOR_PALETTES[palette] || CONFIG.COLOR_PALETTES.purple;
+    
+    root.style.setProperty('--theme-gradient-1', colors.gradient1);
+    root.style.setProperty('--theme-gradient-2', colors.gradient2);
+    root.style.setProperty('--theme-accent', colors.accent);
+    root.style.setProperty('--theme-accent-hover', colors.accentHover);
+    root.style.setProperty('--theme-accent-light', colors.accentLight);
+    root.style.setProperty('--theme-gradient-secondary-1', colors.gradientSecondary1);
+    root.style.setProperty('--theme-gradient-secondary-2', colors.gradientSecondary2);
+}
 
 // ========================================
 // STATE MANAGEMENT
