@@ -95,15 +95,22 @@ function updateScheduleFromData() {
     
     console.log('Current child:', child.name);
     console.log('Child data:', child);
+    console.log('Child.schedule property:', child.schedule);
+    console.log('All child properties:', Object.keys(child));
     
     const schedule = StateManager.getSchedule();
-    console.log('Schedule from StateManager:', schedule);
+    console.log('Schedule from StateManager.getSchedule():', schedule);
     console.log('Schedule length:', schedule.length);
+    
+    // Try getting schedule directly from child
+    const directSchedule = child.schedule || [];
+    console.log('Direct schedule from child.schedule:', directSchedule);
     
     const dayData = StateManager.getDayData();
     
     if (schedule.length === 0) {
         console.log('No schedule items - showing empty message');
+        console.log('Full StateManager state:', StateManager.state);
         document.querySelector('.current-task-card').innerHTML = `
             <div style="text-align: center; padding: 20px;">
                 <p>No schedule items for today. Add them in the desktop app!</p>
