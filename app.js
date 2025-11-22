@@ -745,83 +745,85 @@ const ScheduleModule = {
     },
 
     renderFocusedScheduleItem() {
-        const schedule = StateManager.getSchedule();
-        const dayData = StateManager.getDayData();
-        const container = document.getElementById('schedule-detail-container');
-        
-        // Safety check
-        if (!container) {
-            console.warn('schedule-detail-container not found in HTML');
-            return;
-        }
-        
-        if (schedule.length === 0) {
-            container.style.display = 'none';
-            return;
-        }
-        
-        // Get current time in minutes
-        const now = new Date();
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        
-        // Find the current or next incomplete item
-        let focusedItem = null;
-        let focusedIndex = -1;
-        
-        // Find the current or next incomplete item closest to current time
-        let firstIncompleteAtOrAfter = null;
-        let firstIncompleteAtOrAfterIndex = -1;
-        let lastIncompleteBefore = null;
-        let lastIncompleteBeforeIndex = -1;
+    const schedule = StateManager.getSchedule();
+    const dayData = StateManager.getDayData();
+    const container = document.getElementById('schedule-detail-container');
+    
+    // Safety check
+    if (!container) {
+        console.warn('schedule-detail-container not found in HTML');
+        return;
+    }
+    
+    if (schedule.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    // Get current time in minutes (using local timezone)
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    // Find the current or next incomplete item
+    let focusedItem = null;
+    let focusedIndex = -1;
+    
+    // Find the current or next incomplete item closest to current time
+    let firstIncompleteAtOrAfter = null;
+    let firstIncompleteAtOrAfterIndex = -1;
+    let lastIncompleteBefore = null;
+    let lastIncompleteBeforeIndex = -1;
 
-        for (let i = 0; i < schedule.length; i++) {
-            const item = schedule[i];
-            const itemMinutes = StateManager.convertTimeToMinutes(item.time);
-            const isComplete = dayData.schedule[item.id] === true;
-            
-            if (!isComplete) {
-                if (itemMinutes >= currentMinutes) {
-                    // First incomplete item at or after current time
-                    if (firstIncompleteAtOrAfter === null) {
-                        firstIncompleteAtOrAfter = item;
-                        firstIncompleteAtOrAfterIndex = i;
-                    }
-                } else {
-                    // Keep track of the most recent incomplete item before current time
-                    lastIncompleteBefore = item;
-                    lastIncompleteBeforeIndex = i;
+    for (let i = 0; i < schedule.length; i++) {
+        const item = schedule[i];
+        const itemMinutes = StateManager.convertTimeToMinutes(item.time);
+        const isComplete = dayData.schedule[item.id] === true;
+        
+        if (!isComplete) {
+            if (itemMinutes >= currentMinutes) {
+                // First incomplete item at or after current time
+                if (firstIncompleteAtOrAfter === null) {
+                    firstIncompleteAtOrAfter = item;
+                    firstIncompleteAtOrAfterIndex = i;
                 }
+            } else {
+                // Keep track of the most recent incomplete item before current time
+                lastIncompleteBefore = item;
+                lastIncompleteBeforeIndex = i;
             }
         }
+    }
 
-        // Prioritize upcoming/current incomplete items, then fall back to most recent
-        if (firstIncompleteAtOrAfter) {
-            focusedItem = firstIncompleteAtOrAfter;
-            focusedIndex = firstIncompleteAtOrAfterIndex;
-        } else if (lastIncompleteBefore) {
-            focusedItem = lastIncompleteBefore;
-            focusedIndex = lastIncompleteBeforeIndex;
-        }
-        
-        // If all complete, show last item
-        if (!focusedItem && schedule.length > 0) {
-            focusedItem = schedule[schedule.length - 1];
-            focusedIndex = schedule.length - 1;
-        }
-        
-        if (!focusedItem) {
-            container.style.display = 'none';
-            return;
-        }
-        
-        // Render the focused item
-        this.renderFocusedScheduleItemById(focusedItem.id);
-        this.updateScheduleFocusStates(focusedIndex);
-        
-        // Auto-scroll to focused item - scroll so it's in the "second position"
+    // Prioritize upcoming/current incomplete items, then fall back to most recent
+    if (firstIncompleteAtOrAfter) {
+        focusedItem = firstIncompleteAtOrAfter;
+        focusedIndex = firstIncompleteAtOrAfterIndex;
+    } else if (lastIncompleteBefore) {
+        focusedItem = lastIncompleteBefore;
+        focusedIndex = lastIncompleteBeforeIndex;
+    }
+    
+    // If all complete, show last item
+    if (!focusedItem && schedule.length > 0) {
+        focusedItem = schedule[schedule.length - 1];
+        focusedIndex = schedule.length - 1;
+    }
+    
+    if (!focusedItem) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    // Render the focused item
+    this.renderFocusedScheduleItemById(focusedItem.id);
+    this.updateScheduleFocusStates(focusedIndex);
+    
+    // Only auto-scroll on initial load (when scroll position is at top)
+    // This allows users to manually scroll down without jumping back
+    const scheduleSection = document.querySelector('.schedule-section');
+    if (scheduleSection && scheduleSection.scrollTop < 50) {
         setTimeout(() => {
             const items = document.querySelectorAll('.timeline-item');
-            const scheduleSection = document.querySelector('.schedule-section');
             
             if (items[focusedIndex] && scheduleSection) {
                 const headerHeight = 70;
@@ -832,7 +834,8 @@ const ScheduleModule = {
                 setTimeout(() => this.updateFocusBasedOnScroll(), 200);
             }
         }, 100);
-    },
+    }
+},
 
     renderFocusedScheduleItemById(itemId) {
         const schedule = StateManager.getSchedule();
