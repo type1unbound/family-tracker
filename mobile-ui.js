@@ -88,12 +88,22 @@ function updateMemberDropdown() {
 
 function updateScheduleFromData() {
     const child = StateManager.getCurrentChild();
-    if (!child) return;
+    if (!child) {
+        console.log('No child found');
+        return;
+    }
+    
+    console.log('Current child:', child.name);
+    console.log('Child data:', child);
     
     const schedule = StateManager.getSchedule();
+    console.log('Schedule from StateManager:', schedule);
+    console.log('Schedule length:', schedule.length);
+    
     const dayData = StateManager.getDayData();
     
     if (schedule.length === 0) {
+        console.log('No schedule items - showing empty message');
         document.querySelector('.current-task-card').innerHTML = `
             <div style="text-align: center; padding: 20px;">
                 <p>No schedule items for today. Add them in the desktop app!</p>
@@ -108,6 +118,7 @@ function updateScheduleFromData() {
     currentTaskIndex = schedule.findIndex(item => !dayData.schedule[item.id]);
     if (currentTaskIndex === -1) currentTaskIndex = schedule.length - 1;
     
+    console.log('Updating current task, index:', currentTaskIndex);
     updateCurrentTask();
 }
 
@@ -346,3 +357,10 @@ function updateWellnessTrackers() {
         `;
     }).join('');
 }
+
+// Export to global scope
+window.updateUI = updateUI;
+window.updateStatsCards = updateStatsCards;
+window.updateResponsibilities = updateResponsibilities;
+window.updateCurrentTask = updateCurrentTask;
+window.renderCharacterValues = renderCharacterValues;
