@@ -64,8 +64,7 @@ function updateMemberDropdown() {
         const child = StateManager.getChild(childId);
         if (!child) return '';
         
-        const schedule = StateManager.state.data[childId] ? 
-            (StateManager.state.data[childId].schedule || []) : [];
+        const schedule = child.schedule || [];
         const dayData = child.days ? (child.days[StateManager.state.currentDate] || {}) : {};
         const completed = Object.values(dayData.schedule || {}).filter(v => v === true).length;
         const total = schedule.length;
@@ -88,29 +87,13 @@ function updateMemberDropdown() {
 
 function updateScheduleFromData() {
     const child = StateManager.getCurrentChild();
-    if (!child) {
-        console.log('No child found');
-        return;
-    }
+    if (!child) return;
     
-    console.log('Current child:', child.name);
-    console.log('Child data:', child);
-    console.log('Child.schedule property:', child.schedule);
-    console.log('All child properties:', Object.keys(child));
-    
-    const schedule = StateManager.getSchedule();
-    console.log('Schedule from StateManager.getSchedule():', schedule);
-    console.log('Schedule length:', schedule.length);
-    
-    // Try getting schedule directly from child
-    const directSchedule = child.schedule || [];
-    console.log('Direct schedule from child.schedule:', directSchedule);
-    
+    // Use child.schedule directly instead of StateManager.getSchedule()
+    const schedule = child.schedule || [];
     const dayData = StateManager.getDayData();
     
     if (schedule.length === 0) {
-        console.log('No schedule items - showing empty message');
-        console.log('Full StateManager state:', StateManager.state);
         document.querySelector('.current-task-card').innerHTML = `
             <div style="text-align: center; padding: 20px;">
                 <p>No schedule items for today. Add them in the desktop app!</p>
@@ -125,12 +108,14 @@ function updateScheduleFromData() {
     currentTaskIndex = schedule.findIndex(item => !dayData.schedule[item.id]);
     if (currentTaskIndex === -1) currentTaskIndex = schedule.length - 1;
     
-    console.log('Updating current task, index:', currentTaskIndex);
     updateCurrentTask();
 }
 
 function updateCurrentTask() {
-    const schedule = StateManager.getSchedule();
+    const child = StateManager.getCurrentChild();
+    if (!child) return;
+    
+    const schedule = child.schedule || [];
     if (schedule.length === 0) return;
     
     const task = schedule[currentTaskIndex];
@@ -159,7 +144,10 @@ function updateCurrentTask() {
 }
 
 function updateTimelinePreview() {
-    const schedule = StateManager.getSchedule();
+    const child = StateManager.getCurrentChild();
+    if (!child) return;
+    
+    const schedule = child.schedule || [];
     const dayData = StateManager.getDayData();
     
     const track = document.getElementById('tasks-track');
