@@ -1,5 +1,5 @@
 // ========================================
-// FAMILY ROUTINE & VALUES TRACKERS - Update Theme Colors 17:10 11/19/2025 - Working
+// FAMILY ROUTINE & VALUES TRACKERS - Fix scorecard 9:55 11/22/2025 - Testing
 // Consolidated Single-File Application
 // ========================================
 
@@ -291,32 +291,52 @@ const StateManager = {
     getDayData() {
         const child = this.getCurrentChild();
         if (!child.days[this.state.currentDate]) {
+            // Initialize with all current character categories
+            const categoryMultipliers = {};
+            const characterValues = this.getCharacterValues();
+            characterValues.forEach(cat => {
+                categoryMultipliers[cat.id] = 1.0;
+            });
+            
             child.days[this.state.currentDate] = {
                 schedule: {},
                 weeklyChores: {},
-                categoryMultipliers: {
-                    conflict: 1.0,
-                    respect: 1.0,
-                    etiquette: 1.0,
-                    transitions: 1.0
-                },
+                categoryMultipliers: categoryMultipliers,
                 notes: '',
                 characterNotes: {}
             };
         }
         
         const dayData = child.days[this.state.currentDate];
+        
+        // Migrate old data structure
         if (dayData.characterMultiplier && !dayData.categoryMultipliers) {
-            dayData.categoryMultipliers = {
-                conflict: dayData.characterMultiplier,
-                respect: dayData.characterMultiplier,
-                etiquette: dayData.characterMultiplier,
-                transitions: dayData.characterMultiplier
-            };
+            const categoryMultipliers = {};
+            const characterValues = this.getCharacterValues();
+            characterValues.forEach(cat => {
+                categoryMultipliers[cat.id] = dayData.characterMultiplier;
+            });
+            dayData.categoryMultipliers = categoryMultipliers;
             delete dayData.characterMultiplier;
         }
+        
+        // Ensure all current categories exist in multipliers
+        if (!dayData.categoryMultipliers) {
+            dayData.categoryMultipliers = {};
+        }
+        const characterValues = this.getCharacterValues();
+        characterValues.forEach(cat => {
+            if (dayData.categoryMultipliers[cat.id] === undefined) {
+                dayData.categoryMultipliers[cat.id] = 1.0;
+            }
+        });
+        
         if (!dayData.weeklyChores) {
             dayData.weeklyChores = {};
+        }
+        
+        if (!dayData.characterNotes) {
+            dayData.characterNotes = {};
         }
         
         return child.days[this.state.currentDate];
@@ -377,14 +397,16 @@ const StateManager = {
 const PointsModule = {
     calculatePoints(childId, date, includeWeeklyBonus = false) {
         const child = StateManager.getChild(childId);
+        
+        // Safety check
+        if (!child) {
+            console.error('❌ Child not found:', childId);
+            return { base: 0, total: 0, dailyTotal: 0, multiplier: 1.0, choresMultiplier: 1.0, finalMultiplier: 1.0, choresComplete: false };
+        }
+        
         const dayData = child.days[date] || { 
             schedule: {}, 
-            categoryMultipliers: {
-                conflict: 1.0,
-                respect: 1.0,
-                etiquette: 1.0,
-                transitions: 1.0
-            }
+            categoryMultipliers: {}
         };
         
         const completed = Object.values(dayData.schedule).filter(v => v === true).length;
@@ -397,8 +419,15 @@ const PointsModule = {
         const characterValues = StateManager.getCharacterValues();
         StateManager.state.currentChild = savedChild;
         
+        // Ensure categoryMultipliers exists
+        if (!dayData.categoryMultipliers) {
+            dayData.categoryMultipliers = {};
+        }
+        
         characterValues.forEach(cat => {
-            const mult = dayData.categoryMultipliers[cat.id] || 1.0;
+            const mult = dayData.categoryMultipliers[cat.id] !== undefined 
+                ? dayData.categoryMultipliers[cat.id] 
+                : 1.0;
             totalMultiplier += mult * cat.weight;
             totalWeight += cat.weight;
         });
@@ -582,9 +611,26 @@ const ScheduleModule = {
     renderSchedule() {
         const dayData = StateManager.getDayData();
         const list = document.getElementById('schedule-list');
+        
+        // Safety check
+        if (!list) {
+            console.error('❌ schedule-list container not found');
+            return;
+        }
+        
         const isEditMode = StateManager.state.editMode;
         
         const schedule = StateManager.getSchedule(!isEditMode);
+        
+        if (!schedule || schedule.length === 0) {
+            list.innerHTML = '<p style="padding: 40px; text-align: center; color: #6b7280;">No schedule items yet</p>';
+            return;
+        }
+        
+        // Ensure dayData.schedule exists
+        if (!dayData.schedule) {
+            dayData.schedule = {};
+        }
         
         list.innerHTML = schedule.map((item, index) => {
             const status = dayData.schedule[item.id];
@@ -725,40 +771,40 @@ const ScheduleModule = {
         let focusedItem = null;
         let focusedIndex = -1;
         
-// Find the current or next incomplete item closest to current time
-let firstIncompleteAtOrAfter = null;
-let firstIncompleteAtOrAfterIndex = -1;
-let lastIncompleteBefore = null;
-let lastIncompleteBeforeIndex = -1;
+        // Find the current or next incomplete item closest to current time
+        let firstIncompleteAtOrAfter = null;
+        let firstIncompleteAtOrAfterIndex = -1;
+        let lastIncompleteBefore = null;
+        let lastIncompleteBeforeIndex = -1;
 
-for (let i = 0; i < schedule.length; i++) {
-    const item = schedule[i];
-    const itemMinutes = StateManager.convertTimeToMinutes(item.time);
-    const isComplete = dayData.schedule[item.id] === true;
-    
-    if (!isComplete) {
-        if (itemMinutes >= currentMinutes) {
-            // First incomplete item at or after current time
-            if (firstIncompleteAtOrAfter === null) {
-                firstIncompleteAtOrAfter = item;
-                firstIncompleteAtOrAfterIndex = i;
+        for (let i = 0; i < schedule.length; i++) {
+            const item = schedule[i];
+            const itemMinutes = StateManager.convertTimeToMinutes(item.time);
+            const isComplete = dayData.schedule[item.id] === true;
+            
+            if (!isComplete) {
+                if (itemMinutes >= currentMinutes) {
+                    // First incomplete item at or after current time
+                    if (firstIncompleteAtOrAfter === null) {
+                        firstIncompleteAtOrAfter = item;
+                        firstIncompleteAtOrAfterIndex = i;
+                    }
+                } else {
+                    // Keep track of the most recent incomplete item before current time
+                    lastIncompleteBefore = item;
+                    lastIncompleteBeforeIndex = i;
+                }
             }
-        } else {
-            // Keep track of the most recent incomplete item before current time
-            lastIncompleteBefore = item;
-            lastIncompleteBeforeIndex = i;
         }
-    }
-}
 
-// Prioritize upcoming/current incomplete items, then fall back to most recent
-if (firstIncompleteAtOrAfter) {
-    focusedItem = firstIncompleteAtOrAfter;
-    focusedIndex = firstIncompleteAtOrAfterIndex;
-} else if (lastIncompleteBefore) {
-    focusedItem = lastIncompleteBefore;
-    focusedIndex = lastIncompleteBeforeIndex;
-}
+        // Prioritize upcoming/current incomplete items, then fall back to most recent
+        if (firstIncompleteAtOrAfter) {
+            focusedItem = firstIncompleteAtOrAfter;
+            focusedIndex = firstIncompleteAtOrAfterIndex;
+        } else if (lastIncompleteBefore) {
+            focusedItem = lastIncompleteBefore;
+            focusedIndex = lastIncompleteBeforeIndex;
+        }
         
         // If all complete, show last item
         if (!focusedItem && schedule.length > 0) {
@@ -1022,8 +1068,31 @@ const CharacterModule = {
         const characterValues = StateManager.getCharacterValues();
         const isEditMode = StateManager.state.editMode;
         
+        // Safety check
+        if (!container) {
+            console.error('❌ character-sections container not found');
+            return;
+        }
+        
+        if (!characterValues || characterValues.length === 0) {
+            container.innerHTML = '<p style="padding: 20px; text-align: center; color: #6b7280;">No character values defined</p>';
+            return;
+        }
+        
         container.innerHTML = characterValues.map((section, index) => {
-            const mult = dayData.categoryMultipliers[section.id] || 1.0;
+            // Ensure categoryMultipliers exists and has this category
+            if (!dayData.categoryMultipliers) {
+                dayData.categoryMultipliers = {};
+            }
+            const mult = dayData.categoryMultipliers[section.id] !== undefined 
+                ? dayData.categoryMultipliers[section.id] 
+                : 1.0;
+            
+            // Ensure characterNotes exists
+            if (!dayData.characterNotes) {
+                dayData.characterNotes = {};
+            }
+            
             return `
             <div class="character-section">
                 <h3>${section.category}</h3>
