@@ -172,11 +172,27 @@ function updateTimelinePreview() {
     indicators.innerHTML = schedule.map((_, idx) => 
         `<div class="indicator-dot ${idx === currentTaskIndex ? 'active' : ''}"></div>`
     ).join('');
+    
+    // Add scroll handler to update indicators
+    const container = track.parentElement;
+    if (container) {
+        container.addEventListener('scroll', () => {
+            const scrollLeft = container.scrollLeft;
+            const cardWidth = 280 + 16; // card width + gap
+            const activeIndex = Math.round(scrollLeft / cardWidth);
+            
+            indicators.querySelectorAll('.indicator-dot').forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === activeIndex);
+            });
+        });
+    }
 }
 
 function updateStatsCards() {
     const child = StateManager.getCurrentChild();
     if (!child) return;
+    
+    console.log('Updating stats cards...');
     
     // Use PointsModule from desktop app.js
     const currentDate = StateManager.state.currentDate;
@@ -184,6 +200,9 @@ function updateStatsCards() {
     const weeklyPoints = PointsModule.calculateWeeklyTotal();
     const dailyGoal = PointsModule.getDailyGoal();
     const weeklyGoal = PointsModule.getWeeklyGoal();
+    
+    console.log('Daily points:', dailyPoints.total, 'of', dailyGoal);
+    console.log('Weekly points:', weeklyPoints, 'of', weeklyGoal);
     
     // Calculate balance
     let totalEarned = 0;
@@ -204,19 +223,24 @@ function updateStatsCards() {
     const weeklyPercent = weeklyGoal > 0 ? Math.min(Math.round((weeklyPoints / weeklyGoal) * 100), 100) : 0;
     
     const statCards = document.querySelectorAll('.stat-card');
+    console.log('Found', statCards.length, 'stat cards');
+    
     if (statCards[0]) {
+        console.log('Updating card 0:', dailyPercent + '%');
         statCards[0].querySelector('.stat-value').textContent = dailyPercent + '%';
         statCards[0].querySelector('.stat-subtext').textContent = 
             `${dailyPoints.total} of ${dailyGoal} points`;
     }
     
     if (statCards[1]) {
+        console.log('Updating card 1:', weeklyPercent + '%');
         statCards[1].querySelector('.stat-value').textContent = weeklyPercent + '%';
         statCards[1].querySelector('.stat-subtext').textContent = 
             `${weeklyPoints} of ${weeklyGoal} points`;
     }
     
     if (statCards[2] && child) {
+        console.log('Updating card 2:', child.pointsBalance);
         statCards[2].querySelector('.stat-value').textContent = child.pointsBalance || 0;
         statCards[2].querySelector('.stat-subtext').textContent = 
             `+${dailyPoints.total} points today`;
