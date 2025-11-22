@@ -685,10 +685,7 @@ const ScheduleModule = {
             `;
         }
 
-        // Add padding to schedule list for better scrolling
-        if (list) {
-            list.style.paddingBottom = '400px';
-        }
+
 
         // Attach scroll listener if not already attached
         if (!this.scrollListenerAttached) {
