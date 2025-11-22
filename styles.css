@@ -564,6 +564,15 @@ body {
     border-radius: 3px;
 }
 
+.schedule-section {
+    overflow-y: scroll !important; /* Changed from auto to scroll */
+}
+
+#schedule-list {
+    padding-bottom: 100vh !important; /* Allow last item to scroll into focus zone */
+    min-height: 100%;
+}
+
 /* Section Headers */
 .section-header {
     font-size: 15px;
