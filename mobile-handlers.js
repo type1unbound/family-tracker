@@ -55,7 +55,10 @@ function setCharacterRating(ratingKey, rating) {
 
 function completeTask() {
     const btn = event.currentTarget;
-    const schedule = StateManager.getSchedule();
+    const child = StateManager.getCurrentChild();
+    if (!child) return;
+    
+    const schedule = child.schedule || [];
     const task = schedule[currentTaskIndex];
     
     if (!task) return;
@@ -148,3 +151,13 @@ function initStatsSwipe() {
         });
     });
 }
+
+// Export to global scope for onclick handlers
+window.toggleMemberDropdown = toggleMemberDropdown;
+window.selectMemberById = selectMemberById;
+window.switchView = switchView;
+window.toggleWeeklyChore = toggleWeeklyChore;
+window.setCharacterRating = setCharacterRating;
+window.completeTask = completeTask;
+window.jumpToTask = jumpToTask;
+window.initStatsSwipe = initStatsSwipe;
