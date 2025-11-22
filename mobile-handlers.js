@@ -112,6 +112,9 @@ function initStatsSwipe() {
     if (!statsTrack) return;
     
     const statCards = document.querySelectorAll('.stat-card');
+    
+    // Card width is calc(100vw - 64px) + 16px gap = 100vw - 48px per card
+    const getCardOffset = () => window.innerWidth - 48;
 
     statsTrack.addEventListener('touchstart', (e) => {
         statsStartX = e.touches[0].clientX;
@@ -123,7 +126,7 @@ function initStatsSwipe() {
         if (!statsIsDragging) return;
         statsCurrentX = e.touches[0].clientX;
         const diff = statsCurrentX - statsStartX;
-        const currentOffset = -currentStatIndex * (window.innerWidth - 32);
+        const currentOffset = -currentStatIndex * getCardOffset();
         statsTrack.style.transform = `translateX(${currentOffset + diff}px)`;
     });
 
@@ -143,7 +146,7 @@ function initStatsSwipe() {
         }
         
         statsTrack.style.transition = 'transform 0.3s ease';
-        const offset = -currentStatIndex * (window.innerWidth - 32);
+        const offset = -currentStatIndex * getCardOffset();
         statsTrack.style.transform = `translateX(${offset}px)`;
         
         document.querySelectorAll('.stat-dot').forEach((dot, idx) => {
