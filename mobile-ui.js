@@ -287,7 +287,8 @@ function renderCharacterValues() {
         let html = `<div class="character-category-title">${category.category}</div>`;
         
         category.items.forEach((item, itemIdx) => {
-            const ratingKey = category.id;
+            // Create unique key for each item (not just category)
+            const ratingKey = `${category.id}-${itemIdx}`;
             const currentRating = dayData.categoryMultipliers?.[ratingKey] || 1.0;
             
             html += `
