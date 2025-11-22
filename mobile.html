@@ -155,7 +155,7 @@
             transition: opacity 0.3s ease;
         }
 
-        /* Stats Cards - Swipeable */
+        /* Stats Cards - Swipeable - FIXED CENTERING */
         .stats-swipe-container {
             position: relative;
             overflow: hidden;
@@ -171,7 +171,8 @@
         }
 
         .stat-card {
-            min-width: calc(100% - 32px);
+            min-width: calc(100vw - 64px);
+            flex-shrink: 0;
             background: linear-gradient(135deg, var(--theme-gradient-1), var(--theme-gradient-2));
             color: white;
             border-radius: 16px;
@@ -568,10 +569,56 @@
             letter-spacing: 0.3px;
         }
 
+        .rating-btn:active {
+            transform: scale(0.95);
+        }
+
         .rating-btn.active {
             border-color: #6366f1;
             background: #6366f1;
             color: white;
+        }
+
+        /* Wellness rating groups */
+        .wellness-rating-group {
+            background: #f9fafb;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            min-width: calc(100% - 32px);
+            flex-shrink: 0;
+            scroll-snap-align: start;
+        }
+
+        .wellness-ratings-container {
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            display: flex;
+            gap: 16px;
+            padding: 8px 0;
+            margin: 0 -16px;
+            padding: 8px 16px;
+        }
+
+        .rating-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .rating-indicator-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #d1d5db;
+            transition: all 0.3s;
+        }
+
+        .rating-indicator-dot.active {
+            width: 24px;
+            border-radius: 4px;
+            background: #10b981;
         }
 
         /* Wellness Journal View */
@@ -700,6 +747,38 @@
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .save-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .save-btn.saving {
+            background: #6b7280;
+        }
+
+        .save-btn.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .btn-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Bottom Navigation */
@@ -759,8 +838,8 @@
 </head>
 <body>
     <!-- Login Overlay -->
-    <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; z-index: 10000;">
-        <div style="background: white; border-radius: 20px; padding: 40px; max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center;">
+    <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; z-index: 10000; overflow-y: auto;">
+        <div style="background: white; border-radius: 20px; padding: 40px; max-width: 400px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center; margin: 20px;">
             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width: 60px; height: 60px; margin-bottom: 16px;">
                 <defs>
                     <linearGradient id="loginCompassGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -790,6 +869,12 @@
                     Sign in with Google
                 </button>
                 
+                <div style="margin-top: 32px; text-align: left;">
+                    <div style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px;">Have a family code?</div>
+                    <input type="text" id="family-code-input" placeholder="Enter family code" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; margin-bottom: 8px; text-transform: uppercase;">
+                    <button id="join-family-btn" style="width: 100%; padding: 12px; background: #6366f1; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">Join Family</button>
+                </div>
+                
                 <div style="margin-top: 24px; font-size: 14px; color: #6b7280;">
                     <p>🔒 Secure authentication</p>
                     <p style="margin-top: 8px;">☁️ Your data syncs across devices</p>
@@ -800,6 +885,12 @@
             <div id="loading-content" style="display: none;">
                 <div style="width: 50px; height: 50px; border: 4px solid #e5e7eb; border-top-color: #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
                 <p style="margin-top: 20px; color: #6b7280;">Loading your family data...</p>
+            </div>
+            
+            <div id="family-code-display" style="display: none; margin-top: 24px; padding: 16px; background: #f0f9ff; border-radius: 12px; border: 2px solid #bae6fd;">
+                <div style="font-size: 12px; font-weight: 600; color: #0c4a6e; margin-bottom: 8px;">Your Family Code</div>
+                <div id="family-code-text" style="font-size: 24px; font-weight: 700; color: #0369a1; letter-spacing: 2px; margin-bottom: 8px;"></div>
+                <div style="font-size: 12px; color: #0369a1;">Share this code with family members to invite them</div>
             </div>
         </div>
     </div>
@@ -839,27 +930,7 @@
 
     <!-- Member Dropdown -->
     <div class="member-dropdown" id="member-dropdown">
-        <div class="member-option active" onclick="selectMember('sarah')">
-            <div class="member-avatar">👧</div>
-            <div>
-                <div style="font-weight: 600;">Sarah</div>
-                <div style="font-size: 12px; color: #6b7280;">2 of 17 tasks complete</div>
-            </div>
-        </div>
-        <div class="member-option" onclick="selectMember('alex')">
-            <div class="member-avatar">👦</div>
-            <div>
-                <div style="font-weight: 600;">Alex</div>
-                <div style="font-size: 12px; color: #6b7280;">5 of 17 tasks complete</div>
-            </div>
-        </div>
-        <div class="member-option" onclick="selectMember('emma')">
-            <div class="member-avatar">👶</div>
-            <div>
-                <div style="font-weight: 600;">Emma</div>
-                <div style="font-size: 12px; color: #6b7280;">1 of 12 tasks complete</div>
-            </div>
-        </div>
+        <!-- Populated by JavaScript -->
     </div>
 
     <!-- Main Content -->
@@ -972,31 +1043,10 @@
                     4 / 6 Complete (67%) 
                 </div>
                 
-                <div class="responsibility-card">
-                    <div class="responsibility-item">
-                        <div class="task-checkbox checked" onclick="toggleTaskCheck(this)"></div>
-                        <span>Sweeping floors</span>
-                    </div>
-                    <div class="responsibility-item">
-                        <div class="task-checkbox" onclick="toggleTaskCheck(this)"></div>
-                        <span>Cleaning table</span>
-                    </div>
-                    <div class="responsibility-item">
-                        <div class="task-checkbox checked" onclick="toggleTaskCheck(this)"></div>
-                        <span>Cleaning bathrooms</span>
-                    </div>
-                    <div class="responsibility-item">
-                        <div class="task-checkbox checked" onclick="toggleTaskCheck(this)"></div>
-                        <span>Cleaning basement</span>
-                    </div>
-                    <div class="responsibility-item">
-                        <div class="task-checkbox" onclick="toggleTaskCheck(this)"></div>
-                        <span>Taking out garbage</span>
-                    </div>
-                    <div class="responsibility-item">
-                        <div class="task-checkbox checked" onclick="toggleTaskCheck(this)"></div>
-                        <span>Organizing shoe area</span>
-                    </div>
+                <div class="week-range" id="week-range">Mon-Sun · Resets Weekly</div>
+                
+                <div id="weekly-chores-list">
+                    <!-- Weekly goals will be inserted here by JavaScript -->
                 </div>
 
                 <!-- Personal Growth -->
@@ -1009,52 +1059,16 @@
                     Personal Growth
                 </div>
                 
-                <div class="character-category">
-                    <div class="character-category-title">Conflict Resolution</div>
-                    <div class="character-trait-item">
-                        <div class="character-trait-text">Solving problems without escalating emotions</div>
-                        <div class="growth-rating">
-                            <button class="rating-btn" onclick="setRating(this, 1)">Starting</button>
-                            <button class="rating-btn active" onclick="setRating(this, 2)">Progress</button>
-                            <button class="rating-btn" onclick="setRating(this, 3)">Excelling</button>
-                        </div>
-                    </div>
-                    <div class="character-trait-item">
-                        <div class="character-trait-text">Apologizing and recognizing own part</div>
-                        <div class="growth-rating">
-                            <button class="rating-btn" onclick="setRating(this, 1)">Starting</button>
-                            <button class="rating-btn" onclick="setRating(this, 2)">Progress</button>
-                            <button class="rating-btn active" onclick="setRating(this, 3)">Excelling</button>
-                        </div>
-                    </div>
+                <div id="character-sections">
+                    <!-- Character categories will be inserted here by JavaScript -->
                 </div>
-
-                <div class="character-category">
-                    <div class="character-category-title">Respect & Consideration</div>
-                    <div class="character-trait-item">
-                        <div class="character-trait-text">Asking and putting others first</div>
-                        <div class="growth-rating">
-                            <button class="rating-btn" onclick="setRating(this, 1)">Starting</button>
-                            <button class="rating-btn active" onclick="setRating(this, 2)">Progress</button>
-                            <button class="rating-btn" onclick="setRating(this, 3)">Excelling</button>
+                
+            <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); padding: 12px; border-radius: 12px; border: 2px solid #86efac; margin-top: 16px;">
+                  <div style="font-size: 11px; font-weight: 700; color: #166534; margin-bottom: 4px;">💡 Growth Multipliers</div> 
+                     <div style="font-size: 10px; color: #166534; line-height: 1.4;">
+                     <strong>Starting</strong> 1.0x · <strong>Progress</strong> 1.5x · <strong>Excelling</strong> 2.0x
+                            </div>
                         </div>
-                    </div>
-                    <div class="character-trait-item">
-                        <div class="character-trait-text">Not interrupting when others speak</div>
-                        <div class="growth-rating">
-                            <button class="rating-btn" onclick="setRating(this, 1)">Starting</button>
-                            <button class="rating-btn" onclick="setRating(this, 2)">Progress</button>
-                            <button class="rating-btn active" onclick="setRating(this, 3)">Excelling</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); padding: 12px; border-radius: 12px; border: 2px solid #86efac; margin-top: 16px;">
-                    <div style="font-size: 11px; font-weight: 700; color: #166534; margin-bottom: 4px;">💡 Growth Multipliers</div> 
-                    <div style="font-size: 10px; color: #166534; line-height: 1.4;">
-                        <strong>Starting</strong> 1.0x · <strong>Progress</strong> 1.5x · <strong>Excelling</strong> 2.0x
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -1118,60 +1132,7 @@
                 </div>
                 
                 <div class="wellness-card">
-                    <div class="form-group">
-                        <label class="form-label">Date:</label>
-                        <input type="date" class="form-input" id="wellness-date">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Observer Name:</label>
-                        <input type="text" class="form-input" placeholder="Who is filling this out?">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Period/Phase:</label>
-                        <select class="form-input">
-                            <option>📊 Baseline</option>
-                            <option>💊 Treatment</option>
-                            <option>✅ Maintenance</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Observer Ratings</label>
-                        <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">Rate observed behaviors (1=Poor, 5=Excellent)</p>
-                        
-                        <div style="background: #f9fafb; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                            <div style="font-weight: 600; font-size: 13px; margin-bottom: 8px;">Stays focused on tasks</div>
-                            <div style="display: flex; gap: 8px;">
-                                <button class="rating-btn" onclick="selectRating(this)">1</button>
-                                <button class="rating-btn" onclick="selectRating(this)">2</button>
-                                <button class="rating-btn active" onclick="selectRating(this)">3</button>
-                                <button class="rating-btn" onclick="selectRating(this)">4</button>
-                                <button class="rating-btn" onclick="selectRating(this)">5</button>
-                            </div>
-                        </div>
-
-                        <div style="background: #f9fafb; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                            <div style="font-weight: 600; font-size: 13px; margin-bottom: 8px;">Completes morning routine</div>
-                            <div style="display: flex; gap: 8px;">
-                                <button class="rating-btn" onclick="selectRating(this)">1</button>
-                                <button class="rating-btn" onclick="selectRating(this)">2</button>
-                                <button class="rating-btn" onclick="selectRating(this)">3</button>
-                                <button class="rating-btn active" onclick="selectRating(this)">4</button>
-                                <button class="rating-btn" onclick="selectRating(this)">5</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Notes:</label>
-                        <textarea class="form-input" placeholder="Any additional observations or notes..."></textarea>
-                    </div>
-
-                    <button class="save-btn" onclick="saveWellness()">
-                        💾 Save Entry
-                    </button>
+                    <!-- This will be dynamically populated -->
                 </div>
 
                 <div style="margin-top: 16px; padding: 16px; background: #f0f9ff; border-radius: 12px; border: 2px solid #bae6fd;">
@@ -1220,983 +1181,16 @@
     </div>
     <!-- End App Container -->
 
-    <script>
-        // ========================================
-        // FIREBASE CONFIGURATION
-        // ========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyCJzB673MruQvNpX_1wuGoHUFSk6leErFg",
-            authDomain: "family-tracker-37025.firebaseapp.com",
-            projectId: "family-tracker-37025",
-            storageBucket: "family-tracker-37025.firebasestorage.app",
-            messagingSenderId: "1004309710251",
-            appId: "1:1004309710251:web:933164ffa6d5f78e6c7eee"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const storage = firebase.storage();
-
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-        db.enablePersistence().catch((err) => console.log('Offline persistence:', err.code));
-
-        let currentUser = null;
-        let authInitialized = false;
-        let currentTaskIndex = 0; // Track which task we're on (0-based index)
-        let tasksCompletedToday = 0; // Track completed tasks
-        let totalTasksToday = 0;
-
-        // ========================================
-        // MOCK STATE MANAGER (simplified for demo)
-        // ========================================
-        const StateManager = {
-            state: {
-                currentChild: null,
-                currentDate: new Date().toISOString().split('T')[0],
-                familyId: null,
-                familyCode: null,
-                children: [],
-                data: {}
-            },
-            getCurrentChild() {
-                return this.state.data[this.state.currentChild];
-            },
-            getChild(childId) {
-                return this.state.data[childId];
-            },
-            getSchedule(filterByDay = true) {
-                const child = this.getCurrentChild();
-                if (!child || !child.schedule) return [];
-                
-                let schedule = [...child.schedule];
-                
-                if (filterByDay) {
-                    const currentDate = new Date(this.state.currentDate + 'T00:00:00');
-                    const dayOfWeek = currentDate.getDay();
-                    schedule = schedule.filter(item => !item.days || item.days.includes(dayOfWeek));
-                }
-                
-                // Sort by time
-                schedule.sort((a, b) => {
-                    const timeA = this.convertTimeToMinutes(a.time);
-                    const timeB = this.convertTimeToMinutes(b.time);
-                    return timeA - timeB;
-                });
-                
-                return schedule;
-            },
-            convertTimeToMinutes(timeStr) {
-                if (!timeStr) return 0;
-                const match = timeStr.toLowerCase().match(/(\d+):?(\d*)([ap]m)?/);
-                if (!match) return 0;
-                let hours = parseInt(match[1]);
-                const minutes = parseInt(match[2] || 0);
-                const period = match[3];
-                if (period === 'pm' && hours !== 12) hours += 12;
-                else if (period === 'am' && hours === 12) hours = 0;
-                return hours * 60 + minutes;
-            },
-            getDayData() {
-                const child = this.getCurrentChild();
-                if (!child) return {};
-                if (!child.days) child.days = {};
-                if (!child.days[this.state.currentDate]) {
-                    child.days[this.state.currentDate] = {
-                        schedule: {},
-                        weeklyChores: {},
-                        categoryMultipliers: {},
-                        notes: ''
-                    };
-                }
-                return child.days[this.state.currentDate];
-            }
-        };
-
-        window.StateManager = StateManager;
-
-        // ========================================
-        // FIREBASE DATA OPERATIONS
-        // ========================================
-        async function saveDataToFirebase() {
-            if (!currentUser) return;
-            
-            try {
-                console.log('💾 Saving data to Firebase...');
-                const userId = currentUser.uid;
-                
-                if (StateManager.state.familyId) {
-                    const familyRef = db.collection('families').doc(StateManager.state.familyId);
-                    await familyRef.set({
-                        children: StateManager.state.children,
-                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
-                    
-                    for (const childId of StateManager.state.children) {
-                        const memberData = StateManager.state.data[childId];
-                        if (!memberData) continue;
-                        
-                        const { days, ...memberInfo } = memberData;
-                        await familyRef.collection('familyMembers').doc(childId).set(memberInfo, { merge: true });
-                        
-                        for (const [date, dayData] of Object.entries(days || {})) {
-                            await familyRef.collection('familyMembers').doc(childId)
-                                .collection('days').doc(date).set(dayData, { merge: true });
-                        }
-                    }
-                }
-                
-                console.log('✅ Data saved');
-            } catch (error) {
-                console.error('❌ Save error:', error);
-            }
-        }
-
-        async function loadDataFromFirebase() {
-            if (!currentUser) return;
-            
-            try {
-                console.log('📥 Loading data from Firebase...');
-                const userId = currentUser.uid;
-                const userRef = db.collection('users').doc(userId);
-                const userDoc = await userRef.get();
-                
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    
-                    if (userData.familyId) {
-                        const familyRef = db.collection('families').doc(userData.familyId);
-                        const familyDoc = await familyRef.get();
-                        
-                        if (familyDoc.exists) {
-                            const familyData = familyDoc.data();
-                            StateManager.state.children = familyData.children || [];
-                            StateManager.state.familyId = userData.familyId;
-                            StateManager.state.familyCode = familyData.familyCode;
-                            
-                            // Load all family members
-                            for (const childId of StateManager.state.children) {
-                                const memberDoc = await familyRef.collection('familyMembers').doc(childId).get();
-                                if (memberDoc.exists) {
-                                    StateManager.state.data[childId] = memberDoc.data();
-                                    
-                                    // Ensure required fields
-                                    if (!StateManager.state.data[childId].trackers) {
-                                        StateManager.state.data[childId].trackers = [];
-                                    }
-                                    if (!StateManager.state.data[childId].days) {
-                                        StateManager.state.data[childId].days = {};
-                                    }
-                                    if (!StateManager.state.data[childId].schedule) {
-                                        StateManager.state.data[childId].schedule = [];
-                                    }
-                                    if (!StateManager.state.data[childId].weeklyChores) {
-                                        StateManager.state.data[childId].weeklyChores = [];
-                                    }
-                                    if (!StateManager.state.data[childId].characterValues) {
-                                        StateManager.state.data[childId].characterValues = [];
-                                    }
-                                    
-                                    // Load days data
-                                    const daysSnapshot = await familyRef.collection('familyMembers').doc(childId)
-                                        .collection('days').get();
-                                    StateManager.state.data[childId].days = {};
-                                    daysSnapshot.forEach(doc => {
-                                        StateManager.state.data[childId].days[doc.id] = doc.data();
-                                    });
-                                    
-                                    console.log('✅ Loaded member:', StateManager.state.data[childId].name);
-                                }
-                            }
-                            
-                            // Set current child to first available
-                            if (StateManager.state.children.length > 0) {
-                                StateManager.state.currentChild = StateManager.state.children[0];
-                            }
-                        }
-                    } else {
-                        // New user - create family
-                        console.log('Creating new family for user...');
-                        const familyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-                        const familyId = 'family_' + Date.now();
-                        
-                        await db.collection('families').doc(familyId).set({
-                            familyCode: familyCode,
-                            createdBy: currentUser.uid,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            children: []
-                        });
-                        
-                        await userRef.set({
-                            email: currentUser.email,
-                            displayName: currentUser.displayName,
-                            familyId: familyId,
-                            joinedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                        
-                        StateManager.state.familyId = familyId;
-                        StateManager.state.familyCode = familyCode;
-                        StateManager.state.children = [];
-                        
-                        console.log('✅ New family created with code:', familyCode);
-                    }
-                }
-                
-                console.log('✅ Data loaded');
-                return true;
-            } catch (error) {
-                console.error('❌ Load error:', error);
-                alert('Failed to load data: ' + error.message);
-                return false;
-            }
-        }
-
-        // ========================================
-        // UI UPDATE FUNCTIONS
-        // ========================================
-        function updateUI() {
-            const child = StateManager.getCurrentChild();
-            if (!child) {
-                // Show empty state
-                document.querySelector('.mobile-content').innerHTML = `
-                    <div style="text-align: center; padding: 40px 20px;">
-                        <h2>No Family Members Yet</h2>
-                        <p style="color: #6b7280; margin: 16px 0;">Add family members in the desktop app to get started.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Apply theme colors
-            applyColorTheme(child.colorPalette || 'purple');
-            
-            // Update member selector
-            document.getElementById('current-name').textContent = child.name;
-            
-            // Update member avatar
-            const avatar = document.getElementById('current-avatar');
-            if (child.photo) {
-                avatar.innerHTML = `<img src="${child.photo}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
-            } else {
-                avatar.textContent = child.name ? child.name.charAt(0).toUpperCase() : '👤';
-            }
-            
-            // Populate member dropdown
-            updateMemberDropdown();
-            
-            // Update current task display
-            updateScheduleFromData();
-            
-            // Update stats
-            updateStatsCards();
-            
-            // Update responsibilities
-            updateResponsibilities();
-            
-            // Update wellness trackers
-            updateWellnessTrackers();
-        }
-
-        function applyColorTheme(paletteKey) {
-            const palette = CONFIG.COLOR_PALETTES[paletteKey] || CONFIG.COLOR_PALETTES.purple;
-            
-            document.documentElement.style.setProperty('--theme-gradient-1', palette.bgGradient1);
-            document.documentElement.style.setProperty('--theme-gradient-2', palette.bgGradient2);
-            document.documentElement.style.setProperty('--theme-accent', palette.accent);
-            document.documentElement.style.setProperty('--theme-accent-hover', palette.accentHover);
-            document.documentElement.style.setProperty('--theme-accent-light', palette.accentLight);
-        }
-
-        function updateMemberDropdown() {
-            const dropdown = document.getElementById('member-dropdown');
-            dropdown.innerHTML = StateManager.state.children.map((childId, idx) => {
-                const child = StateManager.getChild(childId);
-                if (!child) return '';
-                
-                const schedule = StateManager.state.data[childId] ? 
-                    (StateManager.state.data[childId].schedule || []) : [];
-                const dayData = child.days ? (child.days[StateManager.state.currentDate] || {}) : {};
-                const completed = Object.values(dayData.schedule || {}).filter(v => v === true).length;
-                const total = schedule.length;
-                
-                const isActive = childId === StateManager.state.currentChild;
-                
-                return `
-                    <div class="member-option ${isActive ? 'active' : ''}" onclick="selectMemberById('${childId}')">
-                        <div class="member-avatar">${child.photo ? 
-                            `<img src="${child.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : 
-                            child.name.charAt(0).toUpperCase()}</div>
-                        <div>
-                            <div style="font-weight: 600;">${child.name}</div>
-                            <div style="font-size: 12px; color: #6b7280;">${completed} of ${total} tasks complete</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function updateScheduleFromData() {
-            const child = StateManager.getCurrentChild();
-            if (!child) return;
-            
-            const schedule = StateManager.getSchedule();
-            const dayData = StateManager.getDayData();
-            
-            if (schedule.length === 0) {
-                document.querySelector('.current-task-card').innerHTML = `
-                    <div style="text-align: center; padding: 20px;">
-                        <p>No schedule items for today. Add them in the desktop app!</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Find current task (first incomplete)
-            totalTasksToday = schedule.length;
-            tasksCompletedToday = Object.values(dayData.schedule || {}).filter(v => v === true).length;
-            
-            currentTaskIndex = schedule.findIndex(item => !dayData.schedule[item.id]);
-            if (currentTaskIndex === -1) currentTaskIndex = schedule.length - 1;
-            
-            updateCurrentTask();
-        }
-
-        function updateCurrentTask() {
-            const schedule = StateManager.getSchedule();
-            if (schedule.length === 0) return;
-            
-            const task = schedule[currentTaskIndex];
-            if (!task) return;
-            
-            const dayData = StateManager.getDayData();
-            const isCompleted = dayData.schedule[task.id] === true;
-            
-            document.querySelector('.task-time').textContent = 
-                `${task.time} — Task ${currentTaskIndex + 1} of ${totalTasksToday}`;
-            document.querySelector('.task-name').textContent = task.name;
-            
-            const taskList = document.querySelector('.task-checklist');
-            taskList.innerHTML = (task.tasks || []).map(t => `<li>${t}</li>`).join('');
-            
-            const completeBtn = document.querySelector('.complete-task-btn');
-            if (isCompleted) {
-                completeBtn.classList.add('completed');
-                completeBtn.textContent = '✓ Completed';
-            } else {
-                completeBtn.classList.remove('completed');
-                completeBtn.textContent = '✓ Mark Complete';
-            }
-            
-            updateTimelinePreview();
-        }
-
-        function updateTimelinePreview() {
-            const schedule = StateManager.getSchedule();
-            const dayData = StateManager.getDayData();
-            
-            const track = document.getElementById('tasks-track');
-            track.innerHTML = schedule.map((task, idx) => {
-                const isCompleted = dayData.schedule[task.id] === true;
-                const statusClass = isCompleted ? 'completed' : 'pending';
-                const statusText = isCompleted ? '✓ Completed' : 
-                                  idx === currentTaskIndex ? 'In Progress' : 'Not Started';
-                const cardClass = isCompleted ? 'past' : 
-                                 idx === currentTaskIndex ? 'current' : 'future';
-                
-                return `
-                    <div class="task-preview ${cardClass}" data-task-index="${idx}" onclick="jumpToTask(${idx})">
-                        <div class="preview-time">${task.time}</div>
-                        <div class="preview-name">${task.name}</div>
-                        <span class="preview-status ${statusClass}">${statusText}</span>
-                    </div>
-                `;
-            }).join('');
-            
-            const indicators = document.querySelector('.swipe-indicators');
-            indicators.innerHTML = schedule.map((_, idx) => 
-                `<div class="indicator-dot ${idx === currentTaskIndex ? 'active' : ''}"></div>`
-            ).join('');
-        }
-
-        function updateStatsCards() {
-            const dailyPercent = totalTasksToday > 0 ? 
-                Math.round((tasksCompletedToday / totalTasksToday) * 100) : 0;
-            
-            const statCards = document.querySelectorAll('.stat-card');
-            if (statCards[0]) {
-                statCards[0].querySelector('.stat-value').textContent = dailyPercent + '%';
-                statCards[0].querySelector('.stat-subtext').textContent = 
-                    `${tasksCompletedToday} of ${totalTasksToday} tasks complete`;
-            }
-            
-            const child = StateManager.getCurrentChild();
-            if (statCards[2] && child) {
-                statCards[2].querySelector('.stat-value').textContent = child.pointsBalance || 0;
-                statCards[2].querySelector('.stat-subtext').textContent = 
-                    `+${tasksCompletedToday} points today`;
-            }
-        }
-
-        function updateResponsibilities() {
-            const child = StateManager.getCurrentChild();
-            if (!child) return;
-            
-            const chores = child.weeklyChores || [];
-            const dayData = StateManager.getDayData();
-            
-            // Update completion badge
-            const weeklyChoresData = {};
-            chores.forEach(chore => weeklyChoresData[chore.id] = false);
-            
-            // Check across the week
-            const weekDates = getWeekDates(StateManager.state.currentDate);
-            weekDates.forEach(date => {
-                const dd = child.days && child.days[date] ? child.days[date] : {};
-                if (dd.weeklyChores) {
-                    Object.keys(dd.weeklyChores).forEach(choreId => {
-                        if (dd.weeklyChores[choreId]) weeklyChoresData[choreId] = true;
-                    });
-                }
-            });
-            
-            const completed = Object.values(weeklyChoresData).filter(Boolean).length;
-            const total = chores.length;
-            const badge = document.querySelector('.completion-badge');
-            
-            if (badge && total > 0) {
-                const percent = Math.round((completed / total) * 100);
-                badge.textContent = `${completed} / ${total} Complete (${percent}%)`;
-                badge.className = completed === total ? 'completion-badge complete' : 'completion-badge incomplete';
-            }
-            
-            // Render chores
-            const choresList = document.querySelector('.responsibility-card');
-            if (choresList && chores.length > 0) {
-                choresList.innerHTML = chores.map((chore, idx) => {
-                    const isChecked = weeklyChoresData[chore.id];
-                    return `
-                        <div class="responsibility-item">
-                            <div class="task-checkbox ${isChecked ? 'checked' : ''}" 
-                                 onclick="toggleChore('${chore.id}')"></div>
-                            <span>${chore.name}</span>
-                        </div>
-                    `;
-                }).join('');
-            } else if (choresList) {
-                choresList.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">No weekly responsibilities yet. Add them in the desktop app!</div>';
-            }
-            
-            // Render character values
-            renderCharacterValues();
-        }
-
-        function renderCharacterValues() {
-            const child = StateManager.getCurrentChild();
-            if (!child) return;
-            
-            const categories = child.characterValues || [];
-            const dayData = StateManager.getDayData();
-            
-            const container = document.querySelector('.responsibilities-content');
-            const growthSection = container.querySelector('[style*="margin-top: 24px"]');
-            
-            if (!growthSection) return;
-            
-            // Clear existing content after the header
-            while (growthSection.nextSibling && !growthSection.nextSibling.classList?.contains('section-header')) {
-                if (growthSection.nextSibling.style && growthSection.nextSibling.style.background) break;
-                growthSection.nextSibling.remove();
-            }
-            
-            if (categories.length === 0) {
-                const emptyDiv = document.createElement('div');
-                emptyDiv.style.cssText = 'padding: 20px; text-align: center; color: #6b7280;';
-                emptyDiv.textContent = 'No personal growth areas yet. Add them in the desktop app!';
-                growthSection.parentNode.insertBefore(emptyDiv, growthSection.nextSibling);
-                return;
-            }
-            
-            categories.forEach(category => {
-                const categoryDiv = document.createElement('div');
-                categoryDiv.className = 'character-category';
-                
-                let html = `<div class="character-category-title">${category.category}</div>`;
-                
-                category.items.forEach((item, itemIdx) => {
-                    const currentRating = dayData.categoryMultipliers?.[category.id] || 1.0;
-                    
-                    html += `
-                        <div class="character-trait-item">
-                            <div class="character-trait-text">${item}</div>
-                            <div class="growth-rating">
-                                <button class="rating-btn ${currentRating === 1.0 ? 'active' : ''}" 
-                                        onclick="setCharacterRating('${category.id}', 1.0)">Starting</button>
-                                <button class="rating-btn ${currentRating === 1.5 ? 'active' : ''}" 
-                                        onclick="setCharacterRating('${category.id}', 1.5)">Progress</button>
-                                <button class="rating-btn ${currentRating === 2.0 ? 'active' : ''}" 
-                                        onclick="setCharacterRating('${category.id}', 2.0)">Excelling</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                categoryDiv.innerHTML = html;
-                growthSection.parentNode.insertBefore(categoryDiv, growthSection.nextSibling);
-            });
-        }
-
-        function getWeekDates(date) {
-            const d = new Date(date + 'T00:00:00');
-            const day = d.getDay();
-            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-            const monday = new Date(d.setDate(diff));
-            
-            const dates = [];
-            for (let i = 0; i < 7; i++) {
-                const current = new Date(monday);
-                current.setDate(monday.getDate() + i);
-                dates.push(current.toISOString().split('T')[0]);
-            }
-            return dates;
-        }
-
-        function jumpToTask(index) {
-            currentTaskIndex = index;
-            updateCurrentTask();
-        }
-
-        function updateWellnessTrackers() {
-            const child = StateManager.getCurrentChild();
-            const selectionView = document.getElementById('wellness-tracker-selection');
-            
-            if (!child || !child.trackers || child.trackers.length === 0) {
-                if (selectionView) {
-                    selectionView.innerHTML = `
-                        <div class="section-header">
-                            <div class="section-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                                </svg>
-                            </div>
-                            Wellness Journals
-                        </div>
-                        <div style="background: #f0f9ff; padding: 16px; border-radius: 12px; border: 2px solid #bae6fd; text-align: center;">
-                            <div style="font-size: 14px; color: #0369a1;">No wellness journals yet. Add one in the desktop app!</div>
-                        </div>
-                    `;
-                }
-                return;
-            }
-            
-            const trackerSelector = selectionView.querySelector('.tracker-selector');
-            if (!trackerSelector) return;
-            
-            trackerSelector.innerHTML = child.trackers.map(tracker => {
-                const entryCount = tracker.entries ? tracker.entries.length : 0;
-                const lastEntry = entryCount > 0 ? 'Today' : 'Never';
-                
-                // Use icon if provided, otherwise use generic SVG
-                const iconHtml = tracker.icon ? 
-                    `<div style="font-size: 32px;">${tracker.icon}</div>` :
-                    `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
-                        <polyline points="10 9 9 9 8 9"/>
-                    </svg>`;
-                
-                return `
-                    <div class="tracker-option" onclick="openTracker('${tracker.id}')">
-                        <div class="tracker-icon">${iconHtml}</div>
-                        <div class="tracker-info">
-                            <div class="tracker-name">${tracker.templateName}</div>
-                            <div class="tracker-entries">${entryCount} entries · Last: ${lastEntry}</div>
-                        </div>
-                        <div style="color: #6b7280;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"/>
-                            </svg>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // ========================================
-        // AUTH STATE LISTENER & LOGIN
-        // ========================================
-        
-        // Setup Google Sign-In
-        document.addEventListener('DOMContentLoaded', function() {
-            const signInBtn = document.getElementById('google-signin-btn');
-            if (signInBtn) {
-                signInBtn.addEventListener('click', async () => {
-                    try {
-                        const provider = new firebase.auth.GoogleAuthProvider();
-                        provider.setCustomParameters({
-                            prompt: 'select_account'
-                        });
-                        
-                        document.getElementById('login-content').style.display = 'none';
-                        document.getElementById('loading-content').style.display = 'block';
-                        
-                        await auth.signInWithPopup(provider);
-                    } catch (error) {
-                        console.error('Sign in failed:', error);
-                        document.getElementById('login-content').style.display = 'block';
-                        document.getElementById('loading-content').style.display = 'none';
-                        
-                        if (error.code === 'auth/popup-blocked') {
-                            alert('⚠️ Popup was blocked! Please allow popups for this site and try again.');
-                        } else if (error.code !== 'auth/popup-closed-by-user') {
-                            alert('Sign in failed: ' + error.message);
-                        }
-                    }
-                });
-            }
-        });
-
-        auth.onAuthStateChanged(async (user) => {
-            if (user && !authInitialized) {
-                authInitialized = true;
-                currentUser = user;
-                console.log('✅ User signed in:', user.email);
-                
-                document.getElementById('loading-content').style.display = 'block';
-                
-                const success = await loadDataFromFirebase();
-                
-                if (success) {
-                    updateUI();
-                    document.getElementById('login-overlay').style.display = 'none';
-                    document.getElementById('app-container').style.display = 'block';
-                } else {
-                    document.getElementById('loading-content').style.display = 'none';
-                    document.getElementById('login-content').style.display = 'block';
-                }
-            } else if (!user) {
-                authInitialized = false;
-                currentUser = null;
-                document.getElementById('login-overlay').style.display = 'flex';
-                document.getElementById('app-container').style.display = 'none';
-                document.getElementById('login-content').style.display = 'block';
-                document.getElementById('loading-content').style.display = 'none';
-            }
-        });
-
-        // Set today's date for wellness journal
-        // Set today's date
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('wellness-date').value = today;
-
-        // Stats card swiping
-        let statsStartX = 0;
-        let statsCurrentX = 0;
-        let statsIsDragging = false;
-        let currentStatIndex = 0;
-
-        function initStatsSwipe() {
-            const statsTrack = document.getElementById('stats-track');
-            if (!statsTrack) return;
-            
-            const statCards = document.querySelectorAll('.stat-card');
-
-            statsTrack.addEventListener('touchstart', (e) => {
-                statsStartX = e.touches[0].clientX;
-                statsIsDragging = true;
-                statsTrack.style.transition = 'none';
-            });
-
-            statsTrack.addEventListener('touchmove', (e) => {
-                if (!statsIsDragging) return;
-                statsCurrentX = e.touches[0].clientX;
-                const diff = statsCurrentX - statsStartX;
-                const currentOffset = -currentStatIndex * (window.innerWidth - 32);
-                statsTrack.style.transform = `translateX(${currentOffset + diff}px)`;
-            });
-
-            statsTrack.addEventListener('touchend', () => {
-                if (!statsIsDragging) return;
-                statsIsDragging = false;
-                
-                const diff = statsCurrentX - statsStartX;
-                const threshold = 50;
-                
-                if (Math.abs(diff) > threshold) {
-                    if (diff > 0 && currentStatIndex > 0) {
-                        currentStatIndex--;
-                    } else if (diff < 0 && currentStatIndex < statCards.length - 1) {
-                        currentStatIndex++;
-                    }
-                }
-                
-                statsTrack.style.transition = 'transform 0.3s ease';
-                const offset = -currentStatIndex * (window.innerWidth - 32);
-                statsTrack.style.transform = `translateX(${offset}px)`;
-                
-                // Update indicators
-                document.querySelectorAll('.stat-dot').forEach((dot, idx) => {
-                    dot.classList.toggle('active', idx === currentStatIndex);
-                });
-            });
-        }
-
-        // Member dropdown
-        function toggleMemberDropdown() {
-            const dropdown = document.getElementById('member-dropdown');
-            dropdown.classList.toggle('active');
-        }
-
-        function selectMemberById(childId) {
-            StateManager.state.currentChild = childId;
-            updateUI();
-            toggleMemberDropdown();
-            saveDataToFirebase();
-        }
-
-        window.selectMemberById = selectMemberById;
-
-        // Click outside to close dropdown
-        document.addEventListener('click', (e) => {
-            const dropdown = document.getElementById('member-dropdown');
-            const selector = document.querySelector('.member-selector');
-            if (!dropdown.contains(e.target) && !selector.contains(e.target)) {
-                dropdown.classList.remove('active');
-            }
-        });
-
-        // View switching
-        function switchView(view) {
-            const views = ['routine', 'responsibilities', 'wellness'];
-            views.forEach(v => {
-                const viewEl = document.getElementById(`${v}-view`);
-                if (viewEl) viewEl.classList.remove('active');
-            });
-            document.getElementById(`${view}-view`).classList.add('active');
-
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-
-            // Show tracker selection when opening wellness
-            if (view === 'wellness') {
-                document.getElementById('wellness-tracker-selection').style.display = 'block';
-                document.getElementById('wellness-tracker-entry').style.display = 'none';
-            }
-        }
-
-        // Task completion
-        function toggleChore(choreId) {
-            const child = StateManager.getCurrentChild();
-            if (!child) return;
-            
-            const dayData = StateManager.getDayData();
-            if (!dayData.weeklyChores) dayData.weeklyChores = {};
-            
-            dayData.weeklyChores[choreId] = !dayData.weeklyChores[choreId];
-            
-            updateResponsibilities();
-            saveDataToFirebase();
-        }
-
-        function setCharacterRating(categoryId, rating) {
-            const dayData = StateManager.getDayData();
-            if (!dayData.categoryMultipliers) dayData.categoryMultipliers = {};
-            
-            dayData.categoryMultipliers[categoryId] = rating;
-            
-            renderCharacterValues();
-            saveDataToFirebase();
-        }
-
-        window.toggleChore = toggleChore;
-        window.setCharacterRating = setCharacterRating;
-
-        function completeTask() {
-            const btn = event.currentTarget;
-            const schedule = StateManager.getSchedule();
-            const task = schedule[currentTaskIndex];
-            
-            if (!task) return;
-            
-            const dayData = StateManager.getDayData();
-            if (dayData.schedule[task.id]) {
-                // Already completed
-                return;
-            }
-            
-            btn.classList.add('completed');
-            btn.textContent = '✓ Completed!';
-            
-            // Mark as completed
-            dayData.schedule[task.id] = true;
-            tasksCompletedToday++;
-            
-            // Update progress immediately
-            updateStatsCards();
-            
-            setTimeout(() => {
-                // Move to next incomplete task
-                let nextIndex = currentTaskIndex + 1;
-                while (nextIndex < schedule.length && dayData.schedule[schedule[nextIndex].id]) {
-                    nextIndex++;
-                }
-                
-                if (nextIndex < schedule.length) {
-                    currentTaskIndex = nextIndex;
-                    updateCurrentTask();
-                } else {
-                    // All tasks completed
-                    btn.textContent = '🎉 All Done!';
-                }
-                
-                // Save to Firebase
-                saveDataToFirebase();
-            }, 1000);
-        }
-
-        // Swipe functionality for task timeline
-        let startX = 0;
-        let currentX = 0;
-        let isDragging = false;
-        let currentScrollOffset = 0;
-
-        function initTaskSwipe() {
-            const track = document.getElementById('tasks-track');
-            if (!track) return;
-
-            track.addEventListener('touchstart', (e) => {
-                startX = e.touches[0].clientX;
-                isDragging = true;
-                track.style.transition = 'none';
-            });
-
-            track.addEventListener('touchmove', (e) => {
-                if (!isDragging) return;
-                e.preventDefault();
-                currentX = e.touches[0].clientX;
-                const diff = currentX - startX;
-                track.style.transform = `translateX(${currentScrollOffset + diff}px)`;
-            });
-
-            track.addEventListener('touchend', () => {
-                if (!isDragging) return;
-                isDragging = false;
-                
-                const diff = currentX - startX;
-                const cardWidth = 296; // 280px + 16px gap
-                
-                if (Math.abs(diff) > 50) {
-                    if (diff > 0) {
-                        // Swipe right - go to previous
-                        currentScrollOffset = Math.min(currentScrollOffset + cardWidth, 0);
-                    } else {
-                        // Swipe left - go to next
-                        const maxScroll = -(track.scrollWidth - track.parentElement.offsetWidth);
-                        currentScrollOffset = Math.max(currentScrollOffset - cardWidth, maxScroll);
-                    }
-                } else {
-                    // Snap back to current position
-                }
-                
-                track.style.transition = 'transform 0.3s ease';
-                track.style.transform = `translateX(${currentScrollOffset}px)`;
-            });
-        }
-
-        // Growth ratings
-        function setRating(btn, level) {
-            const container = btn.parentElement;
-            container.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
-        // Wellness tracker selection
-        function openTracker(trackerId) {
-            document.getElementById('wellness-tracker-selection').style.display = 'none';
-            document.getElementById('wellness-tracker-entry').style.display = 'block';
-            
-            const child = StateManager.getCurrentChild();
-            if (!child || !child.trackers) return;
-            
-            const tracker = child.trackers.find(t => t.id === trackerId);
-            if (tracker) {
-                document.getElementById('tracker-title').textContent = tracker.templateName || 'Wellness Tracker';
-            }
-        }
-
-        function backToTrackerList() {
-            document.getElementById('wellness-tracker-selection').style.display = 'block';
-            document.getElementById('wellness-tracker-entry').style.display = 'none';
-        }
-
-        function selectRating(btn) {
-            const container = btn.parentElement;
-            container.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
-        function saveWellness() {
-            // Collect form data
-            const date = document.getElementById('wellness-date').value;
-            const observer = document.querySelector('#wellness-tracker-entry input[type="text"]').value;
-            const phase = document.querySelector('#wellness-tracker-entry select').value;
-            const notes = document.querySelector('#wellness-tracker-entry textarea').value;
-            
-            // Collect ratings
-            const ratings = {};
-            document.querySelectorAll('#wellness-tracker-entry .rating-btn.active').forEach(btn => {
-                const ratingGroup = btn.parentElement;
-                const question = ratingGroup.previousElementSibling;
-                if (question) {
-                    ratings[question.textContent] = btn.textContent;
-                }
-            });
-            
-            const entry = {
-                date,
-                observer,
-                phase,
-                notes,
-                ratings,
-                timestamp: Date.now()
-            };
-            
-            // Save to current tracker
-            const child = StateManager.getCurrentChild();
-            if (child && child.trackers) {
-                // Find active tracker (simplified - would need to track which one is open)
-                const tracker = child.trackers[0];
-                if (tracker) {
-                    if (!tracker.entries) tracker.entries = [];
-                    tracker.entries.push(entry);
-                    
-                    saveDataToFirebase().then(() => {
-                        alert('Wellness entry saved! ✓');
-                        setTimeout(() => {
-                            backToTrackerList();
-                        }, 500);
-                    });
-                }
-            }
-        }
-
-        // Initialize swipe handlers when DOM is ready
-        setTimeout(() => {
-            initStatsSwipe();
-            initTaskSwipe();
-        }, 1000);
-
-        // Add logout function
-        window.logout = function() {
-            if (confirm('Are you sure you want to log out?')) {
-                auth.signOut();
-            }
-        };
-
-        // Make jumpToTask globally available
-        window.jumpToTask = jumpToTask;
-    </script>
+    <!-- Load Desktop App.js for StateManager and PointsModule -->
+    <script src="https://type1unbound.github.io/family-tracker/app.js"></script>
+    
+    <!-- Load Mobile JavaScript Modules -->
+    <script src="firebase-config.js"></script>
+    <script src="data-operations.js"></script>
+    <script src="ui-updates.js"></script>
+    <script src="wellness-tracker.js"></script>
+    <script src="interaction-handlers.js"></script>
+    <script src="auth-handlers.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>
