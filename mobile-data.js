@@ -62,9 +62,6 @@ async function loadDataFromFirebase() {
                         if (memberDoc.exists) {
                             StateManager.state.data[childId] = memberDoc.data();
                             
-                            console.log('  Raw member data for', childId, ':', memberDoc.data());
-                            console.log('  Schedule data:', StateManager.state.data[childId].schedule);
-                            
                             // Initialize missing properties
                             if (!StateManager.state.data[childId].trackers) {
                                 StateManager.state.data[childId].trackers = [];
@@ -74,9 +71,6 @@ async function loadDataFromFirebase() {
                             }
                             if (!StateManager.state.data[childId].schedule) {
                                 StateManager.state.data[childId].schedule = [];
-                                console.log('  WARNING: No schedule found, initialized empty array');
-                            } else {
-                                console.log('  Schedule exists with', StateManager.state.data[childId].schedule.length, 'items');
                             }
                             if (!StateManager.state.data[childId].weeklyChores) {
                                 StateManager.state.data[childId].weeklyChores = [];
