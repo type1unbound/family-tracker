@@ -959,11 +959,14 @@ const MedicationTracker = {
         // Sort by date, newest first
         const sortedEntries = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        let html = '<div style="display: flex; flex-direction: column; gap: 16px;">';
-        sortedEntries.forEach((entry, index) => {
-            const avgRating = Object.values(entry.ratings).length > 0
-                ? (Object.values(entry.ratings).reduce((a, b) => a + b, 0) / Object.values(entry.ratings).length).toFixed(1)
-                : 'N/A';
+    let html = '<div style="display: flex; flex-direction: column; gap: 16px;">';
+    sortedEntries.forEach((entry, index) => {
+        // Safe check for ratings object
+        const ratings = entry.ratings || {};
+        const ratingValues = Object.values(ratings);
+        const avgRating = ratingValues.length > 0
+            ? (ratingValues.reduce((a, b) => a + b, 0) / ratingValues.length).toFixed(1)
+            : 'N/A';
 
             html += `
                 <div style="background: #f9fafb; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">
