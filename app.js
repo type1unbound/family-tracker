@@ -1,5 +1,5 @@
 // ========================================
-// FAMILY ROUTINE & VALUES TRACKERS - Fix scorecard 9:55 11/22/2025 - Testing
+// FAMILY ROUTINE & VALUES TRACKERS - Update Theme Colors 17:10 11/19/2025 - Working
 // Consolidated Single-File Application
 // ========================================
 
@@ -685,8 +685,6 @@ const ScheduleModule = {
             `;
         }
 
-
-
         // Attach scroll listener if not already attached
         if (!this.scrollListenerAttached) {
             this.attachScrollListener();
@@ -708,134 +706,108 @@ const ScheduleModule = {
         
         if (!scheduleSection || items.length === 0) return;
         
-        const headerHeight = 70;
-        const focusZoneTop = headerHeight + 10;
-        const focusZoneBottom = focusZoneTop + 100;
-        
         const containerRect = scheduleSection.getBoundingClientRect();
-        const scrollTop = scheduleSection.scrollTop;
         
-        let focusedIndex = -1;
+        // Simple approach: Find the item closest to 150px from top
+        const targetPosition = 150;
+        let closestIndex = -1;
+        let closestDistance = Infinity;
         
-        // Special case: if scrolled to very top, focus first item
-        if (scrollTop < 20) {
-            focusedIndex = 0;
-        } else {
-            // Find which item is in the focus zone
-            items.forEach((item, index) => {
-                const itemRect = item.getBoundingClientRect();
-                const itemTop = itemRect.top - containerRect.top;
-                
-                if (itemTop >= focusZoneTop && itemTop < focusZoneBottom) {
-                    focusedIndex = index;
-                }
-            });
-        }
+        items.forEach((item, index) => {
+            const itemRect = item.getBoundingClientRect();
+            const itemTop = itemRect.top - containerRect.top;
+            const distance = Math.abs(itemTop - targetPosition);
+            
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestIndex = index;
+            }
+        });
         
-        if (focusedIndex >= 0) {
+        if (closestIndex >= 0) {
             const schedule = StateManager.getSchedule();
-            const focusedItem = schedule[focusedIndex];
+            const focusedItem = schedule[closestIndex];
             
             if (focusedItem && this.currentFocusedItemId !== focusedItem.id) {
-                console.log('📍 Auto-focusing:', focusedItem.time, focusedItem.name);
                 this.renderFocusedScheduleItemById(focusedItem.id);
-                this.updateScheduleFocusStates(focusedIndex);
+                this.updateScheduleFocusStates(closestIndex);
             }
         }
     },
 
     renderFocusedScheduleItem() {
-    const schedule = StateManager.getSchedule();
-    const dayData = StateManager.getDayData();
-    const container = document.getElementById('schedule-detail-container');
-    
-    // Safety check
-    if (!container) {
-        console.warn('schedule-detail-container not found in HTML');
-        return;
-    }
-    
-    if (schedule.length === 0) {
-        container.style.display = 'none';
-        return;
-    }
-    
-    // Get current time in minutes (using local timezone)
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    
-    // Find the current or next incomplete item
-    let focusedItem = null;
-    let focusedIndex = -1;
-    
-    // Find the current or next incomplete item closest to current time
-    let firstIncompleteAtOrAfter = null;
-    let firstIncompleteAtOrAfterIndex = -1;
-    let lastIncompleteBefore = null;
-    let lastIncompleteBeforeIndex = -1;
-
-    for (let i = 0; i < schedule.length; i++) {
-        const item = schedule[i];
-        const itemMinutes = StateManager.convertTimeToMinutes(item.time);
-        const isComplete = dayData.schedule[item.id] === true;
+        const schedule = StateManager.getSchedule();
+        const dayData = StateManager.getDayData();
+        const container = document.getElementById('schedule-detail-container');
         
-        if (!isComplete) {
-            if (itemMinutes >= currentMinutes) {
-                // First incomplete item at or after current time
-                if (firstIncompleteAtOrAfter === null) {
-                    firstIncompleteAtOrAfter = item;
-                    firstIncompleteAtOrAfterIndex = i;
+        // Safety check
+        if (!container) {
+            console.warn('schedule-detail-container not found in HTML');
+            return;
+        }
+        
+        if (schedule.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+        
+        // Get current time in minutes (local timezone)
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        
+        // Find the next upcoming incomplete item, or most recent incomplete
+        let focusedItem = null;
+        let focusedIndex = -1;
+        
+        let firstIncompleteAtOrAfter = null;
+        let firstIncompleteAtOrAfterIndex = -1;
+        let lastIncompleteBefore = null;
+        let lastIncompleteBeforeIndex = -1;
+
+        for (let i = 0; i < schedule.length; i++) {
+            const item = schedule[i];
+            const itemMinutes = StateManager.convertTimeToMinutes(item.time);
+            const isComplete = dayData.schedule[item.id] === true;
+            
+            if (!isComplete) {
+                if (itemMinutes >= currentMinutes) {
+                    // First incomplete item at or after current time
+                    if (firstIncompleteAtOrAfter === null) {
+                        firstIncompleteAtOrAfter = item;
+                        firstIncompleteAtOrAfterIndex = i;
+                    }
+                } else {
+                    // Most recent incomplete item before current time
+                    lastIncompleteBefore = item;
+                    lastIncompleteBeforeIndex = i;
                 }
-            } else {
-                // Keep track of the most recent incomplete item before current time
-                lastIncompleteBefore = item;
-                lastIncompleteBeforeIndex = i;
             }
         }
-    }
 
-    // Prioritize upcoming/current incomplete items, then fall back to most recent
-    if (firstIncompleteAtOrAfter) {
-        focusedItem = firstIncompleteAtOrAfter;
-        focusedIndex = firstIncompleteAtOrAfterIndex;
-    } else if (lastIncompleteBefore) {
-        focusedItem = lastIncompleteBefore;
-        focusedIndex = lastIncompleteBeforeIndex;
-    }
-    
-    // If all complete, show last item
-    if (!focusedItem && schedule.length > 0) {
-        focusedItem = schedule[schedule.length - 1];
-        focusedIndex = schedule.length - 1;
-    }
-    
-    if (!focusedItem) {
-        container.style.display = 'none';
-        return;
-    }
-    
-    // Render the focused item
-    this.renderFocusedScheduleItemById(focusedItem.id);
-    this.updateScheduleFocusStates(focusedIndex);
-    
-    // Only auto-scroll on initial load (when scroll position is at top)
-    // This allows users to manually scroll down without jumping back
-    const scheduleSection = document.querySelector('.schedule-section');
-    if (scheduleSection && scheduleSection.scrollTop < 50) {
-        setTimeout(() => {
-            const items = document.querySelectorAll('.timeline-item');
-            
-            if (items[focusedIndex] && scheduleSection) {
-                const headerHeight = 70;
-                const targetScroll = items[focusedIndex].offsetTop - headerHeight - 10;
-                scheduleSection.scrollTop = Math.max(0, targetScroll);
-                
-                // Trigger focus update after scroll
-                setTimeout(() => this.updateFocusBasedOnScroll(), 200);
-            }
-        }, 100);
-    }
-},
+        // Prioritize upcoming incomplete items, then fall back to most recent
+        if (firstIncompleteAtOrAfter) {
+            focusedItem = firstIncompleteAtOrAfter;
+            focusedIndex = firstIncompleteAtOrAfterIndex;
+        } else if (lastIncompleteBefore) {
+            focusedItem = lastIncompleteBefore;
+            focusedIndex = lastIncompleteBeforeIndex;
+        }
+        
+        // If all complete, show last item
+        if (!focusedItem && schedule.length > 0) {
+            focusedItem = schedule[schedule.length - 1];
+            focusedIndex = schedule.length - 1;
+        }
+        
+        if (!focusedItem) {
+            container.style.display = 'none';
+            return;
+        }
+        
+        // Render the focused item (no auto-scrolling)
+        this.renderFocusedScheduleItemById(focusedItem.id);
+        this.updateScheduleFocusStates(focusedIndex);
+    },
 
     renderFocusedScheduleItemById(itemId) {
         const schedule = StateManager.getSchedule();
