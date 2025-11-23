@@ -569,8 +569,12 @@ body {
 }
 
 #schedule-list {
-    padding-bottom: 100vh !important; /* Allow last item to scroll into focus zone */
+    padding-bottom: 300vh !important;
     min-height: 100%;
+}
+
+.schedule-section {
+    overflow-y: scroll !important;
 }
 
 /* Section Headers */
