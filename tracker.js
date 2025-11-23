@@ -930,9 +930,26 @@ const MedicationTracker = {
         const container = document.getElementById('med-history-list');
         if (!container) return;
 
+        // Better null checking
+        if (!this.currentChildId || !this.currentTrackerId) {
+            container.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 40px;">⚠️ Tracker not properly initialized. Please close and reopen the tracker.</p>';
+            return;
+        }
+
         const child = window.StateManager.getChild(this.currentChildId);
-        const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-        const entries = tracker?.entries || [];
+        if (!child) {
+            container.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 40px;">⚠️ Child data not found.</p>';
+            return;
+        }
+
+        const tracker = child.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) {
+            container.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 40px;">⚠️ Tracker not found.</p>';
+            return;
+        }
+
+        // Ensure entries is an array
+        const entries = Array.isArray(tracker.entries) ? tracker.entries : [];
 
         if (entries.length === 0) {
             container.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 40px;">No entries yet. Add your first entry in the Entry tab!</p>';
@@ -1048,359 +1065,376 @@ const MedicationTracker = {
     },
 
     renderAnalytics: function() {
-    const container = document.getElementById('med-analytics-content');
-    if (!container) return;
+        const container = document.getElementById('med-analytics-content');
+        if (!container) return;
 
-    const child = window.StateManager.getChild(this.currentChildId);
-    const tracker = child?.trackers?.find(t => t.id === this.currentTrackerId);
-    const entries = tracker?.entries || [];
-
-    if (entries.length < 3) {
-        container.innerHTML = `
-            <div style="text-align: center; padding: 60px 20px; background: #eff6ff; border-radius: 12px; border: 2px dashed #3b82f6;">
-                <div style="font-size: 64px; margin-bottom: 16px;">📊</div>
-                <p style="font-size: 18px; font-weight: 600; color: #1e40af;">Not Enough Data</p>
-                <p style="font-size: 14px; color: #3b82f6; margin-top: 8px;">Add at least 3 entries to see analytics</p>
-                <p style="font-size: 13px; color: #6b7280; margin-top: 4px;">Currently: ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}</p>
-            </div>
-        `;
-        return;
-    }
-
-    // Sort entries by date
-    const sortedEntries = [...entries].sort((a, b) => new Date(a.date) - new Date(a.date));
-
-    // Calculate statistics by period type
-    const periodTypes = this.currentConfig.periodTypes || [
-        { value: 'baseline', label: 'Baseline' },
-        { value: 'treatment', label: 'Treatment' },
-        { value: 'maintenance', label: 'Maintenance' }
-    ];
-
-    const getAverageForPeriod = (periodValue) => {
-        const periodEntries = entries.filter(e => e.periodType === periodValue);
-        if (periodEntries.length === 0) return null;
-        
-        let total = 0;
-        let count = 0;
-        periodEntries.forEach(entry => {
-            Object.values(entry.ratings || {}).forEach(rating => {
-                total += rating;
-                count++;
-            });
-        });
-        return count > 0 ? (total / count) : null;
-    };
-
-    const periodStats = periodTypes.map(pt => ({
-        ...pt,
-        count: entries.filter(e => e.periodType === pt.value).length,
-        average: getAverageForPeriod(pt.value)
-    }));
-
-    // Overall stats
-    const totalEntries = entries.length;
-    let totalRatings = 0;
-    let ratingCount = 0;
-    entries.forEach(entry => {
-        Object.values(entry.ratings || {}).forEach(rating => {
-            totalRatings += rating;
-            ratingCount++;
-        });
-    });
-    const overallAverage = ratingCount > 0 ? (totalRatings / ratingCount) : 0;
-
-    // Get first and last period averages for comparison
-    const firstPeriod = periodStats.find(p => p.count > 0);
-    const lastPeriod = [...periodStats].reverse().find(p => p.count > 0 && p.value !== firstPeriod?.value);
-
-    let html = '';
-
-    // ========================================
-    // SUMMARY CARDS
-    // ========================================
-    html += `
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; border-radius: 12px; margin-bottom: 24px;">
-            <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 16px;">📊 Overall Summary</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-                <div style="background: rgba(255,255,255,0.2); padding: 16px; border-radius: 8px;">
-                    <p style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Total Entries</p>
-                    <p style="font-size: 36px; font-weight: 700;">${totalEntries}</p>
-                </div>
-                <div style="background: rgba(255,255,255,0.2); padding: 16px; border-radius: 8px;">
-                    <p style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Overall Average</p>
-                    <p style="font-size: 36px; font-weight: 700;">${overallAverage.toFixed(1)}</p>
-                    <p style="font-size: 13px; opacity: 0.8;">out of 5.0</p>
-                </div>
-                ${firstPeriod && lastPeriod && firstPeriod.average && lastPeriod.average ? `
-                    <div style="background: rgba(255,255,255,0.2); padding: 16px; border-radius: 8px;">
-                        <p style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Change</p>
-                        <p style="font-size: 36px; font-weight: 700;">
-                            ${lastPeriod.average - firstPeriod.average > 0 ? '+' : ''}${(lastPeriod.average - firstPeriod.average).toFixed(2)}
-                        </p>
-                        <p style="font-size: 13px; opacity: 0.8;">
-                            ${(((lastPeriod.average - firstPeriod.average) / firstPeriod.average) * 100).toFixed(1)}%
-                        </p>
-                    </div>
-                ` : ''}
-            </div>
-        </div>
-    `;
-
-    // ========================================
-    // PERIOD BREAKDOWN
-    // ========================================
-    html += '<h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 16px;">📈 By Period/Phase</h3>';
-    html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">';
-
-    const periodColors = ['#fb923c', '#22c55e', '#a855f7', '#3b82f6', '#f59e0b'];
-    periodStats.forEach((period, idx) => {
-        if (period.count === 0) return;
-        const color = periodColors[idx % periodColors.length];
-        
-        html += `
-            <div style="background: ${color}20; border: 2px solid ${color}; padding: 16px; border-radius: 12px;">
-                <p style="font-size: 13px; color: ${color}; font-weight: 600; margin-bottom: 8px;">${period.label}</p>
-                <p style="font-size: 32px; font-weight: 700; color: #111827;">${period.average ? period.average.toFixed(1) : 'N/A'}</p>
-                <p style="font-size: 13px; color: #6b7280;">${period.count} ${period.count === 1 ? 'entry' : 'entries'}</p>
-            </div>
-        `;
-    });
-    html += '</div>';
-
-    // ========================================
-    // TREND LINE CHART (SVG)
-    // ========================================
-    html += '<h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 16px;">📈 Progress Over Time</h3>';
-    html += '<div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">';
-
-    // Prepare data for chart
-    const chartData = sortedEntries.map(entry => {
-        const allRatings = Object.values(entry.ratings || {});
-        const avgRating = allRatings.length > 0 ? (allRatings.reduce((a, b) => a + b, 0) / allRatings.length) : 0;
-        return {
-            date: entry.date,
-            average: avgRating,
-            periodType: entry.periodType
-        };
-    });
-
-    // SVG Chart dimensions
-    const chartWidth = 800;
-    const chartHeight = 300;
-    const padding = { top: 20, right: 30, bottom: 60, left: 50 };
-    const innerWidth = chartWidth - padding.left - padding.right;
-    const innerHeight = chartHeight - padding.top - padding.bottom;
-
-    // Scale functions
-    const xStep = innerWidth / (chartData.length - 1 || 1);
-    const yScale = (value) => padding.top + innerHeight - (value / 5) * innerHeight;
-
-    // Build SVG
-    let svg = `<svg width="100%" height="${chartHeight}" viewBox="0 0 ${chartWidth} ${chartHeight}" style="max-width: 100%;">`;
-    
-    // Grid lines (horizontal)
-    for (let i = 0; i <= 5; i++) {
-        const y = yScale(i);
-        svg += `<line x1="${padding.left}" y1="${y}" x2="${chartWidth - padding.right}" y2="${y}" stroke="#e5e7eb" stroke-width="1"/>`;
-        svg += `<text x="${padding.left - 10}" y="${y + 4}" text-anchor="end" font-size="12" fill="#6b7280">${i}</text>`;
-    }
-
-    // Build the path (trend line)
-    let pathD = '';
-    chartData.forEach((point, index) => {
-        const x = padding.left + (index * xStep);
-        const y = yScale(point.average);
-        
-        if (index === 0) {
-            pathD += `M ${x} ${y}`;
-        } else {
-            pathD += ` L ${x} ${y}`;
+        // Better null checking
+        if (!this.currentChildId || !this.currentTrackerId) {
+            container.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 40px;">⚠️ Tracker not properly initialized.</p>';
+            return;
         }
-    });
 
-    // Draw the trend line
-    svg += `<path d="${pathD}" fill="none" stroke="#6366f1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+        const child = window.StateManager.getChild(this.currentChildId);
+        if (!child) {
+            container.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 40px;">⚠️ Child data not found.</p>';
+            return;
+        }
 
-    // Draw data points
-    chartData.forEach((point, index) => {
-        const x = padding.left + (index * xStep);
-        const y = yScale(point.average);
-        const periodIdx = periodTypes.findIndex(pt => pt.value === point.periodType);
-        const color = periodColors[periodIdx % periodColors.length] || '#6366f1';
-        
-        // Dot
-        svg += `<circle cx="${x}" cy="${y}" r="5" fill="${color}" stroke="white" stroke-width="2"/>`;
-        
-        // Value label above dot
-        svg += `<text x="${x}" y="${y - 10}" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">${point.average.toFixed(1)}</text>`;
-    });
+        const tracker = child.trackers?.find(t => t.id === this.currentTrackerId);
+        if (!tracker) {
+            container.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 40px;">⚠️ Tracker not found.</p>';
+            return;
+        }
 
-    // X-axis labels (dates)
-    chartData.forEach((point, index) => {
-        const x = padding.left + (index * xStep);
-        const dateLabel = new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        svg += `<text x="${x}" y="${chartHeight - padding.bottom + 20}" text-anchor="middle" font-size="11" fill="#6b7280" transform="rotate(-45 ${x} ${chartHeight - padding.bottom + 20})">${dateLabel}</text>`;
-    });
+        // Ensure entries is an array
+        const entries = Array.isArray(tracker.entries) ? tracker.entries : [];
 
-    // Y-axis label
-    svg += `<text x="20" y="${chartHeight / 2}" text-anchor="middle" font-size="12" font-weight="600" fill="#374151" transform="rotate(-90 20 ${chartHeight / 2})">Average Rating</text>`;
-
-    svg += '</svg>';
-    html += svg;
-    html += '</div>';
-
-    // ========================================
-    // CATEGORY BREAKDOWN
-    // ========================================
-    html += '<h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 16px;">🎯 By Category</h3>';
-    
-    // Calculate averages by category
-    const categoryAverages = [];
-    
-    // Observer categories
-    if (this.currentConfig.observedCategories) {
-        this.currentConfig.observedCategories.forEach(category => {
-            category.items.forEach(item => {
-                const ratings = entries
-                    .map(e => e.ratings?.[item.id])
-                    .filter(r => r !== undefined);
-                
-                if (ratings.length > 0) {
-                    const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
-                    categoryAverages.push({
-                        label: item.label,
-                        average: avg,
-                        count: ratings.length,
-                        type: 'Observer'
-                    });
-                }
-            });
-        });
-    }
-    
-    // Self-report categories
-    if (this.currentConfig.selfReportCategories) {
-        this.currentConfig.selfReportCategories.forEach(category => {
-            category.items.forEach(item => {
-                const ratings = entries
-                    .map(e => e.ratings?.[item.id])
-                    .filter(r => r !== undefined);
-                
-                if (ratings.length > 0) {
-                    const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
-                    categoryAverages.push({
-                        label: item.label,
-                        average: avg,
-                        count: ratings.length,
-                        type: 'Self-Report'
-                    });
-                }
-            });
-        });
-    }
-    
-    // Sort by average (highest first)
-    categoryAverages.sort((a, b) => b.average - a.average);
-    
-    html += '<div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">';
-    
-    categoryAverages.slice(0, 10).forEach(cat => {  // Show top 10
-        const percentage = (cat.average / 5) * 100;
-        const color = cat.average >= 4 ? '#22c55e' : cat.average >= 3 ? '#fbbf24' : '#ef4444';
-        
-        html += `
-            <div style="margin-bottom: 16px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                    <div style="flex: 1;">
-                        <span style="font-size: 14px; font-weight: 600; color: #111827;">${cat.label}</span>
-                        <span style="font-size: 11px; color: #6b7280; margin-left: 8px;">(${cat.type})</span>
-                    </div>
-                    <span style="font-size: 16px; font-weight: 700; color: ${color};">${cat.average.toFixed(1)}</span>
+        if (entries.length < 3) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px; background: #eff6ff; border-radius: 12px; border: 2px dashed #3b82f6;">
+                    <div style="font-size: 64px; margin-bottom: 16px;">📊</div>
+                    <p style="font-size: 18px; font-weight: 600; color: #1e40af;">Not Enough Data</p>
+                    <p style="font-size: 14px; color: #3b82f6; margin-top: 8px;">Add at least 3 entries to see analytics</p>
+                    <p style="font-size: 13px; color: #6b7280; margin-top: 4px;">Currently: ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}</p>
                 </div>
-                <div style="height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden;">
-                    <div style="height: 100%; background: ${color}; width: ${percentage}%; transition: width 0.3s;"></div>
-                </div>
-            </div>
-        `;
-    });
-    
-    html += '</div>';
+            `;
+            return;
+        }
 
-    // ========================================
-    // INSIGHTS & PROGRESS
-    // ========================================
-    if (firstPeriod && lastPeriod && firstPeriod.average && lastPeriod.average) {
-        const improvement = lastPeriod.average - firstPeriod.average;
-        const improvementPercent = ((improvement / firstPeriod.average) * 100).toFixed(1);
-        
-        html += `
-            <div style="background: ${improvement > 0 ? '#d1fae5' : '#fee2e2'}; 
-                        border: 2px solid ${improvement > 0 ? '#10b981' : '#ef4444'}; 
-                        border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-                <h3 style="font-size: 18px; font-weight: 700; 
-                           color: ${improvement > 0 ? '#065f46' : '#991b1b'}; 
-                           margin-bottom: 12px;">
-                    ${improvement > 0 ? '✅ Positive Progress Detected' : '⚠️ Consider Review'}
-                </h3>
-                <p style="font-size: 14px; color: ${improvement > 0 ? '#047857' : '#b91c1c'}; line-height: 1.6;">
-                    ${improvement > 0 ? 
-                        `Average ratings improved by <strong>${improvementPercent}%</strong> from ${firstPeriod.label} (${firstPeriod.average.toFixed(1)}) to ${lastPeriod.label} (${lastPeriod.average.toFixed(1)}). This suggests the current approach is showing positive results.` :
-                        `Average ratings decreased by <strong>${Math.abs(improvementPercent)}%</strong> from ${firstPeriod.label} (${firstPeriod.average.toFixed(1)}) to ${lastPeriod.label} (${lastPeriod.average.toFixed(1)}). Consider discussing adjustments with your healthcare provider.`
-                    }
-                </p>
-            </div>
-        `;
-    }
+        // Sort entries by date
+        const sortedEntries = [...entries].sort((a, b) => new Date(a.date) - new Date(a.date));
 
-    // ========================================
-    // TREND ANALYSIS
-    // ========================================
-    if (entries.length >= 5) {
-        const recentThree = sortedEntries.slice(-3);
-        const olderThree = sortedEntries.slice(0, 3);
-        
-        const getAvg = (entrySet) => {
-            let total = 0, count = 0;
-            entrySet.forEach(e => {
-                Object.values(e.ratings || {}).forEach(r => {
-                    total += r;
+        // Calculate statistics by period type
+        const periodTypes = this.currentConfig.periodTypes || [
+            { value: 'baseline', label: 'Baseline' },
+            { value: 'treatment', label: 'Treatment' },
+            { value: 'maintenance', label: 'Maintenance' }
+        ];
+
+        const getAverageForPeriod = (periodValue) => {
+            const periodEntries = entries.filter(e => e.periodType === periodValue);
+            if (periodEntries.length === 0) return null;
+            
+            let total = 0;
+            let count = 0;
+            periodEntries.forEach(entry => {
+                Object.values(entry.ratings || {}).forEach(rating => {
+                    total += rating;
                     count++;
                 });
             });
-            return count > 0 ? total / count : 0;
+            return count > 0 ? (total / count) : null;
         };
-        
-        const recentAvg = getAvg(recentThree);
-        const olderAvg = getAvg(olderThree);
-        const trend = recentAvg - olderAvg;
-        
+
+        const periodStats = periodTypes.map(pt => ({
+            ...pt,
+            count: entries.filter(e => e.periodType === pt.value).length,
+            average: getAverageForPeriod(pt.value)
+        }));
+
+        // Overall stats
+        const totalEntries = entries.length;
+        let totalRatings = 0;
+        let ratingCount = 0;
+        entries.forEach(entry => {
+            Object.values(entry.ratings || {}).forEach(rating => {
+                totalRatings += rating;
+                ratingCount++;
+            });
+        });
+        const overallAverage = ratingCount > 0 ? (totalRatings / ratingCount) : 0;
+
+        // Get first and last period averages for comparison
+        const firstPeriod = periodStats.find(p => p.count > 0);
+        const lastPeriod = [...periodStats].reverse().find(p => p.count > 0 && p.value !== firstPeriod?.value);
+
+        let html = '';
+
+        // ========================================
+        // SUMMARY CARDS
+        // ========================================
         html += `
-            <div style="background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px;">
-                <h3 style="font-size: 18px; font-weight: 700; color: #1e40af; margin-bottom: 12px;">
-                    📈 Recent Trend
-                </h3>
-                <p style="font-size: 14px; color: #1e40af; line-height: 1.6;">
-                    ${trend > 0.2 ? '⬆️ <strong>Improving:</strong> Recent entries show an upward trend (+' + trend.toFixed(2) + ') compared to earlier data.' :
-                      trend < -0.2 ? '⬇️ <strong>Declining:</strong> Recent entries show a downward trend (' + trend.toFixed(2) + ') compared to earlier data.' :
-                      '➡️ <strong>Stable:</strong> Recent entries are consistent with earlier data (±' + Math.abs(trend).toFixed(2) + ').'}
-                </p>
-                <div style="margin-top: 12px; display: flex; gap: 16px;">
-                    <div>
-                        <p style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">First 3 entries avg</p>
-                        <p style="font-size: 20px; font-weight: 700; color: #1e40af;">${olderAvg.toFixed(1)}</p>
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; border-radius: 12px; margin-bottom: 24px;">
+                <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 16px;">📊 Overall Summary</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                    <div style="background: rgba(255,255,255,0.2); padding: 16px; border-radius: 8px;">
+                        <p style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Total Entries</p>
+                        <p style="font-size: 36px; font-weight: 700;">${totalEntries}</p>
                     </div>
-                    <div>
-                        <p style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Recent 3 entries avg</p>
-                        <p style="font-size: 20px; font-weight: 700; color: #1e40af;">${recentAvg.toFixed(1)}</p>
+                    <div style="background: rgba(255,255,255,0.2); padding: 16px; border-radius: 8px;">
+                        <p style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Overall Average</p>
+                        <p style="font-size: 36px; font-weight: 700;">${overallAverage.toFixed(1)}</p>
+                        <p style="font-size: 13px; opacity: 0.8;">out of 5.0</p>
                     </div>
+                    ${firstPeriod && lastPeriod && firstPeriod.average && lastPeriod.average ? `
+                        <div style="background: rgba(255,255,255,0.2); padding: 16px; border-radius: 8px;">
+                            <p style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Change</p>
+                            <p style="font-size: 36px; font-weight: 700;">
+                                ${lastPeriod.average - firstPeriod.average > 0 ? '+' : ''}${(lastPeriod.average - firstPeriod.average).toFixed(2)}
+                            </p>
+                            <p style="font-size: 13px; opacity: 0.8;">
+                                ${(((lastPeriod.average - firstPeriod.average) / firstPeriod.average) * 100).toFixed(1)}%
+                            </p>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `;
-    }
 
-    container.innerHTML = html;
-},
+        // ========================================
+        // PERIOD BREAKDOWN
+        // ========================================
+        html += '<h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 16px;">📈 By Period/Phase</h3>';
+        html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">';
+
+        const periodColors = ['#fb923c', '#22c55e', '#a855f7', '#3b82f6', '#f59e0b'];
+        periodStats.forEach((period, idx) => {
+            if (period.count === 0) return;
+            const color = periodColors[idx % periodColors.length];
+            
+            html += `
+                <div style="background: ${color}20; border: 2px solid ${color}; padding: 16px; border-radius: 12px;">
+                    <p style="font-size: 13px; color: ${color}; font-weight: 600; margin-bottom: 8px;">${period.label}</p>
+                    <p style="font-size: 32px; font-weight: 700; color: #111827;">${period.average ? period.average.toFixed(1) : 'N/A'}</p>
+                    <p style="font-size: 13px; color: #6b7280;">${period.count} ${period.count === 1 ? 'entry' : 'entries'}</p>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        // ========================================
+        // TREND LINE CHART (SVG)
+        // ========================================
+        html += '<h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 16px;">📈 Progress Over Time</h3>';
+        html += '<div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">';
+
+        // Prepare data for chart
+        const chartData = sortedEntries.map(entry => {
+            const allRatings = Object.values(entry.ratings || {});
+            const avgRating = allRatings.length > 0 ? (allRatings.reduce((a, b) => a + b, 0) / allRatings.length) : 0;
+            return {
+                date: entry.date,
+                average: avgRating,
+                periodType: entry.periodType
+            };
+        });
+
+        // SVG Chart dimensions
+        const chartWidth = 800;
+        const chartHeight = 300;
+        const padding = { top: 20, right: 30, bottom: 60, left: 50 };
+        const innerWidth = chartWidth - padding.left - padding.right;
+        const innerHeight = chartHeight - padding.top - padding.bottom;
+
+        // Scale functions
+        const xStep = innerWidth / (chartData.length - 1 || 1);
+        const yScale = (value) => padding.top + innerHeight - (value / 5) * innerHeight;
+
+        // Build SVG
+        let svg = `<svg width="100%" height="${chartHeight}" viewBox="0 0 ${chartWidth} ${chartHeight}" style="max-width: 100%;">`;
+        
+        // Grid lines (horizontal)
+        for (let i = 0; i <= 5; i++) {
+            const y = yScale(i);
+            svg += `<line x1="${padding.left}" y1="${y}" x2="${chartWidth - padding.right}" y2="${y}" stroke="#e5e7eb" stroke-width="1"/>`;
+            svg += `<text x="${padding.left - 10}" y="${y + 4}" text-anchor="end" font-size="12" fill="#6b7280">${i}</text>`;
+        }
+
+        // Build the path (trend line)
+        let pathD = '';
+        chartData.forEach((point, index) => {
+            const x = padding.left + (index * xStep);
+            const y = yScale(point.average);
+            
+            if (index === 0) {
+                pathD += `M ${x} ${y}`;
+            } else {
+                pathD += ` L ${x} ${y}`;
+            }
+        });
+
+        // Draw the trend line
+        svg += `<path d="${pathD}" fill="none" stroke="#6366f1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+        // Draw data points
+        chartData.forEach((point, index) => {
+            const x = padding.left + (index * xStep);
+            const y = yScale(point.average);
+            const periodIdx = periodTypes.findIndex(pt => pt.value === point.periodType);
+            const color = periodColors[periodIdx % periodColors.length] || '#6366f1';
+            
+            // Dot
+            svg += `<circle cx="${x}" cy="${y}" r="5" fill="${color}" stroke="white" stroke-width="2"/>`;
+            
+            // Value label above dot
+            svg += `<text x="${x}" y="${y - 10}" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">${point.average.toFixed(1)}</text>`;
+        });
+
+        // X-axis labels (dates)
+        chartData.forEach((point, index) => {
+            const x = padding.left + (index * xStep);
+            const dateLabel = new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            svg += `<text x="${x}" y="${chartHeight - padding.bottom + 20}" text-anchor="middle" font-size="11" fill="#6b7280" transform="rotate(-45 ${x} ${chartHeight - padding.bottom + 20})">${dateLabel}</text>`;
+        });
+
+        // Y-axis label
+        svg += `<text x="20" y="${chartHeight / 2}" text-anchor="middle" font-size="12" font-weight="600" fill="#374151" transform="rotate(-90 20 ${chartHeight / 2})">Average Rating</text>`;
+
+        svg += '</svg>';
+        html += svg;
+        html += '</div>';
+
+        // ========================================
+        // CATEGORY BREAKDOWN
+        // ========================================
+        html += '<h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 16px;">🎯 By Category</h3>';
+        
+        // Calculate averages by category
+        const categoryAverages = [];
+        
+        // Observer categories
+        if (this.currentConfig.observedCategories) {
+            this.currentConfig.observedCategories.forEach(category => {
+                category.items.forEach(item => {
+                    const ratings = entries
+                        .map(e => e.ratings?.[item.id])
+                        .filter(r => r !== undefined);
+                    
+                    if (ratings.length > 0) {
+                        const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+                        categoryAverages.push({
+                            label: item.label,
+                            average: avg,
+                            count: ratings.length,
+                            type: 'Observer'
+                        });
+                    }
+                });
+            });
+        }
+        
+        // Self-report categories
+        if (this.currentConfig.selfReportCategories) {
+            this.currentConfig.selfReportCategories.forEach(category => {
+                category.items.forEach(item => {
+                    const ratings = entries
+                        .map(e => e.ratings?.[item.id])
+                        .filter(r => r !== undefined);
+                    
+                    if (ratings.length > 0) {
+                        const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+                        categoryAverages.push({
+                            label: item.label,
+                            average: avg,
+                            count: ratings.length,
+                            type: 'Self-Report'
+                        });
+                    }
+                });
+            });
+        }
+        
+        // Sort by average (highest first)
+        categoryAverages.sort((a, b) => b.average - a.average);
+        
+        html += '<div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">';
+        
+        categoryAverages.slice(0, 10).forEach(cat => {  // Show top 10
+            const percentage = (cat.average / 5) * 100;
+            const color = cat.average >= 4 ? '#22c55e' : cat.average >= 3 ? '#fbbf24' : '#ef4444';
+            
+            html += `
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <div style="flex: 1;">
+                            <span style="font-size: 14px; font-weight: 600; color: #111827;">${cat.label}</span>
+                            <span style="font-size: 11px; color: #6b7280; margin-left: 8px;">(${cat.type})</span>
+                        </div>
+                        <span style="font-size: 16px; font-weight: 700; color: ${color};">${cat.average.toFixed(1)}</span>
+                    </div>
+                    <div style="height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden;">
+                        <div style="height: 100%; background: ${color}; width: ${percentage}%; transition: width 0.3s;"></div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+
+        // ========================================
+        // INSIGHTS & PROGRESS
+        // ========================================
+        if (firstPeriod && lastPeriod && firstPeriod.average && lastPeriod.average) {
+            const improvement = lastPeriod.average - firstPeriod.average;
+            const improvementPercent = ((improvement / firstPeriod.average) * 100).toFixed(1);
+            
+            html += `
+                <div style="background: ${improvement > 0 ? '#d1fae5' : '#fee2e2'}; 
+                            border: 2px solid ${improvement > 0 ? '#10b981' : '#ef4444'}; 
+                            border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                    <h3 style="font-size: 18px; font-weight: 700; 
+                               color: ${improvement > 0 ? '#065f46' : '#991b1b'}; 
+                               margin-bottom: 12px;">
+                        ${improvement > 0 ? '✅ Positive Progress Detected' : '⚠️ Consider Review'}
+                    </h3>
+                    <p style="font-size: 14px; color: ${improvement > 0 ? '#047857' : '#b91c1c'}; line-height: 1.6;">
+                        ${improvement > 0 ? 
+                            `Average ratings improved by <strong>${improvementPercent}%</strong> from ${firstPeriod.label} (${firstPeriod.average.toFixed(1)}) to ${lastPeriod.label} (${lastPeriod.average.toFixed(1)}). This suggests the current approach is showing positive results.` :
+                            `Average ratings decreased by <strong>${Math.abs(improvementPercent)}%</strong> from ${firstPeriod.label} (${firstPeriod.average.toFixed(1)}) to ${lastPeriod.label} (${lastPeriod.average.toFixed(1)}). Consider discussing adjustments with your healthcare provider.`
+                        }
+                    </p>
+                </div>
+            `;
+        }
+
+        // ========================================
+        // TREND ANALYSIS
+        // ========================================
+        if (entries.length >= 5) {
+            const recentThree = sortedEntries.slice(-3);
+            const olderThree = sortedEntries.slice(0, 3);
+            
+            const getAvg = (entrySet) => {
+                let total = 0, count = 0;
+                entrySet.forEach(e => {
+                    Object.values(e.ratings || {}).forEach(r => {
+                        total += r;
+                        count++;
+                    });
+                });
+                return count > 0 ? total / count : 0;
+            };
+            
+            const recentAvg = getAvg(recentThree);
+            const olderAvg = getAvg(olderThree);
+            const trend = recentAvg - olderAvg;
+            
+            html += `
+                <div style="background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px;">
+                    <h3 style="font-size: 18px; font-weight: 700; color: #1e40af; margin-bottom: 12px;">
+                        📈 Recent Trend
+                    </h3>
+                    <p style="font-size: 14px; color: #1e40af; line-height: 1.6;">
+                        ${trend > 0.2 ? '⬆️ <strong>Improving:</strong> Recent entries show an upward trend (+' + trend.toFixed(2) + ') compared to earlier data.' :
+                          trend < -0.2 ? '⬇️ <strong>Declining:</strong> Recent entries show a downward trend (' + trend.toFixed(2) + ') compared to earlier data.' :
+                          '➡️ <strong>Stable:</strong> Recent entries are consistent with earlier data (±' + Math.abs(trend).toFixed(2) + ').'}
+                    </p>
+                    <div style="margin-top: 12px; display: flex; gap: 16px;">
+                        <div>
+                            <p style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">First 3 entries avg</p>
+                            <p style="font-size: 20px; font-weight: 700; color: #1e40af;">${olderAvg.toFixed(1)}</p>
+                        </div>
+                        <div>
+                            <p style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Recent 3 entries avg</p>
+                            <p style="font-size: 20px; font-weight: 700; color: #1e40af;">${recentAvg.toFixed(1)}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        container.innerHTML = html;
+    },
 
     renderSettings: function() {
         const container = document.getElementById('med-settings-content');
@@ -1501,7 +1535,7 @@ const MedicationTracker = {
                     <button onclick="MedicationTracker.addSelfReportCategory()" class="add-item-btn" style="margin-top: 8px;">+ Add Self-Report Category</button>
                 </div>
 
- <!-- Save Button -->
+                <!-- Save Button -->
                 <button onclick="MedicationTracker.saveSettings()" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">💾 Save Changes</button>
                 
                 <!-- Export/Delete -->
@@ -1760,4 +1794,4 @@ setInterval(() => {
     if (window.ScheduleModule && window.StateManager) {
         ScheduleModule.renderFocusedScheduleItem();
     }
-}, 60000); // Update every 60 seconds                
+}, 60000); // Update every 60 seconds
