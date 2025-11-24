@@ -1,0 +1,138 @@
+<!-- ========================================
+     REWARDS STORE SECTION - ADD TO YOUR HTML
+     Insert this AFTER the character sections
+     ======================================== -->
+
+<div class="rewards-section" style="
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin-top: 24px;
+">
+    <!-- Header -->
+    <div style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #e5e7eb;
+    ">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <h2 style="margin: 0; color: #2d3748; font-size: 24px;">
+                🏆 Rewards Store
+            </h2>
+            <button 
+                onclick="RewardsModule.showRewardHistory()"
+                style="
+                    padding: 6px 12px;
+                    background: #f3f4f6;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 6px;
+                    color: #6b7280;
+                    font-size: 13px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                "
+                onmouseover="this.style.background='#e5e7eb'"
+                onmouseout="this.style.background='#f3f4f6'"
+            >
+                📜 History
+            </button>
+        </div>
+        
+        <div style="
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        ">
+            <span style="
+                font-size: 32px;
+                font-weight: 700;
+                color: white;
+            " id="store-balance">0</span>
+            <span style="
+                font-size: 16px;
+                color: white;
+                font-weight: 600;
+            ">pts</span>
+        </div>
+    </div>
+    
+    <!-- Rewards Grid -->
+    <div 
+        id="rewards-grid" 
+        style="
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+        "
+    >
+        <!-- Rewards will be rendered here by RewardsModule.renderRewardsStore() -->
+    </div>
+</div>
+
+<!-- ========================================
+     SIDEBAR BUTTON - ADD TO YOUR SIDEBAR
+     Insert after the Trackers section
+     ======================================== -->
+
+<button class="sidebar-btn" onclick="scrollToRewards()" style="
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    font-size: 15px;
+">
+    <span style="font-size: 20px;">🏆</span>
+    <span>Rewards Store</span>
+</button>
+
+<!-- ========================================
+     SCROLL FUNCTION - ADD TO YOUR JS
+     ======================================== -->
+
+<script>
+function scrollToRewards() {
+    const rewardsSection = document.querySelector('.rewards-section');
+    if (rewardsSection) {
+        rewardsSection.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
+
+// Also add this to UICore.updateUI() function:
+// if (window.RewardsModule && document.getElementById('rewards-grid')) {
+//     RewardsModule.renderRewardsStore();
+// }
+</script>
+
+<!-- ========================================
+     COMPLETE INTEGRATION CHECKLIST:
+     
+     1. Add rewards-module.js script:
+        <script src="rewards-module.js"></script>
+     
+     2. Add this HTML snippet (rewards section + button)
+     
+     3. Add call in UICore.updateUI():
+        if (RewardsModule) {
+            RewardsModule.renderRewardsStore();
+        }
+     
+     4. Test by importing onboarding data!
+     ======================================== -->
