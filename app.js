@@ -1885,6 +1885,9 @@ const UICore = {
         document.getElementById('daily-notes').value = dayData.notes || '';
         
         CharacterModule.renderCharacterSections();
+               if (window.RewardsModule && document.getElementById('rewards-grid')) {
+            RewardsModule.renderRewardsStore();
+        }
     },
 
     applyColorPalette() {
