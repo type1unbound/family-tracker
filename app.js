@@ -1,5 +1,5 @@
 // ========================================
-// FAMILY ROUTINE & VALUES TRACKERS - Update Theme Colors 17:10 11/19/2025 - Working
+// FAMILY ROUTINE & VALUES TRACKERS - Multi-Family Support Update - added multi-family login and onboarding 8:55AM 11/24
 // Consolidated Single-File Application
 // ========================================
 
@@ -154,7 +154,7 @@ function applyTheme(palette, root) {
 // ========================================
 const StateManager = {
     state: {
-        currentChild: 'child1',
+        currentChild: null,  // CHANGED: was 'child1', now null until loaded
         currentDate: new Date().toISOString().split('T')[0],
         editMode: false,
         modalData: null,
@@ -170,33 +170,10 @@ const StateManager = {
             startX: 0,
             startY: 0
         },
-        children: ['child1', 'child2'],
-        data: {
-            child1: { 
-                name: 'Family Member 1',
-                photo: null,
-                colorPalette: 'lavender',
-                pointsBalance: 0,
-                pointsSpent: 0,
-                trackers: [],
-                days: {},
-                schedule: JSON.parse(JSON.stringify(CONFIG.DEFAULT_SCHEDULE)),
-                characterValues: JSON.parse(JSON.stringify(CONFIG.DEFAULT_CHARACTER_VALUES)),
-                weeklyChores: JSON.parse(JSON.stringify(CONFIG.DEFAULT_WEEKLY_CHORES))
-            },
-            child2: { 
-                name: 'Family Member 2',
-                photo: null,
-                colorPalette: 'lavender',
-                pointsBalance: 0,
-                pointsSpent: 0,
-                trackers: [],
-                days: {},
-                schedule: JSON.parse(JSON.stringify(CONFIG.DEFAULT_SCHEDULE)),
-                characterValues: JSON.parse(JSON.stringify(CONFIG.DEFAULT_CHARACTER_VALUES)),
-                weeklyChores: JSON.parse(JSON.stringify(CONFIG.DEFAULT_WEEKLY_CHORES))
-            }
-        }
+        children: [],  // CHANGED: was ['child1', 'child2'], now empty until loaded
+        data: {},  // CHANGED: was hardcoded children, now empty until loaded
+        familyId: null,  // NEW: current family ID
+        familyCode: null  // NEW: current family code
     },
 
     getCurrentChild() {
@@ -216,7 +193,10 @@ const StateManager = {
     },
 
     getSchedule(filterByDay = true) {
-        const schedule = this.getCurrentChild().schedule;
+        const child = this.getCurrentChild();
+        if (!child || !child.schedule) return [];
+        
+        const schedule = child.schedule;
         
         schedule.forEach(item => {
             if (!item.days) {
@@ -281,15 +261,19 @@ const StateManager = {
     },
 
     getCharacterValues() {
-        return this.getCurrentChild().characterValues;
+        const child = this.getCurrentChild();
+        return child ? child.characterValues : [];
     },
 
     getWeeklyChores() {
-        return this.getCurrentChild().weeklyChores;
+        const child = this.getCurrentChild();
+        return child ? child.weeklyChores : [];
     },
 
     getDayData() {
         const child = this.getCurrentChild();
+        if (!child) return { schedule: {}, weeklyChores: {}, categoryMultipliers: {}, notes: '', characterNotes: {} };
+        
         if (!child.days[this.state.currentDate]) {
             // Initialize with all current character categories
             const categoryMultipliers = {};
@@ -369,18 +353,20 @@ const StateManager = {
         return `Week of ${start} - ${end}`;
     },
 
-    createChild(childId) {
+    createChild(childId, useDefaults = true) {
+        // UPDATED: Added useDefaults parameter and rewards array
         this.state.data[childId] = {
             name: 'Family Member ' + (this.state.children.length + 1),
             photo: null,
-            colorPalette: 'lavender',
+            colorPalette: 'purple',  // CHANGED: from 'lavender' to match COLOR_PALETTES
             pointsBalance: 0,
             pointsSpent: 0,
             trackers: [],
             days: {},
-            schedule: JSON.parse(JSON.stringify(CONFIG.DEFAULT_SCHEDULE)),
-            characterValues: JSON.parse(JSON.stringify(CONFIG.DEFAULT_CHARACTER_VALUES)),
-            weeklyChores: JSON.parse(JSON.stringify(CONFIG.DEFAULT_WEEKLY_CHORES))
+            schedule: useDefaults ? JSON.parse(JSON.stringify(CONFIG.DEFAULT_SCHEDULE)) : [],
+            characterValues: useDefaults ? JSON.parse(JSON.stringify(CONFIG.DEFAULT_CHARACTER_VALUES)) : [],
+            weeklyChores: useDefaults ? JSON.parse(JSON.stringify(CONFIG.DEFAULT_WEEKLY_CHORES)) : [],
+            rewards: []  // NEW: for rewards system
         };
         this.state.children.push(childId);
     },
@@ -603,6 +589,7 @@ const PointsModule = {
 
 // ========================================
 // SCHEDULE MODULE
+// (No changes needed - keeping all existing code)
 // ========================================
 const ScheduleModule = {
     currentFocusedItemId: null,
@@ -1032,6 +1019,7 @@ const ScheduleModule = {
 
 // ========================================
 // CHARACTER MODULE
+// (No changes needed - keeping all existing code)
 // ========================================
 const CharacterModule = {
     renderCharacterSections() {
@@ -1241,14 +1229,18 @@ const CharacterModule = {
         }
         
         const badge = document.getElementById('chores-completion-badge');
-        badge.innerHTML = `
-            <div class="completion-badge ${choresCompletion.isComplete ? 'complete' : 'incomplete'}">
-                ${choresCompletion.completed} / ${choresCompletion.total} Complete (${choresCompletion.percentage}%)
-                ${choresCompletion.isComplete ? '🎉 5x BONUS ACTIVE!' : ''}
-            </div>
-        `;
+        if (badge) {
+            badge.innerHTML = `
+                <div class="completion-badge ${choresCompletion.isComplete ? 'complete' : 'incomplete'}">
+                    ${choresCompletion.completed} / ${choresCompletion.total} Complete (${choresCompletion.percentage}%)
+                    ${choresCompletion.isComplete ? '🎉 5x BONUS ACTIVE!' : ''}
+                </div>
+            `;
+        }
         
         const list = document.getElementById('weekly-chores-list');
+        if (!list) return;
+        
         list.innerHTML = chores.map((chore, index) => {
             const isCompleteThisWeek = weeklyChoresData[chore.id];
             
@@ -1377,6 +1369,7 @@ const CharacterModule = {
 
 // ========================================
 // PROFILE MODULE
+// (No changes needed - keeping all existing code)
 // ========================================
 const ProfileModule = {
     openProfileModal() {
@@ -1801,6 +1794,14 @@ const ProfileModule = {
 // ========================================
 const UICore = {
     updateUI() {
+        const child = StateManager.getCurrentChild();
+        
+        // Safety check - if no child, don't try to update
+        if (!child) {
+            console.warn('⚠️ No current child selected, skipping UI update');
+            return;
+        }
+        
         const dayData = StateManager.getDayData();
         const points = PointsModule.calculatePoints(StateManager.state.currentChild, StateManager.state.currentDate);
         const weekly = PointsModule.calculateWeeklyTotal();
@@ -1808,7 +1809,6 @@ const UICore = {
         const choresData = PointsModule.calculateChoresCompletion();
         
         const maxSchedulePoints = StateManager.getSchedule().length;
-        const child = StateManager.getCurrentChild();
         const dailyGoal = PointsModule.getDailyGoal();
         const weeklyGoal = PointsModule.getWeeklyGoal();
         
@@ -1882,17 +1882,24 @@ const UICore = {
         ScheduleModule.renderFocusedScheduleItem();
         CharacterModule.renderWeeklyChores();
         
-        document.getElementById('daily-notes').value = dayData.notes || '';
+        const notesEl = document.getElementById('daily-notes');
+        if (notesEl) {
+            notesEl.value = dayData.notes || '';
+        }
         
         CharacterModule.renderCharacterSections();
-               if (window.RewardsModule && document.getElementById('rewards-grid')) {
+        
+        // Render rewards store if module exists
+        if (window.RewardsModule && document.getElementById('rewards-grid')) {
             RewardsModule.renderRewardsStore();
         }
     },
 
     applyColorPalette() {
         const child = StateManager.getCurrentChild();
-        const palette = CONFIG.COLOR_PALETTES[child.colorPalette] || CONFIG.COLOR_PALETTES.lavender;
+        if (!child) return;
+        
+        const palette = CONFIG.COLOR_PALETTES[child.colorPalette] || CONFIG.COLOR_PALETTES.purple;
         
         document.documentElement.style.setProperty('--theme-gradient-1', palette.bgGradient1);
         document.documentElement.style.setProperty('--theme-gradient-2', palette.bgGradient2);
@@ -1926,12 +1933,15 @@ const UICore = {
     selectDate(date) {
         StateManager.state.currentDate = date;
         const d = new Date(date + 'T00:00:00');
-        document.getElementById('date-display').textContent = d.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+        const dateDisplayEl = document.getElementById('date-display');
+        if (dateDisplayEl) {
+            dateDisplayEl.textContent = d.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
         this.updateUI();
     },
 
@@ -1960,10 +1970,12 @@ const UICore = {
 // ========================================
 function saveData() {
     // Overridden by Firebase
+    console.log('saveData() called - should be overridden by Firebase');
 }
 
 function loadData() {
     // Overridden by Firebase
+    console.log('loadData() called - should be overridden by Firebase');
 }
 
 // ========================================
@@ -2065,3 +2077,5 @@ function confirmDeleteGoal() {
 function spendPoints() {
     PointsModule.spendPoints();
 }
+
+console.log('✅ Family Tracker App (Multi-Family Support) loaded');
