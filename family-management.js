@@ -421,13 +421,14 @@ function showCreateFamilyOptions() {
  * Launch the setup wizard (opens onboarding in new tab/window)
  */
 function launchSetupWizard() {
-    // Store user info for wizard
-    localStorage.setItem('compass_wizard_userId', currentUser.uid);
-    localStorage.setItem('compass_wizard_email', currentUser.email);
-    localStorage.setItem('compass_wizard_mode', 'create_new');
+    // Change this URL to wherever you host the React wizard
+    const wizardUrl = 'https://type1unbound.github.io/family-tracker/onboarding.jsx'; // Your hosted wizard URL
     
-    // Open wizard in new tab
-    const wizardWindow = window.open('compass-onboarding.html', '_blank');
+    window.open(wizardUrl, '_blank', 'width=1000,height=800');
+    
+    // Show instruction modal
+    showWizardInstructionModal();
+}
     
     if (!wizardWindow) {
         alert('Please allow popups to use the Setup Wizard, or click the button again.');
