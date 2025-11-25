@@ -1,504 +1,56 @@
 // ========================================
-// FIREBASE INTEGRATION WITH FAMILY SHARING
+// FIREBASE INTEGRATION - MULTI-FAMILY SUPPORT
+// Updated to work with family-management.js
 // ========================================
 
-// Wait for Firebase SDK to load
-if (typeof firebase === 'undefined') {
-    console.error('❌ Firebase SDK not loaded!');
-    alert('Error: Firebase SDK failed to load. Please check your internet connection and refresh the page.');
-} else {
-    console.log('✅ Firebase SDK loaded');
-}
-
-// Firebase configuration
+// Firebase Configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyCJzB673MruQvNpX_1wuGoHUFSk6leErFg",
-    authDomain: "family-tracker-37025.firebaseapp.com",
-    projectId: "family-tracker-37025",
-    storageBucket: "family-tracker-37025.firebasestorage.app",
-    messagingSenderId: "1004309710251",
-    appId: "1:1004309710251:web:933164ffa6d5f78e6c7eee"
+    apiKey: "AIzaSyB4u4R6F_hK9uZ8V7Y3m5Q2X8W9L0P6N4M",
+    authDomain: "compass-family-tracker.firebaseapp.com",
+    projectId: "compass-family-tracker",
+    storageBucket: "compass-family-tracker.appspot.com",
+    messagingSenderId: "123456789012",
+    appId: "1:123456789012:web:abcdef1234567890"
 };
 
 // Initialize Firebase
-try {
-    firebase.initializeApp(firebaseConfig);
-    console.log('✅ Firebase initialized');
-} catch (error) {
-    console.error('❌ Firebase initialization failed:', error);
-    alert('Error initializing Firebase: ' + error.message);
-}
+firebase.initializeApp(firebaseConfig);
 
+// Firebase services
 const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-// Set auth persistence to LOCAL (survives browser restarts)
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-    .then(() => {
-        console.log('✅ Auth persistence set to LOCAL');
-    })
-    .catch((error) => {
-        console.error('❌ Error setting persistence:', error);
-    });
-
-// Enable offline persistence
-db.enablePersistence()
-    .catch((err) => {
-        console.log('Offline persistence error:', err.code);
-    });
-
-// ========================================
-// AUTHENTICATION & USER STATE
-// ========================================
-
+// Auth state tracking
 let currentUser = null;
 let authInitialized = false;
 
-// Setup Google Sign-In button
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, setting up Google Sign-In button');
-    
-    const signInBtn = document.getElementById('google-signin-btn');
-    if (!signInBtn) {
-        console.error('❌ Google Sign-In button not found in DOM!');
-        return;
+console.log('🔥 Firebase initialized');
+
+// ========================================
+// GOOGLE SIGN-IN
+// ========================================
+
+document.getElementById('google-signin-btn')?.addEventListener('click', async () => {
+    try {
+        console.log('🔐 Starting Google sign-in...');
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await auth.signInWithPopup(provider);
+        console.log('✅ Google sign-in successful');
+    } catch (error) {
+        console.error('❌ Sign-in error:', error);
+        alert('Sign-in failed: ' + error.message);
     }
-    
-    console.log('✅ Google Sign-In button found, attaching click handler');
-    
-    signInBtn.addEventListener('click', async () => {
-        console.log('🔐 Sign-In button clicked');
-        
-        // Clear any stuck session flags
-        sessionStorage.clear();
-        
-        try {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            
-            // Force account selection
-            provider.setCustomParameters({
-                prompt: 'select_account'
-            });
-            
-            console.log('Attempting sign in with popup...');
-            
-            // Use popup
-            await auth.signInWithPopup(provider);
-            console.log('✅ Sign-in successful');
-            
-        } catch (error) {
-            console.error('❌ Sign in failed:', error);
-            console.error('Error code:', error.code);
-            console.error('Error message:', error.message);
-            
-            // User-friendly error messages
-            if (error.code === 'auth/popup-blocked') {
-                alert('⚠️ Popup was blocked! Please allow popups for this site and try again.');
-            } else if (error.code === 'auth/popup-closed-by-user') {
-                console.log('ℹ️ User closed the popup');
-            } else {
-                alert('Sign in failed: ' + error.message);
-            }
-        }
-    });
 });
 
 // ========================================
-// FIREBASE DATA OPERATIONS
-// ========================================
-
-async function saveDataToFirebase() {
-    if (!currentUser) {
-        console.log('⏸️ No user logged in, skipping save to Firestore');
-        return;
-    }
-
-    if (!firebase || !firebase.firestore) {
-        console.error('❌ Firebase Firestore not available');
-        return;
-    }
-
-    if (!window.StateManager || !window.StateManager.state) {
-        console.error('❌ StateManager not available');
-        return;
-    }
-
-    try {
-        console.log('💾 Saving data to Firestore for user:', currentUser.email);
-        const userId = currentUser.uid;
-
-        if (window.StateManager.state.familyId) {
-            // Save to family document
-            const familyRef = db.collection('families').doc(window.StateManager.state.familyId);
-            await familyRef.set({
-                children: window.StateManager.state.children,
-                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-            
-            console.log('  Saving to family:', window.StateManager.state.familyId);
-
-            // Save each family member under the family
-            for (const childId of window.StateManager.state.children) {
-                const memberData = window.StateManager.state.data[childId];
-                
-                if (!memberData) continue;
-                
-                // Separate days data
-                const { days, ...memberInfo } = memberData;
-                
-                // Save member info
-                await familyRef.collection('familyMembers').doc(childId).set(memberInfo, { merge: true });
-                
-                // Save days data in subcollection
-                for (const [date, dayData] of Object.entries(days || {})) {
-                    await familyRef.collection('familyMembers').doc(childId)
-                        .collection('days').doc(date).set(dayData, { merge: true });
-                }
-            }
-        } else {
-            // Legacy: save to user document (for backward compatibility)
-            const userRef = db.collection('users').doc(userId);
-            
-            await userRef.set({
-                email: currentUser.email,
-                displayName: currentUser.displayName,
-                children: window.StateManager.state.children,
-                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-
-            // Save each family member
-            for (const childId of window.StateManager.state.children) {
-                const memberData = window.StateManager.state.data[childId];
-                
-                if (!memberData) continue;
-                
-                // Separate days data
-                const { days, ...memberInfo } = memberData;
-                
-                // Save member info
-                await userRef.collection('familyMembers').doc(childId).set(memberInfo, { merge: true });
-                
-                // Save days data in subcollection
-                for (const [date, dayData] of Object.entries(days || {})) {
-                    await userRef.collection('familyMembers').doc(childId)
-                        .collection('days').doc(date).set(dayData, { merge: true });
-                }
-            }
-        }
-
-        console.log('✅ Data saved to Firestore successfully');
-    } catch (error) {
-        console.error('❌ Error saving data to Firestore:', error);
-        console.error('Error details:', error);
-    }
-}
-
-window.saveData = saveDataToFirebase;
-
-async function loadDataFromFirebase() {
-    if (!currentUser) {
-        console.log('⏸️ No user logged in, skipping load from Firestore');
-        return;
-    }
-
-    if (!window.StateManager || !window.StateManager.state) {
-        console.error('❌ StateManager not available - cannot load data');
-        return;
-    }
-
-    try {
-        console.log('📥 Loading data from Firestore for user:', currentUser.email);
-        showLoading();
-        const userId = currentUser.uid;
-        const userRef = db.collection('users').doc(userId);
-
-        // Load user metadata
-        const userDoc = await userRef.get();
-        
-        if (userDoc.exists) {
-            const userData = userDoc.data();
-            
-            // Check if user is part of a family
-            if (userData.familyId) {
-                // Load family data instead of personal data
-                const familyRef = db.collection('families').doc(userData.familyId);
-                const familyDoc = await familyRef.get();
-                
-                if (familyDoc.exists) {
-                    const familyData = familyDoc.data();
-                    window.StateManager.state.children = familyData.children || ['child1', 'child2'];
-                    window.StateManager.state.familyId = userData.familyId;
-                    
-                    // Check if family has a code, if not create one (for legacy users)
-                    if (!familyData.familyCode) {
-                        console.log('  Legacy family detected - generating family code...');
-                        const familyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-                        await familyRef.update({
-                            familyCode: familyCode,
-                            codeGeneratedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                        window.StateManager.state.familyCode = familyCode;
-                        console.log('  ✅ Generated family code:', familyCode);
-                    } else {
-                        window.StateManager.state.familyCode = familyData.familyCode;
-                        console.log('  Loaded family data with code:', familyData.familyCode);
-                    }
-                    
-                    // Load each family member from family document
-                    for (const childId of window.StateManager.state.children) {
-                        const memberDoc = await familyRef.collection('familyMembers').doc(childId).get();
-                        
-                        if (memberDoc.exists) {
-                            window.StateManager.state.data[childId] = memberDoc.data();
-                            
-                            // Ensure required fields exist
-                            if (!window.StateManager.state.data[childId].trackers) {
-                                window.StateManager.state.data[childId].trackers = [];
-                            }
-                            if (!window.StateManager.state.data[childId].days) {
-                                window.StateManager.state.data[childId].days = {};
-                            }
-                            
-                            console.log('  Loaded member:', window.StateManager.state.data[childId].name);
-                            
-                            // Load days data
-                            const daysSnapshot = await familyRef.collection('familyMembers').doc(childId)
-                                .collection('days').get();
-                            
-                            daysSnapshot.forEach(doc => {
-                                window.StateManager.state.data[childId].days[doc.id] = doc.data();
-                            });
-                            console.log('  Loaded', daysSnapshot.size, 'days of data for', window.StateManager.state.data[childId].name);
-                        } else if (!window.StateManager.state.data[childId]) {
-                            // Initialize new member with defaults
-                            console.log('  Initializing new member:', childId);
-                            window.StateManager.createChild(childId);
-                        }
-                    }
-                } else {
-                    console.error('❌ Family document not found!');
-                }
-            } else {
-                // Personal account (legacy) - migrate to family system
-                console.log('  🔄 Legacy personal account detected - migrating to family system...');
-                
-                window.StateManager.state.children = userData.children || ['child1', 'child2'];
-                
-                // Generate unique 6-character family code
-                const familyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-                const familyId = 'family_' + Date.now();
-                
-                // Create family document
-                await db.collection('families').doc(familyId).set({
-                    familyCode: familyCode,
-                    createdBy: currentUser.uid,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    migratedFrom: 'legacy_account',
-                    children: window.StateManager.state.children
-                });
-                
-                // Link user to family
-                await userRef.update({
-                    familyId: familyId,
-                    migratedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                window.StateManager.state.familyId = familyId;
-                window.StateManager.state.familyCode = familyCode;
-                
-                console.log('  ✅ Migrated to family system with code:', familyCode);
-                
-                // Load each family member from user document and copy to family
-                for (const childId of window.StateManager.state.children) {
-                    const memberDoc = await userRef.collection('familyMembers').doc(childId).get();
-                    
-                    if (memberDoc.exists) {
-                        window.StateManager.state.data[childId] = memberDoc.data();
-                        
-                        // Ensure required fields exist
-                        if (!window.StateManager.state.data[childId].trackers) {
-                            window.StateManager.state.data[childId].trackers = [];
-                        }
-                        if (!window.StateManager.state.data[childId].days) {
-                            window.StateManager.state.data[childId].days = {};
-                        }
-                        
-                        console.log('  Loaded member:', window.StateManager.state.data[childId].name);
-                        
-                        // Load days data
-                        const daysSnapshot = await userRef.collection('familyMembers').doc(childId)
-                            .collection('days').get();
-                        
-                        daysSnapshot.forEach(doc => {
-                            window.StateManager.state.data[childId].days[doc.id] = doc.data();
-                        });
-                        console.log('  Loaded', daysSnapshot.size, 'days of data for', window.StateManager.state.data[childId].name);
-                    } else if (!window.StateManager.state.data[childId]) {
-                        // Initialize new member with defaults
-                        console.log('  Initializing new member:', childId);
-                        window.StateManager.createChild(childId);
-                    }
-                }
-                
-                // Save migrated data to new family structure
-                await saveDataToFirebase();
-                console.log('  ✅ Legacy data migrated to family structure');
-            }
-            
-            console.log('  Found existing user data with', window.StateManager.state.children.length, 'family members');
-        } else {
-            // New user - create a new family
-            console.log('  New user - creating new family');
-            
-            // Generate unique 6-character family code
-            const familyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-            const familyId = 'family_' + Date.now();
-            
-            // Create family document
-            await db.collection('families').doc(familyId).set({
-                familyCode: familyCode,
-                createdBy: currentUser.uid,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                children: ['child1', 'child2']
-            });
-            
-            // Link user to family
-            await userRef.set({
-                email: currentUser.email,
-                displayName: currentUser.displayName,
-                familyId: familyId,
-                joinedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            
-            window.StateManager.state.children = ['child1', 'child2'];
-            window.StateManager.state.familyId = familyId;
-            window.StateManager.state.familyCode = familyCode;
-            
-            console.log('  Created family with code:', familyCode);
-            
-            // Initialize default children
-            window.StateManager.state.children.forEach(childId => {
-                if (!window.StateManager.state.data[childId]) {
-                    window.StateManager.createChild(childId);
-                }
-            });
-            
-            await saveDataToFirebase();
-        }
-
-        console.log('✅ Data loaded from Firestore successfully');
-        return true;
-    } catch (error) {
-        console.error('❌ Error loading data from Firestore:', error);
-        alert('Failed to load data: ' + error.message);
-        hideLoading();
-        return false;
-    }
-}
-
-window.loadData = loadDataFromFirebase;
-
-// ========================================
-// UI HELPER FUNCTIONS
-// ========================================
-
-function showLoading() {
-    console.log('🔄 Showing loading overlay');
-    const loginContent = document.getElementById('login-content');
-    const loadingContent = document.getElementById('loading-content');
-    if (loginContent) loginContent.style.display = 'none';
-    if (loadingContent) loadingContent.style.display = 'block';
-}
-
-function hideLoading() {
-    console.log('✅ Hiding loading overlay');
-    const loginOverlay = document.getElementById('login-overlay');
-    if (loginOverlay) {
-        loginOverlay.style.display = 'none';
-        console.log('✅ Login overlay hidden - dashboard should be visible');
-    } else {
-        console.error('❌ Login overlay element not found!');
-    }
-}
-
-// ========================================
-// INITIALIZE DASHBOARD
-// ========================================
-
-async function initializeDashboard() {
-    console.log('🚀 Initializing dashboard...');
-    
-    try {
-        // Check if StateManager exists
-        if (!window.StateManager) {
-            console.error('❌ StateManager not found - cannot initialize dashboard');
-            alert('Error: Application not properly loaded. Please refresh the page.');
-            return false;
-        }
-        
-        console.log('✅ StateManager found');
-        
-        // Load data from Firebase
-        const dataLoaded = await loadDataFromFirebase();
-        if (!dataLoaded) {
-            console.error('❌ Failed to load data from Firebase');
-            return false;
-        }
-        
-        // Initialize date picker
-        const datePicker = document.getElementById('date-picker');
-        if (datePicker && window.StateManager.state) {
-            datePicker.value = window.StateManager.state.currentDate;
-            console.log('✅ Date picker initialized');
-        }
-        
-        // Initialize sidebar avatars
-        if (window.renderSidebarAvatars) {
-            console.log('✅ Rendering sidebar avatars...');
-            window.renderSidebarAvatars();
-        } else {
-            console.warn('⚠️ renderSidebarAvatars not found');
-        }
-        
-        // Initialize sidebar trackers
-        if (window.renderSidebarTrackers) {
-            console.log('✅ Rendering sidebar trackers...');
-            window.renderSidebarTrackers();
-        } else {
-            console.warn('⚠️ renderSidebarTrackers not found');
-        }
-        
-        // Initialize UICore
-        if (window.UICore && window.StateManager.state) {
-            console.log('✅ UICore found, initializing...');
-            window.UICore.selectChild(window.StateManager.state.currentChild);
-            window.UICore.selectDate(window.StateManager.state.currentDate);
-            window.UICore.applyColorPalette();
-        } else {
-            console.warn('⚠️ UICore not found');
-        }
-        
-        console.log('✅ Dashboard initialized successfully');
-        hideLoading();
-        return true;
-        
-    } catch (error) {
-        console.error('❌ Error initializing dashboard:', error);
-        hideLoading();
-        alert('Error initializing dashboard: ' + error.message);
-        return false;
-    }
-}
-
-// ========================================
-// AUTH STATE LISTENER
+// AUTH STATE LISTENER (MODIFIED FOR MULTI-FAMILY)
 // ========================================
 
 auth.onAuthStateChanged(async (user) => {
-    console.log('🎯 onAuthStateChanged fired!');
-    console.log('   - authInitialized:', authInitialized);
-    console.log('   - user:', user ? user.email : 'none');
+    console.log('🎯 Auth state changed');
+    console.log('   - User:', user ? user.email : 'none');
+    console.log('   - Already initialized:', authInitialized);
     
     if (user) {
         // Prevent duplicate initialization
@@ -510,38 +62,30 @@ auth.onAuthStateChanged(async (user) => {
         
         currentUser = user;
         console.log('✅ User signed in:', user.email);
-        console.log('👤 User details:', {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            emailVerified: user.emailVerified
-        });
         
-        // Wait a bit for other modules to load
+        // Show loading
+        showLoading();
+        
+        // Wait for modules to load
         console.log('⏳ Waiting for modules to load...');
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Check what modules are available
+        // Check available modules
         console.log('📦 Available modules:', {
             StateManager: !!window.StateManager,
-            ProfileModule: !!window.ProfileModule,
-            UICore: !!window.UICore,
-            renderSidebarAvatars: !!window.renderSidebarAvatars,
-            renderSidebarTrackers: !!window.renderSidebarTrackers
+            loadUserFamilies: !!window.loadUserFamilies,
+            FamilyManagement: !!window.FamilyManagement
         });
         
-        // Initialize the dashboard
-        console.log('🚀 Starting dashboard initialization...');
-        const success = await initializeDashboard();
-        
-        if (success) {
-            // Add sign out button
-            addSignOutButton();
-            // Add family code button
-            addFamilyCodeButton();
-            console.log('✅ Login complete - user should see dashboard now');
+        // CRITICAL: Load user's families and show selection/setup
+        // This function is provided by family-management.js
+        if (window.loadUserFamilies) {
+            console.log('🚀 Loading user families...');
+            await loadUserFamilies();
         } else {
-            console.error('❌ Dashboard initialization failed');
+            console.error('❌ loadUserFamilies not found! Make sure family-management.js is loaded.');
+            alert('Error: Family management system not loaded. Please refresh the page.');
+            hideLoading();
         }
         
     } else {
@@ -559,30 +103,192 @@ auth.onAuthStateChanged(async (user) => {
         if (loginOverlay) loginOverlay.style.display = 'flex';
         if (loginContent) loginContent.style.display = 'block';
         if (loadingContent) loadingContent.style.display = 'none';
+        
+        // Clear any family selection screens
+        const familySelection = document.getElementById('family-selection-screen');
+        const familySetup = document.getElementById('family-setup-screen');
+        if (familySelection) familySelection.remove();
+        if (familySetup) familySetup.remove();
     }
 });
 
 // ========================================
-// SIGN OUT BUTTON
+// INITIALIZE DASHBOARD (MODIFIED FOR MULTI-FAMILY)
+// Called by switchToFamily() in family-management.js
+// ========================================
+
+async function initializeDashboard() {
+    console.log('🚀 Initializing dashboard...');
+    
+    try {
+        // Check if StateManager exists
+        if (!window.StateManager) {
+            console.error('❌ StateManager not found - cannot initialize dashboard');
+            alert('Error: Application not properly loaded. Please refresh the page.');
+            return false;
+        }
+        
+        console.log('✅ StateManager found');
+        console.log('   Current family:', window.StateManager.state.familyId);
+        console.log('   Current child:', window.StateManager.state.currentChild);
+        console.log('   Children count:', window.StateManager.state.children.length);
+        
+        // Data already loaded by switchToFamily, just initialize UI
+        
+        // Initialize date picker
+        const datePicker = document.getElementById('date-picker');
+        if (datePicker && window.StateManager.state) {
+            datePicker.value = window.StateManager.state.currentDate;
+            console.log('✅ Date picker initialized');
+        }
+        
+        // Initialize sidebar avatars
+        if (window.renderSidebarAvatars) {
+            console.log('✅ Rendering sidebar avatars...');
+            window.renderSidebarAvatars();
+        }
+        
+        // Initialize sidebar trackers
+        if (window.renderSidebarTrackers) {
+            console.log('✅ Rendering sidebar trackers...');
+            window.renderSidebarTrackers();
+        }
+        
+        // Initialize UICore
+        if (window.UICore && window.StateManager.state) {
+            console.log('✅ UICore found, initializing...');
+            window.UICore.selectChild(window.StateManager.state.currentChild);
+            window.UICore.selectDate(window.StateManager.state.currentDate);
+            window.UICore.applyColorPalette();
+        }
+        
+        console.log('✅ Dashboard initialized successfully');
+        
+        // Add header buttons
+        addSignOutButton();
+        addFamilyCodeButton();
+        
+        // Add family switcher if multiple families exist
+        if (window.addFamilySwitcher) {
+            addFamilySwitcher();
+        }
+        
+        // Show switch family button in sidebar if user has multiple families
+        updateSwitchFamilyButton();
+        
+        hideLoading();
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Error initializing dashboard:', error);
+        hideLoading();
+        alert('Error initializing dashboard: ' + error.message);
+        return false;
+    }
+}
+
+// ========================================
+// SAVE DATA TO FIREBASE
+// ========================================
+
+async function saveData() {
+    if (!currentUser) {
+        console.warn('No user logged in, cannot save');
+        return;
+    }
+
+    const familyId = window.StateManager?.state?.familyId;
+    if (!familyId) {
+        console.warn('No family selected, cannot save');
+        return;
+    }
+
+    try {
+        console.log('💾 Saving data to Firebase...');
+        
+        const familyRef = db.collection('families').doc(familyId);
+        
+        // Update family document
+        await familyRef.set({
+            familyCode: window.StateManager.state.familyCode,
+            children: window.StateManager.state.children,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        
+        // Save each family member
+        for (const childId of window.StateManager.state.children) {
+            const childData = window.StateManager.state.data[childId];
+            if (!childData) continue;
+            
+            // Separate days data from main data
+            const { days, ...memberData } = childData;
+            
+            // Save member document
+            await familyRef.collection('familyMembers').doc(childId).set(memberData, { merge: true });
+            
+            // Save days data in subcollection
+            if (days) {
+                for (const [date, dayData] of Object.entries(days)) {
+                    await familyRef.collection('familyMembers').doc(childId)
+                        .collection('days').doc(date)
+                        .set(dayData, { merge: true });
+                }
+            }
+        }
+        
+        console.log('✅ Data saved successfully');
+        
+    } catch (error) {
+        console.error('❌ Error saving data:', error);
+        alert('Error saving data: ' + error.message);
+    }
+}
+
+// Override global saveData
+window.saveData = saveData;
+
+// ========================================
+// LOADING INDICATORS
+// ========================================
+
+function showLoading() {
+    const loginOverlay = document.getElementById('login-overlay');
+    const loginContent = document.getElementById('login-content');
+    const loadingContent = document.getElementById('loading-content');
+    
+    if (loginOverlay) loginOverlay.style.display = 'flex';
+    if (loginContent) loginContent.style.display = 'none';
+    if (loadingContent) loadingContent.style.display = 'block';
+}
+
+function hideLoading() {
+    const loginOverlay = document.getElementById('login-overlay');
+    const loginContent = document.getElementById('login-content');
+    const loadingContent = document.getElementById('loading-content');
+    
+    if (loginOverlay) loginOverlay.style.display = 'none';
+    if (loginContent) loginContent.style.display = 'block';
+    if (loadingContent) loadingContent.style.display = 'none';
+}
+
+// ========================================
+// HEADER BUTTONS
 // ========================================
 
 function addSignOutButton() {
-    const existingBtn = document.getElementById('signout-btn');
-    if (existingBtn) return;
-
-    const header = document.querySelector('h1');
-    if (!header) return;
+    const utilityRight = document.querySelector('.utility-right');
+    if (!utilityRight || document.getElementById('signout-btn')) return;
     
     const signOutBtn = document.createElement('button');
     signOutBtn.id = 'signout-btn';
     signOutBtn.innerHTML = '🚪 Sign Out';
     signOutBtn.style.cssText = `
-        float: right;
+        margin-right: 8px;
         padding: 8px 16px;
         background: rgba(255,255,255,0.2);
         border: 1px solid rgba(255,255,255,0.4);
         border-radius: 8px;
-        color: white;
+        color: #1a202c;
         font-size: 14px;
         cursor: pointer;
         transition: all 0.2s;
@@ -594,131 +300,152 @@ function addSignOutButton() {
             auth.signOut();
         }
     };
-    header.parentElement.insertBefore(signOutBtn, header);
+    
+    utilityRight.insertBefore(signOutBtn, utilityRight.firstChild);
 }
 
-// ========================================
-// FAMILY CODE BUTTON & MODAL
-// ========================================
-
 function addFamilyCodeButton() {
-    const existingBtn = document.getElementById('family-code-btn');
-    if (existingBtn) return;
-
-    const header = document.querySelector('h1');
-    if (!header) return;
+    const utilityRight = document.querySelector('.utility-right');
+    if (!utilityRight || document.getElementById('family-code-btn')) return;
     
-    const familyCodeBtn = document.createElement('button');
-    familyCodeBtn.id = 'family-code-btn';
-    familyCodeBtn.innerHTML = '👨‍👩‍👧‍👦 Family Code';
-    familyCodeBtn.style.cssText = `
-        float: right;
+    const familyCode = window.StateManager?.state?.familyCode;
+    if (!familyCode) return;
+    
+    const codeBtn = document.createElement('button');
+    codeBtn.id = 'family-code-btn';
+    codeBtn.innerHTML = `👨‍👩‍👧‍👦 Code: ${familyCode}`;
+    codeBtn.style.cssText = `
         margin-right: 8px;
         padding: 8px 16px;
         background: rgba(255,255,255,0.2);
         border: 1px solid rgba(255,255,255,0.4);
         border-radius: 8px;
-        color: white;
+        color: #1a202c;
         font-size: 14px;
         cursor: pointer;
         transition: all 0.2s;
     `;
-    familyCodeBtn.onmouseover = () => familyCodeBtn.style.background = 'rgba(255,255,255,0.3)';
-    familyCodeBtn.onmouseout = () => familyCodeBtn.style.background = 'rgba(255,255,255,0.2)';
-    familyCodeBtn.onclick = () => showFamilyCodeModal();
+    codeBtn.onmouseover = () => codeBtn.style.background = 'rgba(255,255,255,0.3)';
+    codeBtn.onmouseout = () => codeBtn.style.background = 'rgba(255,255,255,0.2)';
+    codeBtn.onclick = () => showFamilyCodeModal();
     
-    header.parentElement.insertBefore(familyCodeBtn, header);
+    utilityRight.insertBefore(codeBtn, utilityRight.firstChild);
 }
 
+function updateSwitchFamilyButton() {
+    const switchBtn = document.getElementById('switch-family-btn');
+    if (!switchBtn) return;
+    
+    // Show button only if user has multiple families
+    if (window.userFamilies && window.userFamilies.length > 1) {
+        switchBtn.style.display = 'flex';
+    } else {
+        switchBtn.style.display = 'none';
+    }
+}
+
+// ========================================
+// FAMILY CODE MODAL
+// ========================================
+
 function showFamilyCodeModal() {
-    const familyCode = window.StateManager.state.familyCode || 'No code';
+    const familyCode = window.StateManager?.state?.familyCode;
+    if (!familyCode) return;
+    
+    const existingModal = document.getElementById('family-code-modal');
+    if (existingModal) existingModal.remove();
     
     const modal = document.createElement('div');
-    modal.className = 'modal active';
+    modal.id = 'family-code-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+    
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 400px;">
-            <div class="modal-header">
-                <h2>👨‍👩‍👧‍👦 Family Sharing</h2>
-                <button class="close-btn" onclick="this.closest('.modal').remove()">×</button>
+        <div style="background: white; border-radius: 16px; padding: 32px; max-width: 400px; width: 90%; text-align: center;">
+            <h2 style="margin-bottom: 16px; color: #1a202c;">👨‍👩‍👧‍👦 Family Code</h2>
+            <p style="color: #6b7280; margin-bottom: 24px;">Share this code with family members so they can join and collaborate!</p>
+            
+            <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                <div style="font-size: 32px; font-weight: bold; letter-spacing: 4px; color: #6366f1;">${familyCode}</div>
             </div>
-            <div class="modal-body">
-                <p style="margin-bottom: 16px;">Share this code with family members so they can join:</p>
-                <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
-                    <div style="font-size: 32px; font-weight: bold; letter-spacing: 4px; color: #6366f1;">${familyCode}</div>
-                </div>
-                
-                <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;">
-                
-                <p style="margin-bottom: 12px; font-weight: 600;">Or enter a code to join another family:</p>
-                <p style="margin-bottom: 12px; font-size: 13px; color: #ef4444;">⚠️ Warning: Joining another family will replace your current family data!</p>
-                <input type="text" id="join-family-code" placeholder="Enter 6-character code" maxlength="6" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; text-transform: uppercase; letter-spacing: 2px; text-align: center; margin-bottom: 12px;">
-                <button onclick="joinFamily()" class="btn btn-primary" style="width: 100%;">Join Family</button>
-            </div>
+            
+            <button 
+                onclick="navigator.clipboard.writeText('${familyCode}'); this.textContent='✅ Copied!'; setTimeout(() => this.textContent='📋 Copy Code', 2000)"
+                style="
+                    width: 100%;
+                    padding: 12px 24px;
+                    background: #6366f1;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    margin-bottom: 12px;
+                    transition: background 0.2s;
+                "
+                onmouseover="this.style.background='#4f46e5'"
+                onmouseout="this.style.background='#6366f1'"
+            >
+                📋 Copy Code
+            </button>
+            
+            <button 
+                onclick="this.closest('#family-code-modal').remove()"
+                style="
+                    width: 100%;
+                    padding: 12px 24px;
+                    background: #e5e7eb;
+                    color: #1a202c;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: background 0.2s;
+                "
+                onmouseover="this.style.background='#d1d5db'"
+                onmouseout="this.style.background='#e5e7eb'"
+            >
+                Close
+            </button>
         </div>
     `;
+    
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+    };
+    
     document.body.appendChild(modal);
 }
 
-async function joinFamily() {
-    const code = document.getElementById('join-family-code').value.toUpperCase().trim();
-    
-    if (!code || code.length !== 6) {
-        alert('Please enter a valid 6-character code');
-        return;
-    }
-    
-    if (!confirm('⚠️ Are you sure you want to join another family? Your current family data will be replaced with the new family\'s data.')) {
-        return;
-    }
-    
-    try {
-        // Find family with this code
-        const familiesSnapshot = await db.collection('families')
-            .where('familyCode', '==', code)
-            .limit(1)
-            .get();
-        
-        if (familiesSnapshot.empty) {
-            alert('❌ Family code not found. Please check the code and try again.');
-            return;
-        }
-        
-        const familyDoc = familiesSnapshot.docs[0];
-        const familyId = familyDoc.id;
-        
-        // Update user to join this family
-        const userRef = db.collection('users').doc(currentUser.uid);
-        await userRef.update({
-            familyId: familyId,
-            joinedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        alert('✅ Successfully joined family! Refreshing...');
-        window.location.reload();
-        
-    } catch (error) {
-        console.error('Error joining family:', error);
-        alert('Failed to join family: ' + error.message);
-    }
-}
-
-// Make joinFamily available globally
-window.joinFamily = joinFamily;
-
 // ========================================
-// AUTO-SAVE & CLEANUP
+// EXPORT FUNCTIONS
 // ========================================
 
-// Auto-save data periodically (every 30 seconds)
-setInterval(() => {
-    if (currentUser) {
-        saveDataToFirebase();
-    }
-}, 30000);
+window.initializeDashboard = initializeDashboard;
+window.saveData = saveData;
+window.showLoading = showLoading;
+window.hideLoading = hideLoading;
+window.addSignOutButton = addSignOutButton;
+window.addFamilyCodeButton = addFamilyCodeButton;
+window.showFamilyCodeModal = showFamilyCodeModal;
+window.updateSwitchFamilyButton = updateSwitchFamilyButton;
 
-// Save data before page unload
-window.addEventListener('beforeunload', () => {
-    if (currentUser) {
-        saveDataToFirebase();
-    }
-});
+// Make Firebase services globally available
+window.auth = auth;
+window.db = db;
+window.storage = storage;
+window.currentUser = currentUser;
+
+console.log('✅ Firebase integration loaded (Multi-Family Support)');
