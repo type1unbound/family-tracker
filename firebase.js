@@ -3,14 +3,14 @@
 // Updated to work with family-management.js
 // ========================================
 
-// Firebase Configuration
+// Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyB4u4R6F_hK9uZ8V7Y3m5Q2X8W9L0P6N4M",
-    authDomain: "compass-family-tracker.firebaseapp.com",
-    projectId: "compass-family-tracker",
-    storageBucket: "compass-family-tracker.appspot.com",
-    messagingSenderId: "123456789012",
-    appId: "1:123456789012:web:abcdef1234567890"
+    apiKey: "AIzaSyCJzB673MruQvNpX_1wuGoHUFSk6leErFg",
+    authDomain: "family-tracker-37025.firebaseapp.com",
+    projectId: "family-tracker-37025",
+    storageBucket: "family-tracker-37025.firebasestorage.app",
+    messagingSenderId: "1004309710251",
+    appId: "1:1004309710251:web:933164ffa6d5f78e6c7eee"
 };
 
 // Initialize Firebase
