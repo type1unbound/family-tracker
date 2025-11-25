@@ -422,20 +422,17 @@ function showCreateFamilyOptions() {
  */
 function launchSetupWizard() {
     // Change this URL to wherever you host the React wizard
-    const wizardUrl = 'https://type1unbound.github.io/family-tracker/'
+    const wizardUrl = 'https://type1unbound.github.io/family-tracker/onboarding/';
     
-    window.open(wizardUrl, '_blank', 'width=1000,height=800');
-    
-    // Show instruction modal
-    showWizardInstructionModal();
-}
+    // Open wizard in new window
+    const wizardWindow = window.open(wizardUrl, '_blank', 'width=1000,height=800');
     
     if (!wizardWindow) {
         alert('Please allow popups to use the Setup Wizard, or click the button again.');
         return;
     }
     
-    // Show message
+    // Show instruction modal
     showWizardLaunchedMessage();
 }
 
