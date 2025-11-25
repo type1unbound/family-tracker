@@ -579,7 +579,7 @@ function showCreateFamilyOptions() {
  */
 function launchSetupWizard() {
     // Change this URL to wherever you host the React wizard
-    const wizardUrl = 'https://type1unbound.github.io/family-tracker/onboarding.html';
+    const wizardUrl = 'https://type1unbound.github.io/family-tracker/onboarding.js';
     
     // Open wizard in new window
     const wizardWindow = window.open(wizardUrl, '_blank', 'width=1000,height=800');
