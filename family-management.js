@@ -1,6 +1,6 @@
 // ========================================
 // FAMILY MANAGEMENT & SELECTION SYSTEM
-// Add this to your Firebase integration file AFTER auth.onAuthStateChanged
+// With Safe Migration for Existing Users
 // ========================================
 
 // Track user's families
@@ -31,8 +31,47 @@ async function loadUserFamilies() {
         
         const userData = userDoc.data();
         
+        // ========================================
+        // MIGRATION CHECK FOR EXISTING USERS
+        // ========================================
+        // If user has old single familyId but no familyIds array, migrate them
+        if (userData.familyId && !userData.familyIds) {
+            console.log('🔄 Detected old user format - migrating to multi-family structure...');
+            
+            try {
+                await migrateOldUserData(userRef, userData);
+                
+                // Reload user data after migration
+                const updatedDoc = await userRef.get();
+                const updatedData = updatedDoc.data();
+                const familyIds = updatedData.familyIds || [];
+                
+                console.log('✅ Migration complete! User now has', familyIds.length, 'family/families');
+                
+                if (familyIds.length === 0) {
+                    console.log('User has no families after migration - showing setup wizard');
+                    showFamilySetupChoice();
+                    return;
+                }
+                
+                // Continue with migrated data
+                await loadFamiliesAndShowScreen(updatedData, familyIds);
+                return;
+                
+            } catch (error) {
+                console.error('❌ Migration failed:', error);
+                alert('Error migrating your data. Please contact support. Your original data is safe.');
+                hideLoading();
+                return;
+            }
+        }
+        
+        // ========================================
+        // NORMAL FLOW (New multi-family users)
+        // ========================================
+        
         // Get all family IDs user belongs to
-        const familyIds = userData.familyIds || (userData.familyId ? [userData.familyId] : []);
+        const familyIds = userData.familyIds || [];
         
         if (familyIds.length === 0) {
             // User exists but has no families - show setup
@@ -41,34 +80,152 @@ async function loadUserFamilies() {
             return;
         }
         
-        // Load family details
-        userFamilies = [];
-        for (const familyId of familyIds) {
-            const familyDoc = await db.collection('families').doc(familyId).get();
-            if (familyDoc.exists) {
-                userFamilies.push({
-                    id: familyId,
-                    ...familyDoc.data()
-                });
-            }
-        }
-        
-        console.log('✅ Loaded', userFamilies.length, 'families');
-        
-        // Get last active family or use first one
-        const lastFamilyId = userData.lastActiveFamilyId || familyIds[0];
-        
-        if (userFamilies.length === 1) {
-            // Only one family - go directly to dashboard
-            await switchToFamily(lastFamilyId);
-        } else {
-            // Multiple families - show selection screen
-            showFamilySelectionScreen(lastFamilyId);
-        }
+        await loadFamiliesAndShowScreen(userData, familyIds);
         
     } catch (error) {
         console.error('❌ Error loading families:', error);
         alert('Error loading families: ' + error.message);
+        hideLoading();
+    }
+}
+
+/**
+ * Load family details and show appropriate screen
+ */
+async function loadFamiliesAndShowScreen(userData, familyIds) {
+    // Load family details
+    userFamilies = [];
+    for (const familyId of familyIds) {
+        const familyDoc = await db.collection('families').doc(familyId).get();
+        if (familyDoc.exists) {
+            userFamilies.push({
+                id: familyId,
+                ...familyDoc.data()
+            });
+        }
+    }
+    
+    console.log('✅ Loaded', userFamilies.length, 'families');
+    
+    // Get last active family or use first one
+    const lastFamilyId = userData.lastActiveFamilyId || familyIds[0];
+    
+    if (userFamilies.length === 1) {
+        // Only one family - go directly to dashboard
+        await switchToFamily(lastFamilyId);
+    } else {
+        // Multiple families - show selection screen
+        showFamilySelectionScreen(lastFamilyId);
+    }
+}
+
+/**
+ * Migrate old single-family data to new multi-family structure
+ * SAFE: Copies data, does NOT delete original
+ */
+async function migrateOldUserData(userRef, userData) {
+    try {
+        console.log('🔄 Starting migration...');
+        console.log('   - Original familyId:', userData.familyId);
+        
+        const oldFamilyId = userData.familyId;
+        const userId = userRef.id;
+        
+        // Check if family document already exists in new location
+        const existingFamilyDoc = await db.collection('families').doc(oldFamilyId).get();
+        
+        if (existingFamilyDoc.exists) {
+            console.log('   ✓ Family document already exists in /families - skipping family creation');
+        } else {
+            // Create new family document in /families collection
+            const familyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            
+            console.log('   - Creating family document with code:', familyCode);
+            
+            await db.collection('families').doc(oldFamilyId).set({
+                familyCode: familyCode,
+                createdBy: userId,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                migratedFrom: 'legacy',
+                migratedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                children: [] // Will be populated below
+            });
+        }
+        
+        // Get all family members from old location (/users/{uid}/familyMembers)
+        console.log('   - Copying family members from /users to /families...');
+        const oldMembersSnapshot = await userRef.collection('familyMembers').get();
+        const childIds = [];
+        
+        for (const memberDoc of oldMembersSnapshot.docs) {
+            childIds.push(memberDoc.id);
+            const memberData = memberDoc.data();
+            
+            // Check if member already exists in new location
+            const newMemberRef = db.collection('families').doc(oldFamilyId)
+                .collection('familyMembers').doc(memberDoc.id);
+            const existingMember = await newMemberRef.get();
+            
+            if (!existingMember.exists) {
+                // Copy member to new location (COPY, not move - original stays)
+                await newMemberRef.set(memberData);
+                console.log(`     ✓ Copied ${memberData.name || memberDoc.id}`);
+                
+                // Copy days data
+                const daysSnapshot = await memberDoc.ref.collection('days').get();
+                let dayCount = 0;
+                for (const dayDoc of daysSnapshot.docs) {
+                    await newMemberRef.collection('days').doc(dayDoc.id).set(dayDoc.data());
+                    dayCount++;
+                }
+                console.log(`       → Copied ${dayCount} days of data`);
+                
+                // Copy tracker data if it exists
+                const trackerSnapshot = await memberDoc.ref.collection('trackerData').get();
+                if (!trackerSnapshot.empty) {
+                    let trackerCount = 0;
+                    for (const trackerDoc of trackerSnapshot.docs) {
+                        await newMemberRef.collection('trackerData').doc(trackerDoc.id).set(trackerDoc.data());
+                        
+                        // Copy tracker entries
+                        const entriesSnapshot = await trackerDoc.ref.collection('entries').get();
+                        for (const entryDoc of entriesSnapshot.docs) {
+                            await newMemberRef.collection('trackerData').doc(trackerDoc.id)
+                                .collection('entries').doc(entryDoc.id).set(entryDoc.data());
+                        }
+                        trackerCount++;
+                    }
+                    console.log(`       → Copied ${trackerCount} trackers`);
+                }
+            } else {
+                console.log(`     ✓ ${memberData.name || memberDoc.id} already exists in new location`);
+            }
+        }
+        
+        // Update family document with children list
+        await db.collection('families').doc(oldFamilyId).update({
+            children: childIds
+        });
+        
+        console.log('   - Updating user document to multi-family format...');
+        
+        // Update user document to new format
+        // IMPORTANT: We keep the old familyId field for backwards compatibility
+        await userRef.update({
+            familyIds: [oldFamilyId],  // NEW: Array of family IDs
+            lastActiveFamilyId: oldFamilyId,  // NEW: Track last active
+            migratedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            // familyId: oldFamilyId  ← KEPT (not removed) for backwards compatibility
+        });
+        
+        console.log('✅ Migration complete!');
+        console.log('   ℹ️  Original data in /users collection is preserved');
+        console.log('   ℹ️  New data is in /families collection');
+        console.log('   ℹ️  User can now access multi-family features');
+        
+    } catch (error) {
+        console.error('❌ Migration error:', error);
+        throw new Error('Migration failed: ' + error.message);
     }
 }
 
@@ -658,5 +815,6 @@ window.createEmptyFamily = createEmptyFamily;
 window.switchToFamily = switchToFamily;
 window.addFamilySwitcher = addFamilySwitcher;
 window.showJoinFamilyDialog = showJoinFamilyDialog;
+window.migrateOldUserData = migrateOldUserData; // Export for manual migration if needed
 
-console.log('✅ Family Management System loaded');
+console.log('✅ Family Management System loaded (with migration support)');
