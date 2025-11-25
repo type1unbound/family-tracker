@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+<!-- Onboarding & Rewards -->
+<!DOCTYPE html> 
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,11 +9,216 @@
     <!-- Compass CSS -->
     <link rel="stylesheet" href="https://type1unbound.github.io/family-tracker/styles.css">
     
-    <!-- Spinning animation for loading -->
+    <!-- CUSTOM STYLES FOR MULTI-FAMILY & REWARDS -->
     <style>
+        /* Spinning animation for loading */
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        /* FAMILY SELECTION OVERLAY */
+        #family-selection-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 10000;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .family-selection-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .family-selection-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .family-selection-header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .family-selection-header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .family-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .family-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .family-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .family-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .family-card-icon {
+            font-size: 32px;
+        }
+
+        .family-card-info h3 {
+            font-size: 20px;
+            margin-bottom: 4px;
+            color: #1f2937;
+        }
+
+        .family-card-info p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .create-family-btn {
+            width: 100%;
+            padding: 16px;
+            background: white;
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .create-family-btn:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+            background: #f0f9ff;
+        }
+
+        /* REWARDS SECTION STYLES */
+        .rewards-section {
+            margin-top: 24px;
+        }
+
+        .rewards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .reward-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .reward-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .reward-card.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .reward-card.redeemed {
+            border: 2px solid #10b981;
+            background: #f0fdf4;
+        }
+
+        .reward-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .reward-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+
+        .reward-description {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .reward-cost {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .reward-points {
+            font-size: 16px;
+            font-weight: 600;
+            color: #6366f1;
+        }
+
+        .reward-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .reward-status.available {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .reward-status.locked {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .reward-status.redeemed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .spend-points-btn {
+            padding: 8px 16px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .spend-points-btn:hover {
+            background: #4f46e5;
         }
     </style>
     
@@ -75,7 +281,8 @@
             <div class="sidebar-section-title">Wellness Journals</div>
             <div id="sidebar-trackers-container"></div>
 
-            <div class="sidebar-divider"></div>         
+            <div class="sidebar-divider"></div>
+            
             <!-- Bottom Controls -->
             <div class="sidebar-controls">
                 <button class="sidebar-btn" onclick="UICore.toggleEditMode()" id="sidebar-edit-btn">
@@ -83,6 +290,14 @@
                     <span id="sidebar-edit-text">Edit</span>
                 </button>
                 <button class="sidebar-btn" onclick="ProfileModule.openProfileModal()">👤 Profile</button>
+                
+                <!-- NEW: MULTI-FAMILY SWITCH BUTTON (shows only if user has multiple families) -->
+                <button class="sidebar-btn" id="switch-family-btn" onclick="FamilyManagement.showFamilySelection()" 
+                        style="display: none;">
+                    <span class="sidebar-icon">🏠</span>
+                    <span class="sidebar-text">Switch Family</span>
+                </button>
+                
                 <button class="sidebar-btn" onclick="logout()">🔒 Logout</button>
             </div>
         </div>
@@ -174,58 +389,57 @@
                     </div>
                 </div>
                 
-<!-- CENTER COLUMN - Detail View & Progress -->
-<div class="detail-section">
-        <!-- Progress Bars -->
-    <div class="progress-section">
-        <div class="progress-label">
-            <span>Daily Progress</span>
-            <span id="daily-progress-text">0%</span>
-        </div>
-        <div class="progress-bar">
-            <div class="progress-fill" id="daily-progress" style="width: 0%"></div>
-        </div>
-    </div>
-    
-    <div class="progress-section" style="margin-bottom: 24px;">
-        <div class="progress-label">
-            <span>Weekly Progress</span>
-            <span id="weekly-progress-text">0%</span>
-        </div>
-        <div class="progress-bar">
-            <div class="progress-fill weekly" id="weekly-progress" style="width: 0%"></div>
-        </div>
-    </div>
-    <!-- Focused Schedule Item Detail -->
-    <div id="schedule-detail-container" style="display: none; margin-bottom: 24px;">
-        <div class="detail-header">
-            <div class="detail-time" id="focused-time">7:00am</div>
-            <div class="detail-name" id="focused-name">Morning Routine</div>
-        </div>
-        <div class="section-subtitle">Tasks & Expectations</div>
-        <div class="detail-tasks" id="focused-tasks">
-            <!-- Focused item tasks will be inserted here -->
-        </div>
-        <button id="focused-complete-btn" class="complete-btn" onclick="ScheduleModule.completeFocusedItem()">
-            ✓ Mark Complete
-        </button>
-    </div>
-    
-
-    
-    <!-- Streak Card -->
-    <div id="streak-container"></div>
-    
-    <!-- Notes Section -->
-    <div style="margin-top: 24px;">
-        <div class="section-subtitle">📝 Daily Notes & Reflection</div>
-        <textarea id="daily-notes" 
-                  rows="6" 
-                  placeholder="General notes about the day, celebrations, challenges, or things to work on..." 
-                  onchange="CharacterModule.updateNotes(this.value)"
-                  style="width: 100%; padding: 12px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; resize: vertical;"></textarea>
-    </div>
-</div>
+                <!-- CENTER COLUMN - Detail View & Progress -->
+                <div class="detail-section">
+                    <!-- Progress Bars -->
+                    <div class="progress-section">
+                        <div class="progress-label">
+                            <span>Daily Progress</span>
+                            <span id="daily-progress-text">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="daily-progress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-section" style="margin-bottom: 24px;">
+                        <div class="progress-label">
+                            <span>Weekly Progress</span>
+                            <span id="weekly-progress-text">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill weekly" id="weekly-progress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Focused Schedule Item Detail -->
+                    <div id="schedule-detail-container" style="display: none; margin-bottom: 24px;">
+                        <div class="detail-header">
+                            <div class="detail-time" id="focused-time">7:00am</div>
+                            <div class="detail-name" id="focused-name">Morning Routine</div>
+                        </div>
+                        <div class="section-subtitle">Tasks & Expectations</div>
+                        <div class="detail-tasks" id="focused-tasks">
+                            <!-- Focused item tasks will be inserted here -->
+                        </div>
+                        <button id="focused-complete-btn" class="complete-btn" onclick="ScheduleModule.completeFocusedItem()">
+                            ✓ Mark Complete
+                        </button>
+                    </div>
+                    
+                    <!-- Streak Card -->
+                    <div id="streak-container"></div>
+                    
+                    <!-- Notes Section -->
+                    <div style="margin-top: 24px;">
+                        <div class="section-subtitle">📝 Daily Notes & Reflection</div>
+                        <textarea id="daily-notes" 
+                                  rows="6" 
+                                  placeholder="General notes about the day, celebrations, challenges, or things to work on..." 
+                                  onchange="CharacterModule.updateNotes(this.value)"
+                                  style="width: 100%; padding: 12px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; resize: vertical;"></textarea>
+                    </div>
+                </div>
                 
                 <!-- RIGHT COLUMN - Weekly Goals & Character Development -->
                 <div class="goals-section">
@@ -256,12 +470,19 @@
                             <!-- Character categories will be inserted here by JavaScript -->
                         </div>
                         
-                    <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); padding: 12px; border-radius: 10px; border: 1px solid #86efac; margin-top: 12px;">
-                  <div style="font-size: 11px; font-weight: 700; color: #166534; margin-bottom: 4px;">💡 Growth Multipliers</div> 
-                     <div style="font-size: 10px; color: #166534; line-height: 1.4;">
-                     <strong>Starting</strong> 1.0x · <strong>Progress</strong> 1.5x · <strong>Excelling</strong> 2.0x
+                        <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); padding: 12px; border-radius: 10px; border: 1px solid #86efac; margin-top: 12px;">
+                            <div style="font-size: 11px; font-weight: 700; color: #166534; margin-bottom: 4px;">💡 Growth Multipliers</div> 
+                            <div style="font-size: 10px; color: #166534; line-height: 1.4;">
+                                <strong>Starting</strong> 1.0x · <strong>Progress</strong> 1.5x · <strong>Excelling</strong> 2.0x
                             </div>
                         </div>
+                    </div>
+                    
+                    <!-- NEW: REWARDS SECTION PLACEHOLDER -->
+                    <!-- This will be populated by your separate rewards.html content -->
+                    <div class="section rewards-section" id="rewards-section-container">
+                        <!-- Rewards content from rewards.html will be injected here -->
+                        <!-- Or you can include it directly here -->
                     </div>
                 </div>
             </div>
@@ -502,174 +723,182 @@
 
         <!-- Medication/Health Tracker Modal -->
         <div id="med-tracker-modal" class="modal">
-    <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
-        <div class="modal-header">
-            <h2 id="med-tracker-title">Wellness Journal</h2>
-            <button class="close-btn" onclick="closeMedTrackerModal()">×</button>
-        </div>
-        
-        <!-- Tabs -->
-        <div style="display: flex; border-bottom: 2px solid #e5e7eb; margin-bottom: 20px;">
-            <button class="tracker-tab active" data-tab="entry" onclick="switchMedTab('entry')">
-                📝 Entry
-            </button>
-            <button class="tracker-tab" data-tab="history" onclick="switchMedTab('history')">
-                📋 History
-            </button>
-            <button class="tracker-tab" data-tab="analytics" onclick="switchMedTab('analytics')">
-                📊 Analytics
-            </button>
-            <button class="tracker-tab" data-tab="settings" onclick="switchMedTab('settings')">
-                ⚙️ Settings
-            </button>
-        </div>
-        
-        <!-- Tab Contents -->
-        <div style="flex: 1; overflow-y: auto;">
-            <div id="tracker-entry-content" class="tracker-tab-content active">
-                <div id="med-content-entry"></div>
-            </div>
-            
-            <div id="tracker-history-content" class="tracker-tab-content">
-                <div id="med-history-list"></div>
-            </div>
-            
-            <div id="tracker-analytics-content" class="tracker-tab-content">
-                <div id="med-analytics-content"></div>
-            </div>
-            
-            <div id="tracker-settings-content" class="tracker-tab-content">
-                <div id="med-settings-content"></div>
+            <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
+                <div class="modal-header">
+                    <h2 id="med-tracker-title">Wellness Journal</h2>
+                    <button class="close-btn" onclick="closeMedTrackerModal()">×</button>
+                </div>
+                
+                <!-- Tabs -->
+                <div style="display: flex; border-bottom: 2px solid #e5e7eb; margin-bottom: 20px;">
+                    <button class="tracker-tab active" data-tab="entry" onclick="switchMedTab('entry')">
+                        📝 Entry
+                    </button>
+                    <button class="tracker-tab" data-tab="history" onclick="switchMedTab('history')">
+                        📋 History
+                    </button>
+                    <button class="tracker-tab" data-tab="analytics" onclick="switchMedTab('analytics')">
+                        📊 Analytics
+                    </button>
+                    <button class="tracker-tab" data-tab="settings" onclick="switchMedTab('settings')">
+                        ⚙️ Settings
+                    </button>
+                </div>
+                
+                <!-- Tab Contents -->
+                <div style="flex: 1; overflow-y: auto;">
+                    <div id="tracker-entry-content" class="tracker-tab-content active">
+                        <div id="med-content-entry"></div>
+                    </div>
+                    
+                    <div id="tracker-history-content" class="tracker-tab-content">
+                        <div id="med-history-list"></div>
+                    </div>
+                    
+                    <div id="tracker-analytics-content" class="tracker-tab-content">
+                        <div id="med-analytics-content"></div>
+                    </div>
+                    
+                    <div id="tracker-settings-content" class="tracker-tab-content">
+                        <div id="med-settings-content"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- NEW: FAMILY SELECTION OVERLAY -->
+    <!-- This overlay is populated dynamically by family-management.js -->
+    <div id="family-selection-overlay" style="display: none;">
+        <!-- Content will be dynamically injected by FamilyManagement module -->
+    </div>
+
     <!-- Sidebar Rendering Scripts -->
-<script>
-// Render sidebar avatars
-function renderSidebarAvatars() {
-    const container = document.getElementById('sidebar-avatars-container');
-    if (!container) {
-        console.warn('sidebar-avatars-container not found');
-        return;
-    }
-    
-    if (!window.StateManager || !window.StateManager.state) {
-        console.warn('StateManager not available yet');
-        return;
-    }
-    
-    const children = window.StateManager.state.children;
-    const currentChildId = window.StateManager.state.currentChild;
-    
-    container.innerHTML = children.map(childId => {
-        const child = window.StateManager.getChild(childId);
-        if (!child) return '';
-        
-        const isActive = childId === currentChildId;
-        
-        let avatarContent;
-        if (child.photo) {
-            avatarContent = `<img src="${child.photo}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
-        } else {
-            avatarContent = '<span style="font-size: 24px;">👤</span>';
+    <script>
+    // Render sidebar avatars
+    function renderSidebarAvatars() {
+        const container = document.getElementById('sidebar-avatars-container');
+        if (!container) {
+            console.warn('sidebar-avatars-container not found');
+            return;
         }
         
-        return `
-            <button class="sidebar-avatar ${isActive ? 'active' : ''}" 
-                    onclick="UICore.selectChild('${childId}')"
-                    title="${child.name}"
-                    style="width: 48px; height: 48px; border-radius: 50%; border: 3px solid ${isActive ? '#6366f1' : 'transparent'}; background: ${isActive ? '#f0f0f0' : '#fff'}; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; overflow: hidden;">
-                ${avatarContent}
+        if (!window.StateManager || !window.StateManager.state) {
+            console.warn('StateManager not available yet');
+            return;
+        }
+        
+        const children = window.StateManager.state.children;
+        const currentChildId = window.StateManager.state.currentChild;
+        
+        container.innerHTML = children.map(childId => {
+            const child = window.StateManager.getChild(childId);
+            if (!child) return '';
+            
+            const isActive = childId === currentChildId;
+            
+            let avatarContent;
+            if (child.photo) {
+                avatarContent = `<img src="${child.photo}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+            } else {
+                avatarContent = '<span style="font-size: 24px;">👤</span>';
+            }
+            
+            return `
+                <button class="sidebar-avatar ${isActive ? 'active' : ''}" 
+                        onclick="UICore.selectChild('${childId}')"
+                        title="${child.name}"
+                        style="width: 48px; height: 48px; border-radius: 50%; border: 3px solid ${isActive ? '#6366f1' : 'transparent'}; background: ${isActive ? '#f0f0f0' : '#fff'}; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; overflow: hidden;">
+                    ${avatarContent}
+                </button>
+            `;
+        }).join('');
+        
+        console.log('✅ Sidebar avatars rendered');
+    }
+
+    // Render sidebar trackers
+    function renderSidebarTrackers() {
+        const container = document.getElementById('sidebar-trackers-container');
+        if (!container) return;
+        
+        const currentChild = window.StateManager?.getCurrentChild();
+        if (!currentChild) {
+            container.innerHTML = '';
+            return;
+        }
+        
+        const trackers = currentChild.trackers || [];
+        
+        if (trackers.length === 0) {
+            container.innerHTML = '<div style="padding:12px 16px;font-size:12px;color:#9ca3af;text-align:center">No trackers yet</div>';
+            return;
+        }
+        
+        container.innerHTML = trackers.map(tracker => `
+            <button class="sidebar-tracker-btn" onclick="openSpecificTracker('${tracker.id}')">
+                <span style="font-size:16px">${tracker.icon || '📊'}</span>
+                <span>${tracker.templateName || 'Health Tracker'}</span>
             </button>
-        `;
-    }).join('');
-    
-    console.log('✅ Sidebar avatars rendered');
-}
-
-// Render sidebar trackers
-function renderSidebarTrackers() {
-    const container = document.getElementById('sidebar-trackers-container');
-    if (!container) return;
-    
-    const currentChild = window.StateManager?.getCurrentChild();
-    if (!currentChild) {
-        container.innerHTML = '';
-        return;
+        `).join('');
     }
-    
-    const trackers = currentChild.trackers || [];
-    
-    if (trackers.length === 0) {
-        container.innerHTML = '<div style="padding:12px 16px;font-size:12px;color:#9ca3af;text-align:center">No trackers yet</div>';
-        return;
-    }
-    
-    container.innerHTML = trackers.map(tracker => `
-        <button class="sidebar-tracker-btn" onclick="openSpecificTracker('${tracker.id}')">
-            <span style="font-size:16px">${tracker.icon || '📊'}</span>
-            <span>${tracker.templateName || 'Health Tracker'}</span>
-        </button>
-    `).join('');
-}
 
-window.openSpecificTracker = function(trackerId) {
-    const currentChild = window.StateManager?.getCurrentChild();
-    if (!currentChild) return alert('Please select a child first');
-    
-    const tracker = currentChild.trackers?.find(t => t.id === trackerId);
-    if (!tracker) return alert('Tracker not found');
-    
-    const modal = document.getElementById('med-tracker-modal');
-    if (!modal) return alert('Tracker modal not found');
-    
-    if (window.MedicationTracker) {
-        const config = tracker.customConfig || (window.TrackerTemplates?.getTemplate(tracker.templateId)?.config);
-        window.MedicationTracker.init(window.StateManager.state.currentChild, trackerId, config);
-        window.MedicationTracker.renderEntryForm();
+    window.openSpecificTracker = function(trackerId) {
+        const currentChild = window.StateManager?.getCurrentChild();
+        if (!currentChild) return alert('Please select a child first');
         
-        const titleEl = document.getElementById('med-tracker-member-name');
-        if (titleEl) titleEl.textContent = tracker.templateName || 'Health Tracker';
+        const tracker = currentChild.trackers?.find(t => t.id === trackerId);
+        if (!tracker) return alert('Tracker not found');
         
-        modal.style.display = 'flex';
-        if (window.switchMedTab) window.switchMedTab('entry');
-    } else {
-        alert('Tracker module not loaded');
-    }
-};
+        const modal = document.getElementById('med-tracker-modal');
+        if (!modal) return alert('Tracker modal not found');
+        
+        if (window.MedicationTracker) {
+            const config = tracker.customConfig || (window.TrackerTemplates?.getTemplate(tracker.templateId)?.config);
+            window.MedicationTracker.init(window.StateManager.state.currentChild, trackerId, config);
+            window.MedicationTracker.renderEntryForm();
+            
+            const titleEl = document.getElementById('med-tracker-member-name');
+            if (titleEl) titleEl.textContent = tracker.templateName || 'Health Tracker';
+            
+            modal.style.display = 'flex';
+            if (window.switchMedTab) window.switchMedTab('entry');
+        } else {
+            alert('Tracker module not loaded');
+        }
+    };
 
-// Make functions globally available
-window.renderSidebarAvatars = renderSidebarAvatars;
-window.renderSidebarTrackers = renderSidebarTrackers;
+    // Make functions globally available
+    window.renderSidebarAvatars = renderSidebarAvatars;
+    window.renderSidebarTrackers = renderSidebarTrackers;
 
-// Auto-update on child changes
-let lastChildId = null;
-let lastChildrenCount = 0;
+    // Auto-update on child changes
+    let lastChildId = null;
+    let lastChildrenCount = 0;
 
-setInterval(() => {
-    if (!window.StateManager) return;
-    
-    const currentChildId = window.StateManager.state.currentChild;
-    const childrenCount = window.StateManager.state.children.length;
-    
-    // Re-render if child changed OR if number of children changed (added/deleted)
-    if (currentChildId !== lastChildId || childrenCount !== lastChildrenCount) {
-        lastChildId = currentChildId;
-        lastChildrenCount = childrenCount;
-        renderSidebarAvatars();
-        renderSidebarTrackers();
-    }
-}, 500);
+    setInterval(() => {
+        if (!window.StateManager) return;
+        
+        const currentChildId = window.StateManager.state.currentChild;
+        const childrenCount = window.StateManager.state.children.length;
+        
+        // Re-render if child changed OR if number of children changed (added/deleted)
+        if (currentChildId !== lastChildId || childrenCount !== lastChildrenCount) {
+            lastChildId = currentChildId;
+            lastChildrenCount = childrenCount;
+            renderSidebarAvatars();
+            renderSidebarTrackers();
+        }
+    }, 500);
 
-// Initial render after delay to ensure everything is loaded
-setTimeout(() => {
-    if (window.StateManager) {
-        renderSidebarAvatars();
-        renderSidebarTrackers();
-    }
-}, 1500);
-</script>
+    // Initial render after delay to ensure everything is loaded
+    setTimeout(() => {
+        if (window.StateManager) {
+            renderSidebarAvatars();
+            renderSidebarTrackers();
+        }
+    }, 1500);
+    </script>
 
     <!-- Helper Functions Script -->
     <script>
@@ -697,6 +926,10 @@ setTimeout(() => {
         if (modal) {
             modal.style.display = 'none';
         }
+    }
+    
+    function closeMedTrackerModal() {
+        closeMedicationTracker();
     }
     
     function switchMedTab(tab) {
