@@ -1,6 +1,6 @@
 const OnboardingWithPointEconomy = () => {
-  const [step, setStep] = useState(0);
-  const [familyValues, setFamilyValues] = useState([
+  const [step, setStep] = React.useState(0);
+  const [familyValues, setFamilyValues] = React.useState([
     { id: 1, name: 'Kindness', selected: false },
     { id: 2, name: 'Responsibility', selected: false },
     { id: 3, name: 'Courage', selected: false },
@@ -12,15 +12,70 @@ const OnboardingWithPointEconomy = () => {
     { id: 9, name: 'Independence', selected: false },
     { id: 10, name: 'Compassion', selected: false }
   ]);
-  const [orderedValues, setOrderedValues] = useState([]);
-  const [familyMembers, setFamilyMembers] = useState([]);
-  const [currentMember, setCurrentMember] = useState({ name: '', age: '', role: 'child' });
-  const [questionnaires, setQuestionnaires] = useState({});
-  const [currentMemberIndex, setCurrentMemberIndex] = useState(0);
-  const [generatedData, setGeneratedData] = useState(null);
-  const [motivationInsights, setMotivationInsights] = useState(null);
-  const [pointEconomy, setPointEconomy] = useState({});
-  const [currentEconomyMember, setCurrentEconomyMember] = useState(null);
+  const [orderedValues, setOrderedValues] = React.useState([]);
+  const [familyMembers, setFamilyMembers] = React.useState([]);
+  const [currentMember, setCurrentMember] = React.useState({ name: '', age: '', role: 'child' });
+  const [questionnaires, setQuestionnaires] = React.useState({});
+  const [currentMemberIndex, setCurrentMemberIndex] = React.useState(0);
+  const [generatedData, setGeneratedData] = React.useState(null);
+  const [motivationInsights, setMotivationInsights] = React.useState(null);
+  const [pointEconomy, setPointEconomy] = React.useState({});
+
+  // SVG Icons - Professional & Consistent
+  const Icons = {
+    Heart: () => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+      </svg>
+    ),
+    Users: () => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+    ),
+    Sparkles: () => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M5.6 18.4L18.4 5.6"></path>
+      </svg>
+    ),
+    Check: () => (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    ),
+    ArrowRight: () => (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
+    ),
+    ArrowLeft: () => (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+    ),
+    Target: () => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <circle cx="12" cy="12" r="6"></circle>
+        <circle cx="12" cy="12" r="2"></circle>
+      </svg>
+    ),
+    ChevronUp: () => (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    ),
+    ChevronDown: () => (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    )
+  };
 
   // Get rewards based on motivation style and age/role
   const getRewardsByMotivation = (motivationStyle, isAdult, age) => {
@@ -478,12 +533,9 @@ const OnboardingWithPointEconomy = () => {
       window.opener.postMessage({
         type: 'COMPASS_WIZARD_COMPLETE',
         data: exportData
-      }, 'https://type1unbound.github.io'); // Your main app origin
+      }, 'https://type1unbound.github.io');
       
-      // Show success message
       alert('✅ Setup complete! Your family is being created...');
-      
-      // Close wizard window
       window.close();
     } else {
       alert('Unable to send data to main app. Please ensure this window was opened from the Compass app.');
@@ -525,62 +577,107 @@ const OnboardingWithPointEconomy = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #f5f7fa 0%, #e8ede8 100%)',
-      fontFamily: '"DM Sans", system-ui, sans-serif',
-      padding: '2rem'
+      background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      padding: '24px',
+      color: '#1e293b'
     }}>
-      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1 style={{
-            fontSize: '2.5rem',
-            fontFamily: '"Crimson Pro", serif',
-            color: '#2d3748',
-            marginBottom: '0.5rem'
+      <div style={{ maxWidth: '880px', margin: '0 auto' }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            borderRadius: '16px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '16px',
+            boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)'
           }}>
-            Compass Family Setup
+            <Icons.Target />
+            <span style={{ color: 'white', fontSize: '28px', fontWeight: '700' }}>C</span>
+          </div>
+          <h1 style={{
+            fontSize: '28px',
+            fontWeight: '700',
+            color: '#0f172a',
+            margin: '0 0 8px 0',
+            letterSpacing: '-0.5px'
+          }}>
+            Family Setup
           </h1>
-          <p style={{ color: '#718096', fontSize: '1.1rem' }}>
-            Create a personalized growth journey with complete point economy
+          <p style={{ color: '#64748b', fontSize: '15px', margin: 0 }}>
+            Create your personalized growth system
           </p>
         </div>
 
-        {/* Progress */}
+        {/* Progress Bar */}
         <div style={{
           display: 'flex',
           justifyContent: 'center',
-          gap: '0.75rem',
-          marginBottom: '2rem',
-          flexWrap: 'wrap'
+          gap: '8px',
+          marginBottom: '32px'
         }}>
           {['Values', 'Family', 'Questions', 'Insights', 'Complete'].map((label, idx) => (
             <div key={idx} style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '0.4rem',
-              opacity: idx <= step ? 1 : 0.4
+              gap: '8px',
+              flex: '1',
+              maxWidth: '140px'
             }}>
               <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: idx <= step ? 'linear-gradient(135deg, #93c593 0%, #6ba86b 100%)' : '#e2e8f0',
+                width: '100%',
+                height: '4px',
+                background: idx <= step ? 'linear-gradient(90deg, #10b981 0%, #059669 100%)' : '#e2e8f0',
+                borderRadius: '2px',
+                transition: 'all 0.3s ease'
+              }}></div>
+              <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontWeight: '600',
-                fontSize: '0.85rem'
+                gap: '6px'
               }}>
-                {idx < step ? '✓' : idx + 1}
+                {idx < step ? (
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '10px',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white'
+                  }}>
+                    <Icons.Check />
+                  </div>
+                ) : (
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '10px',
+                    background: idx === step ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : '#e2e8f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: idx === step ? 'white' : '#94a3b8',
+                    fontSize: '11px',
+                    fontWeight: '600'
+                  }}>
+                    {idx + 1}
+                  </div>
+                )}
+                <span style={{
+                  fontSize: '12px',
+                  color: idx <= step ? '#0f172a' : '#94a3b8',
+                  fontWeight: idx === step ? '600' : '500'
+                }}>
+                  {label}
+                </span>
               </div>
-              <span style={{
-                fontSize: '0.75rem',
-                color: idx <= step ? '#2d3748' : '#a0aec0',
-                fontWeight: idx === step ? '600' : '400'
-              }}>
-                {label}
-              </span>
             </div>
           ))}
         </div>
@@ -588,40 +685,65 @@ const OnboardingWithPointEconomy = () => {
         {/* Main Card */}
         <div style={{
           background: 'white',
-          borderRadius: '20px',
-          padding: '2.5rem',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.08)',
-          minHeight: '500px'
+          borderRadius: '16px',
+          padding: '40px',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+          minHeight: '500px',
+          border: '1px solid #f1f5f9'
         }}>
           {/* Step 0: Values */}
           {step === 0 && (
             <div>
-              <h2 style={{
-                fontSize: '1.6rem',
-                fontFamily: '"Crimson Pro", serif',
-                color: '#2d3748',
-                marginBottom: '1.5rem'
-              }}>
-                ❤️ Your Family Values
-              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                <div style={{ color: '#10b981' }}>
+                  <Icons.Heart />
+                </div>
+                <h2 style={{
+                  fontSize: '24px',
+                  fontWeight: '700',
+                  color: '#0f172a',
+                  margin: 0,
+                  letterSpacing: '-0.5px'
+                }}>
+                  Your Family Values
+                </h2>
+              </div>
+              <p style={{ color: '#64748b', marginBottom: '24px', fontSize: '14px' }}>
+                Select and prioritize the values that matter most to your family
+              </p>
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                gap: '0.75rem',
-                marginBottom: '1.5rem'
+                gap: '12px',
+                marginBottom: '24px'
               }}>
                 {familyValues.map(value => (
                   <button
                     key={value.id}
                     onClick={() => handleValueToggle(value.id)}
                     style={{
-                      padding: '0.75rem',
+                      padding: '14px 16px',
                       borderRadius: '10px',
-                      border: value.selected ? '2px solid #93c593' : '2px solid #e2e8f0',
-                      background: value.selected ? '#f0f7f0' : 'white',
+                      border: value.selected ? '2px solid #10b981' : '2px solid #e2e8f0',
+                      background: value.selected ? '#f0fdf4' : 'white',
                       cursor: 'pointer',
-                      fontWeight: value.selected ? '600' : '400',
-                      fontSize: '0.9rem'
+                      fontWeight: value.selected ? '600' : '500',
+                      fontSize: '14px',
+                      color: value.selected ? '#0f172a' : '#475569',
+                      transition: 'all 0.2s ease',
+                      fontFamily: 'inherit'
+                    }}
+                    onMouseOver={(e) => {
+                      if (!value.selected) {
+                        e.currentTarget.style.borderColor = '#cbd5e1';
+                        e.currentTarget.style.background = '#f8fafc';
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (!value.selected) {
+                        e.currentTarget.style.borderColor = '#e2e8f0';
+                        e.currentTarget.style.background = 'white';
+                      }
                     }}
                   >
                     {value.name}
@@ -630,56 +752,80 @@ const OnboardingWithPointEconomy = () => {
               </div>
               {orderedValues.length > 0 && (
                 <div style={{
-                  background: '#f7fafc',
-                  borderRadius: '10px',
-                  padding: '1rem'
+                  background: '#f8fafc',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  border: '1px solid #e2e8f0'
                 }}>
-                  <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#0f172a' }}>
                     Priority Order ({orderedValues.length})
                   </h3>
-                  {orderedValues.map((value, index) => (
-                    <div key={value.id} style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '0.6rem',
-                      background: 'white',
-                      borderRadius: '6px',
-                      marginBottom: '0.5rem'
-                    }}>
-                      <span><strong>{index + 1}.</strong> {value.name}</span>
-                      <div style={{ display: 'flex', gap: '0.25rem' }}>
-                        <button
-                          onClick={() => moveValue(index, 'up')}
-                          disabled={index === 0}
-                          style={{
-                            padding: '0.2rem 0.4rem',
-                            borderRadius: '4px',
-                            border: 'none',
-                            background: index === 0 ? '#f7fafc' : '#e2e8f0',
-                            cursor: index === 0 ? 'not-allowed' : 'pointer',
-                            fontSize: '0.85rem'
-                          }}
-                        >
-                          ↑
-                        </button>
-                        <button
-                          onClick={() => moveValue(index, 'down')}
-                          disabled={index === orderedValues.length - 1}
-                          style={{
-                            padding: '0.2rem 0.4rem',
-                            borderRadius: '4px',
-                            border: 'none',
-                            background: index === orderedValues.length - 1 ? '#f7fafc' : '#e2e8f0',
-                            cursor: index === orderedValues.length - 1 ? 'not-allowed' : 'pointer',
-                            fontSize: '0.85rem'
-                          }}
-                        >
-                          ↓
-                        </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {orderedValues.map((value, index) => (
+                      <div key={value.id} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '12px 16px',
+                        background: 'white',
+                        borderRadius: '8px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <span style={{ fontSize: '14px', fontWeight: '500', color: '#0f172a' }}>
+                          <strong style={{ color: '#10b981', marginRight: '8px' }}>{index + 1}.</strong>
+                          {value.name}
+                        </span>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <button
+                            onClick={() => moveValue(index, 'up')}
+                            disabled={index === 0}
+                            style={{
+                              padding: '6px 8px',
+                              borderRadius: '6px',
+                              border: '1px solid #e2e8f0',
+                              background: index === 0 ? '#f1f5f9' : 'white',
+                              cursor: index === 0 ? 'not-allowed' : 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              opacity: index === 0 ? 0.5 : 1,
+                              transition: 'all 0.2s ease'
+                            }}
+                            onMouseOver={(e) => {
+                              if (index !== 0) e.currentTarget.style.background = '#f8fafc';
+                            }}
+                            onMouseOut={(e) => {
+                              if (index !== 0) e.currentTarget.style.background = 'white';
+                            }}
+                          >
+                            <Icons.ChevronUp />
+                          </button>
+                          <button
+                            onClick={() => moveValue(index, 'down')}
+                            disabled={index === orderedValues.length - 1}
+                            style={{
+                              padding: '6px 8px',
+                              borderRadius: '6px',
+                              border: '1px solid #e2e8f0',
+                              background: index === orderedValues.length - 1 ? '#f1f5f9' : 'white',
+                              cursor: index === orderedValues.length - 1 ? 'not-allowed' : 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              opacity: index === orderedValues.length - 1 ? 0.5 : 1,
+                              transition: 'all 0.2s ease'
+                            }}
+                            onMouseOver={(e) => {
+                              if (index !== orderedValues.length - 1) e.currentTarget.style.background = '#f8fafc';
+                            }}
+                            onMouseOut={(e) => {
+                              if (index !== orderedValues.length - 1) e.currentTarget.style.background = 'white';
+                            }}
+                          >
+                            <Icons.ChevronDown />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -688,28 +834,40 @@ const OnboardingWithPointEconomy = () => {
           {/* Step 1: Family */}
           {step === 1 && (
             <div>
-              <h2 style={{
-                fontSize: '1.6rem',
-                fontFamily: '"Crimson Pro", serif',
-                color: '#2d3748',
-                marginBottom: '1.5rem'
-              }}>
-                👨‍👩‍👧‍👦 Add Your Family
-              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                <div style={{ color: '#10b981' }}>
+                  <Icons.Users />
+                </div>
+                <h2 style={{
+                  fontSize: '24px',
+                  fontWeight: '700',
+                  color: '#0f172a',
+                  margin: 0,
+                  letterSpacing: '-0.5px'
+                }}>
+                  Add Your Family
+                </h2>
+              </div>
+              <p style={{ color: '#64748b', marginBottom: '24px', fontSize: '14px' }}>
+                Add each family member who will be using the tracker
+              </p>
               <div style={{
-                background: '#f7fafc',
-                borderRadius: '10px',
-                padding: '1.25rem',
-                marginBottom: '1.5rem'
+                background: '#f8fafc',
+                borderRadius: '12px',
+                padding: '20px',
+                marginBottom: '24px',
+                border: '1px solid #e2e8f0'
               }}>
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: '2fr 1fr 1fr auto',
-                  gap: '0.75rem',
+                  gap: '12px',
                   alignItems: 'end'
                 }}>
                   <div>
-                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '500' }}>Name</label>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#475569' }}>
+                      Name
+                    </label>
                     <input
                       type="text"
                       value={currentMember.name}
@@ -717,40 +875,79 @@ const OnboardingWithPointEconomy = () => {
                       placeholder="Enter name"
                       style={{
                         width: '100%',
-                        padding: '0.6rem',
-                        borderRadius: '6px',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
                         border: '1px solid #e2e8f0',
-                        fontSize: '0.95rem'
+                        fontSize: '14px',
+                        fontFamily: 'inherit',
+                        outline: 'none',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = '#10b981';
+                        e.currentTarget.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = '#e2e8f0';
+                        e.currentTarget.style.boxShadow = 'none';
                       }}
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '500' }}>Age</label>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#475569' }}>
+                      Age
+                    </label>
                     <input
                       type="number"
                       value={currentMember.age}
                       onChange={(e) => setCurrentMember({ ...currentMember, age: e.target.value })}
+                      placeholder="Age"
                       style={{
                         width: '100%',
-                        padding: '0.6rem',
-                        borderRadius: '6px',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
                         border: '1px solid #e2e8f0',
-                        fontSize: '0.95rem'
+                        fontSize: '14px',
+                        fontFamily: 'inherit',
+                        outline: 'none',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = '#10b981';
+                        e.currentTarget.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = '#e2e8f0';
+                        e.currentTarget.style.boxShadow = 'none';
                       }}
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '500' }}>Role</label>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#475569' }}>
+                      Role
+                    </label>
                     <select
                       value={currentMember.role}
                       onChange={(e) => setCurrentMember({ ...currentMember, role: e.target.value })}
                       style={{
                         width: '100%',
-                        padding: '0.6rem',
-                        borderRadius: '6px',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
                         border: '1px solid #e2e8f0',
-                        fontSize: '0.95rem',
-                        background: 'white'
+                        fontSize: '14px',
+                        fontFamily: 'inherit',
+                        background: 'white',
+                        outline: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = '#10b981';
+                        e.currentTarget.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = '#e2e8f0';
+                        e.currentTarget.style.boxShadow = 'none';
                       }}
                     >
                       <option value="child">Child</option>
@@ -760,14 +957,25 @@ const OnboardingWithPointEconomy = () => {
                   <button
                     onClick={addFamilyMember}
                     style={{
-                      padding: '0.6rem 1.25rem',
-                      borderRadius: '6px',
+                      padding: '10px 20px',
+                      borderRadius: '8px',
                       border: 'none',
-                      background: 'linear-gradient(135deg, #93c593 0%, #6ba86b 100%)',
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                       color: 'white',
                       fontWeight: '600',
                       cursor: 'pointer',
-                      fontSize: '0.9rem'
+                      fontSize: '14px',
+                      fontFamily: 'inherit',
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 2px 4px rgba(16, 185, 129, 0.2)'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(16, 185, 129, 0.3)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 2px 4px rgba(16, 185, 129, 0.2)';
                     }}
                   >
                     Add
@@ -776,28 +984,45 @@ const OnboardingWithPointEconomy = () => {
               </div>
               {familyMembers.length > 0 && (
                 <div>
-                  <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>Family Members ({familyMembers.length})</h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#0f172a' }}>
+                    Family Members ({familyMembers.length})
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {familyMembers.map(member => (
                       <div key={member.id} style={{
-                        padding: '0.75rem',
-                        background: '#f7fafc',
-                        borderRadius: '8px',
+                        padding: '16px',
+                        background: '#f8fafc',
+                        borderRadius: '10px',
                         display: 'flex',
                         justifyContent: 'space-between',
-                        alignItems: 'center'
+                        alignItems: 'center',
+                        border: '1px solid #e2e8f0'
                       }}>
-                        <span><strong>{member.name}</strong> ({member.age} yrs, {member.role})</span>
+                        <span style={{ fontSize: '14px', fontWeight: '500', color: '#0f172a' }}>
+                          <strong>{member.name}</strong>
+                          <span style={{ color: '#64748b', marginLeft: '8px' }}>
+                            ({member.age} yrs, {member.role})
+                          </span>
+                        </span>
                         <button
                           onClick={() => setFamilyMembers(familyMembers.filter(m => m.id !== member.id))}
                           style={{
-                            padding: '0.4rem 0.75rem',
-                            borderRadius: '4px',
-                            border: 'none',
-                            background: '#fee',
-                            color: '#c53030',
+                            padding: '6px 14px',
+                            borderRadius: '6px',
+                            border: '1px solid #fecaca',
+                            background: '#fef2f2',
+                            color: '#dc2626',
                             cursor: 'pointer',
-                            fontSize: '0.85rem'
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            fontFamily: 'inherit',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.background = '#fee2e2';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.background = '#fef2f2';
                           }}
                         >
                           Remove
@@ -814,23 +1039,24 @@ const OnboardingWithPointEconomy = () => {
           {step === 2 && currentMemberData && (
             <div>
               <h2 style={{
-                fontSize: '1.6rem',
-                fontFamily: '"Crimson Pro", serif',
-                color: '#2d3748',
-                marginBottom: '0.5rem'
+                fontSize: '24px',
+                fontWeight: '700',
+                color: '#0f172a',
+                margin: '0 0 8px 0',
+                letterSpacing: '-0.5px'
               }}>
                 About {currentMemberData.name}
               </h2>
-              <p style={{ color: '#718096', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-                ({currentMemberIndex + 1} of {familyMembers.length})
+              <p style={{ color: '#64748b', marginBottom: '24px', fontSize: '14px' }}>
+                Question {currentMemberIndex + 1} of {familyMembers.length}
               </p>
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '1.5rem',
+                gap: '24px',
                 maxHeight: '450px',
                 overflowY: 'auto',
-                paddingRight: '0.5rem'
+                paddingRight: '8px'
               }}>
                 {(isCurrentChild
                   ? getQuestionsForChild(currentMemberData.age, questionnaires[currentMemberData.id] || {})
@@ -838,9 +1064,9 @@ const OnboardingWithPointEconomy = () => {
                 ).map((q) => (
                   <div key={q.id}>
                     <h3 style={{
-                      fontSize: '1rem',
-                      color: '#2d3748',
-                      marginBottom: '0.75rem',
+                      fontSize: '15px',
+                      color: '#0f172a',
+                      marginBottom: '12px',
                       fontWeight: '600'
                     }}>
                       {q.question}
@@ -848,7 +1074,7 @@ const OnboardingWithPointEconomy = () => {
                     <div style={{
                       display: 'grid',
                       gridTemplateColumns: q.options.length <= 2 ? `repeat(${q.options.length}, 1fr)` : 'repeat(2, 1fr)',
-                      gap: '0.6rem'
+                      gap: '10px'
                     }}>
                       {q.options.map(option => {
                         const isSelected = questionnaires[currentMemberData.id]?.[q.id] === option;
@@ -857,14 +1083,29 @@ const OnboardingWithPointEconomy = () => {
                             key={option}
                             onClick={() => handleQuestionAnswer(currentMemberData.id, q.id, option)}
                             style={{
-                              padding: '0.75rem',
-                              borderRadius: '8px',
-                              border: isSelected ? '2px solid #93c593' : '2px solid #e2e8f0',
-                              background: isSelected ? '#f0f7f0' : 'white',
+                              padding: '14px 16px',
+                              borderRadius: '10px',
+                              border: isSelected ? '2px solid #10b981' : '2px solid #e2e8f0',
+                              background: isSelected ? '#f0fdf4' : 'white',
                               cursor: 'pointer',
                               textAlign: 'left',
-                              fontSize: '0.9rem',
-                              fontWeight: isSelected ? '600' : '400'
+                              fontSize: '14px',
+                              fontWeight: isSelected ? '600' : '500',
+                              color: isSelected ? '#0f172a' : '#475569',
+                              fontFamily: 'inherit',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onMouseOver={(e) => {
+                              if (!isSelected) {
+                                e.currentTarget.style.borderColor = '#cbd5e1';
+                                e.currentTarget.style.background = '#f8fafc';
+                              }
+                            }}
+                            onMouseOut={(e) => {
+                              if (!isSelected) {
+                                e.currentTarget.style.borderColor = '#e2e8f0';
+                                e.currentTarget.style.background = 'white';
+                              }
                             }}
                           >
                             {option}
@@ -881,22 +1122,37 @@ const OnboardingWithPointEconomy = () => {
           {/* Step 3: Motivation Insights */}
           {step === 3 && motivationInsights && (
             <div>
-              <h2 style={{
-                fontSize: '1.8rem',
-                fontFamily: '"Crimson Pro", serif',
-                color: '#2d3748',
-                marginBottom: '0.5rem',
-                textAlign: 'center'
-              }}>
-                ✨ Understanding Motivation
-              </h2>
-              <p style={{ textAlign: 'center', color: '#718096', marginBottom: '2rem', fontSize: '0.95rem' }}>
-                Here's what motivates each person
-              </p>
+              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  borderRadius: '12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '16px',
+                  color: 'white'
+                }}>
+                  <Icons.Sparkles />
+                </div>
+                <h2 style={{
+                  fontSize: '24px',
+                  fontWeight: '700',
+                  color: '#0f172a',
+                  margin: '0 0 8px 0',
+                  letterSpacing: '-0.5px'
+                }}>
+                  Understanding Motivation
+                </h2>
+                <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>
+                  Here's what motivates each person in your family
+                </p>
+              </div>
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '1.25rem',
+                gap: '16px',
                 maxHeight: '450px',
                 overflowY: 'auto'
               }}>
@@ -904,27 +1160,30 @@ const OnboardingWithPointEconomy = () => {
                   const motivation = motivationInsights[member.id];
                   return (
                     <div key={member.id} style={{
-                      background: 'linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%)',
-                      borderRadius: '10px',
-                      padding: '1.25rem',
+                      background: '#f8fafc',
+                      borderRadius: '12px',
+                      padding: '20px',
                       border: '1px solid #e2e8f0'
                     }}>
-                      <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>
-                        {member.name} (Age {member.age})
+                      <h3 style={{ fontSize: '17px', fontWeight: '600', marginBottom: '8px', color: '#0f172a' }}>
+                        {member.name}
+                        <span style={{ color: '#64748b', fontWeight: '500', marginLeft: '8px' }}>
+                          (Age {member.age})
+                        </span>
                       </h3>
                       <div style={{
-                        padding: '0.4rem 0.8rem',
-                        background: 'linear-gradient(135deg, #93c593 0%, #6ba86b 100%)',
-                        color: 'white',
-                        borderRadius: '16px',
-                        fontSize: '0.85rem',
-                        fontWeight: '600',
                         display: 'inline-block',
-                        marginBottom: '0.75rem'
+                        padding: '6px 12px',
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        color: 'white',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        marginBottom: '12px'
                       }}>
-                        🎯 {motivation.primary}
+                        {motivation.primary}
                       </div>
-                      <p style={{ color: '#4a5568', lineHeight: '1.6', fontSize: '0.9rem' }}>
+                      <p style={{ color: '#475569', lineHeight: '1.6', fontSize: '14px', margin: 0 }}>
                         {motivation.explanation}
                       </p>
                     </div>
@@ -937,56 +1196,101 @@ const OnboardingWithPointEconomy = () => {
           {/* Step 4: Complete Setup */}
           {step === 4 && generatedData && (
             <div>
-              <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                <div style={{ fontSize: '64px', marginBottom: '1rem' }}>🎉</div>
+              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  borderRadius: '50%',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '20px',
+                  fontSize: '36px',
+                  boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)'
+                }}>
+                  <Icons.Check />
+                  <span style={{ color: 'white' }}>✓</span>
+                </div>
                 <h2 style={{
-                  fontSize: '2rem',
-                  fontFamily: '"Crimson Pro", serif',
-                  color: '#2d3748',
-                  marginBottom: '0.5rem'
+                  fontSize: '28px',
+                  fontWeight: '700',
+                  color: '#0f172a',
+                  margin: '0 0 12px 0',
+                  letterSpacing: '-0.5px'
                 }}>
                   Setup Complete!
                 </h2>
-                <p style={{ color: '#718096', fontSize: '1rem', marginBottom: '2rem' }}>
+                <p style={{ color: '#64748b', fontSize: '15px', marginBottom: '32px' }}>
                   Your personalized family system is ready
                 </p>
                 <button
                   onClick={sendToMainApp}
                   style={{
-                    padding: '1rem 2.5rem',
+                    padding: '16px 40px',
                     borderRadius: '12px',
                     border: 'none',
-                    background: 'linear-gradient(135deg, #93c593 0%, #6ba86b 100%)',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                     color: 'white',
-                    fontSize: '1.1rem',
+                    fontSize: '16px',
                     fontWeight: '700',
                     cursor: 'pointer',
-                    boxShadow: '0 8px 20px rgba(147, 197, 147, 0.4)',
-                    transition: 'all 0.2s'
+                    fontFamily: 'inherit',
+                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                    transition: 'all 0.2s ease',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px'
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                  onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.4)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+                  }}
                 >
-                  ✨ Create My Family
+                  Create My Family
+                  <Icons.ArrowRight />
                 </button>
               </div>
 
               <div style={{
-                background: 'linear-gradient(135deg, #f0f7f0 0%, #e6f3e6 100%)',
+                background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
                 borderRadius: '12px',
-                padding: '1.5rem',
-                marginTop: '2rem'
+                padding: '24px',
+                marginTop: '32px',
+                border: '1px solid #bbf7d0'
               }}>
-                <h4 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#2d3748' }}>
-                  📦 What's Included:
+                <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '16px', color: '#0f172a' }}>
+                  What's Included
                 </h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', fontSize: '0.9rem', color: '#4a5568' }}>
-                  <div>✓ {familyMembers.length} family member{familyMembers.length !== 1 ? 's' : ''}</div>
-                  <div>✓ Personalized routines</div>
-                  <div>✓ Custom rewards menus</div>
-                  <div>✓ Point economy system</div>
-                  <div>✓ {orderedValues.length} family values</div>
-                  <div>✓ Character development goals</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', fontSize: '14px', color: '#475569' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ color: '#10b981', fontWeight: '600' }}>✓</span>
+                    {familyMembers.length} family member{familyMembers.length !== 1 ? 's' : ''}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ color: '#10b981', fontWeight: '600' }}>✓</span>
+                    Personalized routines
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ color: '#10b981', fontWeight: '600' }}>✓</span>
+                    Custom rewards menus
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ color: '#10b981', fontWeight: '600' }}>✓</span>
+                    Point economy system
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ color: '#10b981', fontWeight: '600' }}>✓</span>
+                    {orderedValues.length} family values
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ color: '#10b981', fontWeight: '600' }}>✓</span>
+                    Character development goals
+                  </div>
                 </div>
               </div>
             </div>
@@ -998,52 +1302,77 @@ const OnboardingWithPointEconomy = () => {
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
-            marginTop: '1.5rem'
+            marginTop: '24px',
+            gap: '16px'
           }}>
             <button
               onClick={prevStep}
               disabled={step === 0}
               style={{
-                padding: '0.7rem 1.25rem',
-                borderRadius: '8px',
-                border: '2px solid #e2e8f0',
+                padding: '12px 24px',
+                borderRadius: '10px',
+                border: '1px solid #e2e8f0',
                 background: 'white',
-                color: '#4a5568',
+                color: step === 0 ? '#cbd5e1' : '#475569',
                 fontWeight: '600',
                 cursor: step === 0 ? 'not-allowed' : 'pointer',
-                opacity: step === 0 ? 0.5 : 1,
+                fontSize: '14px',
+                fontFamily: 'inherit',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem'
+                gap: '8px',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => {
+                if (step !== 0) {
+                  e.currentTarget.style.background = '#f8fafc';
+                  e.currentTarget.style.borderColor = '#cbd5e1';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (step !== 0) {
+                  e.currentTarget.style.background = 'white';
+                  e.currentTarget.style.borderColor = '#e2e8f0';
+                }
               }}
             >
-              ← Back
+              <Icons.ArrowLeft />
+              Back
             </button>
             <button
               onClick={nextStep}
               style={{
-                padding: '0.7rem 1.25rem',
-                borderRadius: '8px',
+                padding: '12px 24px',
+                borderRadius: '10px',
                 border: 'none',
-                background: 'linear-gradient(135deg, #93c593 0%, #6ba86b 100%)',
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                 color: 'white',
                 fontWeight: '600',
                 cursor: 'pointer',
+                fontSize: '14px',
+                fontFamily: 'inherit',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem'
+                gap: '8px',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 4px rgba(16, 185, 129, 0.2)'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(16, 185, 129, 0.3)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 4px rgba(16, 185, 129, 0.2)';
               }}
             >
               {step === 2 && currentMemberIndex < familyMembers.length - 1 ? 'Next Person' :
-               step === 2 ? 'See Insights' : 'Continue'} →
+               step === 2 ? 'See Insights' : 'Continue'}
+              <Icons.ArrowRight />
             </button>
           </div>
         )}
       </div>
-
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
-      `}</style>
     </div>
   );
 };
