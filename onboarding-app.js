@@ -1,6 +1,3 @@
-import React, { useState } from 'react';
-import { ChevronRight, ChevronLeft, Users, Heart, Target, CheckCircle, GripVertical, Star, Trophy, Sparkles, Download, DollarSign } from 'lucide-react';
-
 const OnboardingWithPointEconomy = () => {
   const [step, setStep] = useState(0);
   const [familyValues, setFamilyValues] = useState([
@@ -605,8 +602,7 @@ const OnboardingWithPointEconomy = () => {
                 color: '#2d3748',
                 marginBottom: '1.5rem'
               }}>
-                <Heart size={24} style={{ color: '#93c593', display: 'inline', marginRight: '0.5rem' }} />
-                Your Family Values
+                ❤️ Your Family Values
               </h2>
               <div style={{
                 display: 'grid',
@@ -698,8 +694,7 @@ const OnboardingWithPointEconomy = () => {
                 color: '#2d3748',
                 marginBottom: '1.5rem'
               }}>
-                <Users size={24} style={{ color: '#93c593', display: 'inline', marginRight: '0.5rem' }} />
-                Add Your Family
+                👨‍👩‍👧‍👦 Add Your Family
               </h2>
               <div style={{
                 background: '#f7fafc',
@@ -893,8 +888,7 @@ const OnboardingWithPointEconomy = () => {
                 marginBottom: '0.5rem',
                 textAlign: 'center'
               }}>
-                <Sparkles size={28} style={{ color: '#93c593', display: 'inline', marginRight: '0.5rem' }} />
-                Understanding Motivation
+                ✨ Understanding Motivation
               </h2>
               <p style={{ textAlign: 'center', color: '#718096', marginBottom: '2rem', fontSize: '0.95rem' }}>
                 Here's what motivates each person
@@ -1023,8 +1017,7 @@ const OnboardingWithPointEconomy = () => {
                 gap: '0.5rem'
               }}
             >
-              <ChevronLeft size={18} />
-              Back
+              ← Back
             </button>
             <button
               onClick={nextStep}
@@ -1042,8 +1035,7 @@ const OnboardingWithPointEconomy = () => {
               }}
             >
               {step === 2 && currentMemberIndex < familyMembers.length - 1 ? 'Next Person' :
-               step === 2 ? 'See Insights' : 'Continue'}
-              <ChevronRight size={18} />
+               step === 2 ? 'See Insights' : 'Continue'} →
             </button>
           </div>
         )}
