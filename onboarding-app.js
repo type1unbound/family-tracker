@@ -142,13 +142,12 @@ const OnboardingWithPointEconomy = () => {
   const calculatePointValues = (isAdult, age) => {
     if (isAdult) {
       return {
-        routineItem: 3,      // Adults: morning practices, etc
-        responsibility: 5,    // Adults: harder to maintain consistency
-        weeklyGoal: 15,      // Adults: significant growth goals
-        dailyGoal: 8         // Adults: daily practices
+        routineItem: 3,
+        responsibility: 5,
+        weeklyGoal: 15,
+        dailyGoal: 8
       };
     } else {
-      // Children: scale with age
       const routinePoints = age <= 7 ? 1 : age <= 11 ? 2 : 3;
       const respPoints = age <= 7 ? 2 : age <= 11 ? 3 : 5;
       const goalPoints = age <= 7 ? 5 : age <= 11 ? 8 : 12;
@@ -177,7 +176,7 @@ const OnboardingWithPointEconomy = () => {
     };
   };
 
-  // Child questions (same as before)
+  // Child questions
   const getQuestionsForChild = (childAge, answers = {}) => {
     const questions = [];
     questions.push({
@@ -213,7 +212,7 @@ const OnboardingWithPointEconomy = () => {
     return questions;
   };
 
-  // Adult questions (same as before)
+  // Adult questions
   const getQuestionsForAdult = (answers = {}) => {
     const questions = [];
     questions.push({
@@ -338,7 +337,7 @@ const OnboardingWithPointEconomy = () => {
       const motivation = determineMotivationStyle(answers, !isChild);
       insights[member.id] = motivation;
 
-      const pointValues = calculatePointValues(isChild, age);
+      const pointValues = calculatePointValues(!isChild, age);
 
       if (isChild) {
         let routineCount = age <= 5 ? 3 : age <= 8 ? 5 : age <= 12 ? 7 : 8;
@@ -458,7 +457,41 @@ const OnboardingWithPointEconomy = () => {
     setPointEconomy(economies);
   };
 
+  // AUTOMATIC SEND TO MAIN APP
+  const sendToMainApp = () => {
+    const exportData = {
+      readyToImport: true,
+      familyName: 'My Family',
+      familyValues: orderedValues.map(v => v.name),
+      members: Object.values(generatedData).map(member => ({
+        name: member.name,
+        age: member.age,
+        role: member.role,
+        routine: member.routine,
+        responsibilities: member.responsibilities,
+        goals: member.goals,
+        rewards: member.suggestedRewards,
+        motivationStyle: member.motivationStyle
+      }))
+    };
 
+    // Send to parent window (main Compass app)
+    if (window.opener) {
+      console.log('📤 Sending setup data to main app...');
+      window.opener.postMessage({
+        type: 'COMPASS_WIZARD_COMPLETE',
+        data: exportData
+      }, 'https://type1unbound.github.io'); // Your main app origin
+      
+      // Show success message
+      alert('✅ Setup complete! Your family is being created...');
+      
+      // Close wizard window
+      window.close();
+    } else {
+      alert('Unable to send data to main app. Please ensure this window was opened from the Compass app.');
+    }
+  };
 
   const nextStep = () => {
     if (step === 0 && orderedValues.length < 3) {
@@ -522,7 +555,7 @@ const OnboardingWithPointEconomy = () => {
           marginBottom: '2rem',
           flexWrap: 'wrap'
         }}>
-          {['Values', 'Family', 'Questions', 'Insights', 'Review & Export'].map((label, idx) => (
+          {['Values', 'Family', 'Questions', 'Insights', 'Complete'].map((label, idx) => (
             <div key={idx} style={{
               display: 'flex',
               flexDirection: 'column',
@@ -563,7 +596,7 @@ const OnboardingWithPointEconomy = () => {
           boxShadow: '0 20px 60px rgba(0,0,0,0.08)',
           minHeight: '500px'
         }}>
-          {/* Step 0: Values (condensed version) */}
+          {/* Step 0: Values */}
           {step === 0 && (
             <div>
               <h2 style={{
@@ -656,7 +689,7 @@ const OnboardingWithPointEconomy = () => {
             </div>
           )}
 
-          {/* Step 1: Family (condensed) */}
+          {/* Step 1: Family */}
           {step === 1 && (
             <div>
               <h2 style={{
@@ -782,7 +815,7 @@ const OnboardingWithPointEconomy = () => {
             </div>
           )}
 
-          {/* Step 2: Questions (condensed) */}
+          {/* Step 2: Questions */}
           {step === 2 && currentMemberData && (
             <div>
               <h2 style={{
@@ -907,136 +940,60 @@ const OnboardingWithPointEconomy = () => {
             </div>
           )}
 
-          {/* Step 4: Review & Export with Point Economy */}
+          {/* Step 4: Complete Setup */}
           {step === 4 && generatedData && (
             <div>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '1.5rem'
-              }}>
-                <div>
-                  <h2 style={{
-                    fontSize: '1.8rem',
-                    fontFamily: '"Crimson Pro", serif',
-                    color: '#2d3748',
-                    marginBottom: '0.25rem'
-                  }}>
-                    <CheckCircle size={26} style={{ color: '#93c593', display: 'inline', marginRight: '0.5rem' }} />
-                    Your Complete Plan
-                  </h2>
-                  <p style={{ color: '#718096', fontSize: '0.9rem' }}>
-                    With point economy and rewards
-                  </p>
-                </div>
-                <button
-                  onClick={exportToJSON}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: 'linear-gradient(135deg, #93c593 0%, #6ba86b 100%)',
-                    color: 'white',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}
-                >
-                  <Download size={18} />
-                  Export JSON
-                </button>
-              </div>
-
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1.75rem',
-                maxHeight: '550px',
-                overflowY: 'auto',
-                paddingRight: '0.5rem'
-              }}>
-                {Object.values(generatedData).map((person, idx) => (
-                  <div key={idx} style={{
-                    padding: '1.5rem',
-                    background: 'linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%)',
-                    borderRadius: '14px',
-                    border: '1px solid #e2e8f0'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'start',
-                      marginBottom: '1rem'
-                    }}>
-                      <div>
-                        <h3 style={{
-                          fontSize: '1.35rem',
-                          fontFamily: '"Crimson Pro", serif',
-                          color: '#2d3748',
-                          marginBottom: '0.5rem'
-                        }}>
-                          {person.name}, age {person.age}
-                        </h3>
-                        <span style={{
-                          padding: '0.35rem 0.75rem',
-                          background: 'linear-gradient(135deg, #93c593 0%, #6ba86b 100%)',
-                          color: 'white',
-                          borderRadius: '14px',
-                          fontSize: '0.8rem',
-                          fontWeight: '600'
-                        }}>
-                          🎯 {person.motivationStyle}
-                        </span>
-                      </div>
-                      <div style={{
-                        background: 'white',
-                        padding: '0.75rem 1rem',
-                        borderRadius: '8px',
-                        textAlign: 'right'
-                      }}>
-                        <div style={{ fontSize: '0.75rem', color: '#718096', marginBottom: '0.25rem' }}>
-                          Weekly Potential
-                        </div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#93c593' }}>
-                          {person.weeklyPoints.weeklyTotal}
-                          <span style={{ fontSize: '0.85rem', fontWeight: '500' }}> pts</span>
-                        </div>
-                        <div style={{ fontSize: '0.75rem', color: '#718096' }}>
-                          ~{person.weeklyPoints.dailyAverage} daily
-                        </div>
-                      </div>
-                    </div>
-
-
-
-
-
-
-                  </div>
-                ))}
-              </div>
-
-              <div style={{
-                marginTop: '1.5rem',
-                padding: '1.25rem',
-                background: 'linear-gradient(135deg, #f0f7f0 0%, #e6f3e6 100%)',
-                borderRadius: '12px',
-                textAlign: 'center'
-              }}>
-                <h4 style={{
-                  fontSize: '1.1rem',
+              <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                <div style={{ fontSize: '64px', marginBottom: '1rem' }}>🎉</div>
+                <h2 style={{
+                  fontSize: '2rem',
                   fontFamily: '"Crimson Pro", serif',
                   color: '#2d3748',
                   marginBottom: '0.5rem'
                 }}>
-                  Ready to import into Compass?
-                </h4>
-                <p style={{ color: '#718096', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                  Click "Export JSON" to download the complete setup with point economy and rewards
+                  Setup Complete!
+                </h2>
+                <p style={{ color: '#718096', fontSize: '1rem', marginBottom: '2rem' }}>
+                  Your personalized family system is ready
                 </p>
+                <button
+                  onClick={sendToMainApp}
+                  style={{
+                    padding: '1rem 2.5rem',
+                    borderRadius: '12px',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #93c593 0%, #6ba86b 100%)',
+                    color: 'white',
+                    fontSize: '1.1rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    boxShadow: '0 8px 20px rgba(147, 197, 147, 0.4)',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  ✨ Create My Family
+                </button>
+              </div>
+
+              <div style={{
+                background: 'linear-gradient(135deg, #f0f7f0 0%, #e6f3e6 100%)',
+                borderRadius: '12px',
+                padding: '1.5rem',
+                marginTop: '2rem'
+              }}>
+                <h4 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#2d3748' }}>
+                  📦 What's Included:
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', fontSize: '0.9rem', color: '#4a5568' }}>
+                  <div>✓ {familyMembers.length} family member{familyMembers.length !== 1 ? 's' : ''}</div>
+                  <div>✓ Personalized routines</div>
+                  <div>✓ Custom rewards menus</div>
+                  <div>✓ Point economy system</div>
+                  <div>✓ {orderedValues.length} family values</div>
+                  <div>✓ Character development goals</div>
+                </div>
               </div>
             </div>
           )}
@@ -1098,4 +1055,6 @@ const OnboardingWithPointEconomy = () => {
     </div>
   );
 };
+
+// Render the app
 ReactDOM.render(<OnboardingWithPointEconomy />, document.getElementById('root'));
