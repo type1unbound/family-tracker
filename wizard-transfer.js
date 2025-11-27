@@ -103,17 +103,18 @@ async function createFamilyFromWizard(wizardData) {
         console.log(`      - Goals:`, member.goals ? member.goals.length : 0);
         console.log(`      - Rewards:`, member.rewards ? member.rewards.length : 0);
         
-        // Prepare member data with GUARANTEED arrays
-        const memberData = {
-            name: member.name,
-            age: parseInt(member.age),
-            role: member.role || 'child',
-            colorPalette: getDefaultColorForIndex(i),
-            photo: null,
-            
-            // Schedule (routine items) - ALWAYS create array in proper format
-            schedule: Array.isArray(member.routine) ? member.routine.map((item, idx) => {
-                // Generate time based on index: 7:00am, 7:30am, 8:00am, etc.
+        // ============================================
+        // SCHEMA TRANSFORMATION
+        // Match EXACT structure from CONFIG.DEFAULT_* in app.js
+        // ============================================
+        
+        // 1. SCHEDULE TRANSFORMATION
+        // From: { text: "Wake up", points: 2 }
+        // To:   { id: 1, time: "7:00am", name: "Wake up", tasks: ["Wake up"], days: [0,1,2,3,4,5,6] }
+        const schedule = [];
+        if (Array.isArray(member.routine)) {
+            member.routine.forEach((routineItem, idx) => {
+                // Generate sequential times: 7:00am, 7:30am, 8:00am, etc.
                 const baseHour = 7;
                 const intervalMinutes = 30;
                 const totalMinutes = baseHour * 60 + (idx * intervalMinutes);
@@ -123,42 +124,76 @@ async function createFamilyFromWizard(wizardData) {
                 const period = hours >= 12 ? 'pm' : 'am';
                 const timeStr = `${hour12}:${minutes.toString().padStart(2, '0')}${period}`;
                 
-                return {
-                    id: idx + 1,
-                    time: timeStr,
-                    name: item.text || 'Routine item',
-                    tasks: [item.text || 'Complete task'],
-                    days: item.days || [0,1,2,3,4,5,6],
-                    points: parseInt(item.points) || 1,
-                    frequency: item.frequency || 'daily'
-                };
-            }) : [],
+                schedule.push({
+                    id: idx + 1,                              // Number ID (1, 2, 3...)
+                    time: timeStr,                            // "7:00am" format
+                    name: routineItem.text || 'Routine item', // String
+                    tasks: [routineItem.text || 'Complete task'], // Array of strings
+                    days: [0, 1, 2, 3, 4, 5, 6]              // All days (Sun-Sat)
+                });
+            });
+        }
+        
+        // 2. WEEKLY CHORES TRANSFORMATION
+        // From: { text: "Clean room", points: 3 }
+        // To:   { id: "chore1", name: "Clean room" }
+        const weeklyChores = [];
+        if (Array.isArray(member.responsibilities)) {
+            member.responsibilities.forEach((resp, idx) => {
+                weeklyChores.push({
+                    id: `chore${idx + 1}`,           // String ID
+                    name: resp.text || 'Chore'       // String
+                });
+            });
+        }
+        
+        // 3. CHARACTER VALUES TRANSFORMATION
+        // From: [{ text: "Be kind", points: 8 }, { text: "Help others", points: 8 }]
+        // To:   [{ id: "personal_goals", category: "Personal Goals", weight: 1.0, items: ["Be kind", "Help others"] }]
+        const characterValues = [];
+        if (Array.isArray(member.goals) && member.goals.length > 0) {
+            characterValues.push({
+                id: 'personal_goals',                    // String ID
+                category: 'Personal Goals',              // String
+                weight: 1.0,                            // Number
+                items: member.goals.map(g => g.text || 'Goal') // Array of strings
+            });
+        }
+        
+        // 4. REWARDS TRANSFORMATION
+        // From: { name: "Extra screen time", points: 50, category: "digital" }
+        // To:   { id: "reward1", name: "Extra screen time", points: 50, category: "digital", available: true, redeemed: false }
+        const rewards = [];
+        if (Array.isArray(member.rewards)) {
+            member.rewards.forEach((reward, idx) => {
+                rewards.push({
+                    id: `reward${idx + 1}`,                    // String ID
+                    name: reward.name || 'Reward',             // String
+                    points: parseInt(reward.points) || 10,     // Number
+                    category: reward.category || 'general',    // String
+                    available: true,                           // Boolean
+                    redeemed: false                            // Boolean
+                });
+            });
+        }
+        
+        // ============================================
+        // PREPARE MEMBER DATA WITH TRANSFORMED SCHEMAS
+        // ============================================
+        const memberData = {
+            name: member.name,
+            age: parseInt(member.age),
+            role: member.role || 'child',
+            colorPalette: getDefaultColorForIndex(i),
+            photo: null,
             
-            // Weekly chores (responsibilities) - ALWAYS create array in proper format
-            weeklyChores: Array.isArray(member.responsibilities) ? member.responsibilities.map((item, idx) => ({
-                id: `chore${idx + 1}`,
-                name: item.text || ''
-            })) : [],
+            // EXACT SCHEMA MATCHES
+            schedule: schedule,           // Matches DEFAULT_SCHEDULE structure
+            weeklyChores: weeklyChores,   // Matches DEFAULT_WEEKLY_CHORES structure
+            characterValues: characterValues, // Matches DEFAULT_CHARACTER_VALUES structure
+            rewards: rewards,             // Matches rewards structure
             
-            // Character values (goals) - ALWAYS create array in proper category format
-            characterValues: Array.isArray(member.goals) && member.goals.length > 0 ? [{
-                id: 'personal_goals',
-                category: 'Personal Goals',
-                weight: 1.0,
-                items: member.goals.map(goal => goal.text || '')
-            }] : [],
-            
-            // Rewards - ALWAYS create array
-            rewards: Array.isArray(member.rewards) ? member.rewards.map((reward, idx) => ({
-                id: `reward${idx + 1}`,
-                name: reward.name || '',
-                points: parseInt(reward.points) || 10,
-                category: reward.category || 'general',
-                available: true,
-                redeemed: false
-            })) : [],
-            
-            // Points
+            // Additional required fields
             pointsBalance: 0,
             pointsSpent: 0,
             pointsEarned: 0,
@@ -166,10 +201,8 @@ async function createFamilyFromWizard(wizardData) {
             // Motivation
             motivationStyle: member.motivationStyle || 'Rewards and incentives',
             
-            // Trackers
+            // Trackers and days
             trackers: [],
-            
-            // Days data
             days: {}
         };
         
@@ -179,12 +212,21 @@ async function createFamilyFromWizard(wizardData) {
             .set(memberData);
         
         console.log(`    ✓ Created ${member.name}`);
-        console.log(`      Schedule: ${memberData.schedule.length} items with times ${memberData.schedule[0]?.time} to ${memberData.schedule[memberData.schedule.length-1]?.time}`);
-        console.log(`      Weekly Chores: ${memberData.weeklyChores.length} chores`);
-        console.log(`      Character Values: ${memberData.characterValues.length} categories`);
+        console.log(`      ✅ Schedule: ${memberData.schedule.length} items`);
         if (memberData.schedule.length > 0) {
-            console.log(`      Sample schedule item:`, memberData.schedule[0]);
+            console.log(`         Sample:`, memberData.schedule[0]);
+            console.log(`         ✓ Has 'tasks' array:`, Array.isArray(memberData.schedule[0].tasks));
         }
+        console.log(`      ✅ Weekly Chores: ${memberData.weeklyChores.length} chores`);
+        if (memberData.weeklyChores.length > 0) {
+            console.log(`         Sample:`, memberData.weeklyChores[0]);
+        }
+        console.log(`      ✅ Character Values: ${memberData.characterValues.length} categories`);
+        if (memberData.characterValues.length > 0) {
+            console.log(`         Sample:`, memberData.characterValues[0]);
+            console.log(`         ✓ Has 'items' array:`, Array.isArray(memberData.characterValues[0].items));
+        }
+        console.log(`      ✅ Rewards: ${memberData.rewards.length} rewards`);
     }
     
     // Update user document
