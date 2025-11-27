@@ -111,33 +111,42 @@ async function createFamilyFromWizard(wizardData) {
             colorPalette: getDefaultColorForIndex(i),
             photo: null,
             
-            // Schedule (routine items) - ALWAYS create array
-            schedule: Array.isArray(member.routine) ? member.routine.map((item, idx) => ({
-                id: `routine${idx + 1}`,
-                text: item.text || '',
-                points: parseInt(item.points) || 1,
-                frequency: item.frequency || 'daily',
-                category: 'routine',
-                completed: false
-            })) : [],
+            // Schedule (routine items) - ALWAYS create array in proper format
+            schedule: Array.isArray(member.routine) ? member.routine.map((item, idx) => {
+                // Generate time based on index: 7:00am, 7:30am, 8:00am, etc.
+                const baseHour = 7;
+                const intervalMinutes = 30;
+                const totalMinutes = baseHour * 60 + (idx * intervalMinutes);
+                const hours = Math.floor(totalMinutes / 60) % 24;
+                const minutes = totalMinutes % 60;
+                const hour12 = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+                const period = hours >= 12 ? 'pm' : 'am';
+                const timeStr = `${hour12}:${minutes.toString().padStart(2, '0')}${period}`;
+                
+                return {
+                    id: idx + 1,
+                    time: timeStr,
+                    name: item.text || 'Routine item',
+                    tasks: [item.text || 'Complete task'],
+                    days: item.days || [0,1,2,3,4,5,6],
+                    points: parseInt(item.points) || 1,
+                    frequency: item.frequency || 'daily'
+                };
+            }) : [],
             
-            // Weekly chores (responsibilities) - ALWAYS create array
+            // Weekly chores (responsibilities) - ALWAYS create array in proper format
             weeklyChores: Array.isArray(member.responsibilities) ? member.responsibilities.map((item, idx) => ({
                 id: `chore${idx + 1}`,
-                text: item.text || '',
-                points: parseInt(item.points) || 2,
-                frequency: item.frequency || 'weekly',
-                completed: false
+                name: item.text || ''
             })) : [],
             
-            // Character values (goals) - ALWAYS create array
-            characterValues: Array.isArray(member.goals) ? member.goals.map((item, idx) => ({
-                id: `goal${idx + 1}`,
-                text: item.text || '',
-                points: parseInt(item.points) || 5,
-                frequency: item.frequency || 'daily',
-                completed: false
-            })) : [],
+            // Character values (goals) - ALWAYS create array in proper category format
+            characterValues: Array.isArray(member.goals) && member.goals.length > 0 ? [{
+                id: 'personal_goals',
+                category: 'Personal Goals',
+                weight: 1.0,
+                items: member.goals.map(goal => goal.text || '')
+            }] : [],
             
             // Rewards - ALWAYS create array
             rewards: Array.isArray(member.rewards) ? member.rewards.map((reward, idx) => ({
@@ -170,7 +179,12 @@ async function createFamilyFromWizard(wizardData) {
             .set(memberData);
         
         console.log(`    ✓ Created ${member.name}`);
-        console.log(`      Saved with ${memberData.schedule.length} schedule items, ${memberData.weeklyChores.length} chores, ${memberData.characterValues.length} goals`);
+        console.log(`      Schedule: ${memberData.schedule.length} items with times ${memberData.schedule[0]?.time} to ${memberData.schedule[memberData.schedule.length-1]?.time}`);
+        console.log(`      Weekly Chores: ${memberData.weeklyChores.length} chores`);
+        console.log(`      Character Values: ${memberData.characterValues.length} categories`);
+        if (memberData.schedule.length > 0) {
+            console.log(`      Sample schedule item:`, memberData.schedule[0]);
+        }
     }
     
     // Update user document
