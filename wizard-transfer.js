@@ -97,7 +97,13 @@ async function createFamilyFromWizard(wizardData) {
         const member = wizardData.members[i];
         const childId = childIds[i];
         
-        // Prepare member data
+        console.log(`    Processing member ${i + 1}:`, member.name);
+        console.log(`      - Routine items:`, member.routine ? member.routine.length : 0);
+        console.log(`      - Responsibilities:`, member.responsibilities ? member.responsibilities.length : 0);
+        console.log(`      - Goals:`, member.goals ? member.goals.length : 0);
+        console.log(`      - Rewards:`, member.rewards ? member.rewards.length : 0);
+        
+        // Prepare member data with GUARANTEED arrays
         const memberData = {
             name: member.name,
             age: parseInt(member.age),
@@ -105,39 +111,39 @@ async function createFamilyFromWizard(wizardData) {
             colorPalette: getDefaultColorForIndex(i),
             photo: null,
             
-            // Schedule (routine items)
-            schedule: member.routine ? member.routine.map((item, idx) => ({
+            // Schedule (routine items) - ALWAYS create array
+            schedule: Array.isArray(member.routine) ? member.routine.map((item, idx) => ({
                 id: `routine${idx + 1}`,
-                text: item.text,
-                points: item.points || 1,
+                text: item.text || '',
+                points: parseInt(item.points) || 1,
                 frequency: item.frequency || 'daily',
                 category: 'routine',
                 completed: false
             })) : [],
             
-            // Weekly chores (responsibilities)
-            weeklyChores: member.responsibilities ? member.responsibilities.map((item, idx) => ({
+            // Weekly chores (responsibilities) - ALWAYS create array
+            weeklyChores: Array.isArray(member.responsibilities) ? member.responsibilities.map((item, idx) => ({
                 id: `chore${idx + 1}`,
-                text: item.text,
-                points: item.points || 2,
+                text: item.text || '',
+                points: parseInt(item.points) || 2,
                 frequency: item.frequency || 'weekly',
                 completed: false
             })) : [],
             
-            // Character values (goals)
-            characterValues: member.goals ? member.goals.map((item, idx) => ({
+            // Character values (goals) - ALWAYS create array
+            characterValues: Array.isArray(member.goals) ? member.goals.map((item, idx) => ({
                 id: `goal${idx + 1}`,
-                text: item.text,
-                points: item.points || 5,
+                text: item.text || '',
+                points: parseInt(item.points) || 5,
                 frequency: item.frequency || 'daily',
                 completed: false
             })) : [],
             
-            // Rewards
-            rewards: member.rewards ? member.rewards.map((reward, idx) => ({
+            // Rewards - ALWAYS create array
+            rewards: Array.isArray(member.rewards) ? member.rewards.map((reward, idx) => ({
                 id: `reward${idx + 1}`,
-                name: reward.name,
-                points: reward.points,
+                name: reward.name || '',
+                points: parseInt(reward.points) || 10,
                 category: reward.category || 'general',
                 available: true,
                 redeemed: false
@@ -164,6 +170,7 @@ async function createFamilyFromWizard(wizardData) {
             .set(memberData);
         
         console.log(`    ✓ Created ${member.name}`);
+        console.log(`      Saved with ${memberData.schedule.length} schedule items, ${memberData.weeklyChores.length} chores, ${memberData.characterValues.length} goals`);
     }
     
     // Update user document
