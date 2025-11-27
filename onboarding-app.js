@@ -533,7 +533,7 @@ const OnboardingWithPointEconomy = () => {
       window.opener.postMessage({
         type: 'COMPASS_WIZARD_COMPLETE',
         data: exportData
-      }, 'https://type1unbound.github.io');
+      }, '*'); // Send to any origin (main app is on Squarespace)
       
       alert('✅ Setup complete! Your family is being created...');
       window.close();
