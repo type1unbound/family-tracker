@@ -196,7 +196,18 @@ const StateManager = {
 
     getSchedule(filterByDay = true) {
         const child = this.getCurrentChild();
-        if (!child || !child.schedule) return [];
+        if (!child) return [];
+        
+        // Initialize schedule if it doesn't exist
+        if (!child.schedule) {
+            child.schedule = [];
+        }
+        
+        // Extra safety: ensure schedule is an array
+        if (!Array.isArray(child.schedule)) {
+            console.warn('⚠️ Schedule is not an array, initializing empty array');
+            child.schedule = [];
+        }
         
         const schedule = child.schedule;
         
@@ -264,12 +275,38 @@ const StateManager = {
 
     getCharacterValues() {
         const child = this.getCurrentChild();
-        return child ? child.characterValues : [];
+        if (!child) return [];
+        
+        // Initialize characterValues if it doesn't exist
+        if (!child.characterValues) {
+            child.characterValues = [];
+        }
+        
+        // Extra safety: ensure characterValues is an array
+        if (!Array.isArray(child.characterValues)) {
+            console.warn('⚠️ CharacterValues is not an array, initializing empty array');
+            child.characterValues = [];
+        }
+        
+        return child.characterValues;
     },
 
     getWeeklyChores() {
         const child = this.getCurrentChild();
-        return child ? child.weeklyChores : [];
+        if (!child) return [];
+        
+        // Initialize weeklyChores if it doesn't exist
+        if (!child.weeklyChores) {
+            child.weeklyChores = [];
+        }
+        
+        // Extra safety: ensure weeklyChores is an array
+        if (!Array.isArray(child.weeklyChores)) {
+            console.warn('⚠️ WeeklyChores is not an array, initializing empty array');
+            child.weeklyChores = [];
+        }
+        
+        return child.weeklyChores;
     },
 
     getDayData() {
