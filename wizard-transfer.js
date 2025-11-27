@@ -5,8 +5,14 @@
 
 // Listen for wizard completion
 window.addEventListener('message', async function(event) {
-    // Security: Only accept messages from your GitHub Pages domain
-    if (event.origin !== 'https://type1unbound.github.io') {
+    // Security: Only accept messages from trusted wizard domains
+    const allowedOrigins = [
+        'https://type1unbound.github.io',
+        'https://family-tracker-37025.firebaseapp.com',
+        'https://family-tracker-37025.web.app'
+    ];
+    
+    if (!allowedOrigins.includes(event.origin)) {
         console.log('❌ Rejected message from unknown origin:', event.origin);
         return;
     }
