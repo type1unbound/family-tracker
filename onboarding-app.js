@@ -21,6 +21,7 @@ const OnboardingWithPointEconomy = () => {
   const [motivationInsights, setMotivationInsights] = React.useState(null);
   const [pointEconomy, setPointEconomy] = React.useState({});
   const [customizedRewards, setCustomizedRewards] = React.useState({});
+  const [customizedTasks, setCustomizedTasks] = React.useState({});
 
   // SVG Icons - Professional & Consistent
   const Icons = {
@@ -509,6 +510,20 @@ const OnboardingWithPointEconomy = () => {
     setMotivationInsights(insights);
     setPointEconomy(economies);
     
+    // Initialize customized tasks (user can edit these)
+    const initialCustomTasks = {};
+    familyMembers.forEach(member => {
+      const memberRecs = recommendations[member.id];
+      if (memberRecs) {
+        initialCustomTasks[member.id] = {
+          routine: memberRecs.routine.map(item => ({...item})),
+          responsibilities: memberRecs.responsibilities.map(item => ({...item})),
+          goals: memberRecs.goals.map(item => ({...item}))
+        };
+      }
+    });
+    setCustomizedTasks(initialCustomTasks);
+    
     // Initialize customized rewards (user can edit these)
     const initialCustomRewards = {};
     familyMembers.forEach(member => {
@@ -532,6 +547,7 @@ const OnboardingWithPointEconomy = () => {
       familyValues: orderedValues.map(v => v.name),
       members: familyMembers.map(member => {
         const memberData = generatedData[member.id];
+        const tasks = customizedTasks[member.id];
         // Get customized rewards for this member (only enabled ones)
         const memberRewards = customizedRewards[member.id] || [];
         const enabledRewards = memberRewards.filter(r => r.enabled);
@@ -540,10 +556,10 @@ const OnboardingWithPointEconomy = () => {
           name: memberData.name,
           age: memberData.age,
           role: memberData.role,
-          routine: memberData.routine,
-          responsibilities: memberData.responsibilities,
-          goals: memberData.goals,
-          rewards: enabledRewards.length > 0 ? enabledRewards : memberData.suggestedRewards, // Use customized or fallback to suggested
+          routine: tasks ? tasks.routine : memberData.routine,
+          responsibilities: tasks ? tasks.responsibilities : memberData.responsibilities,
+          goals: tasks ? tasks.goals : memberData.goals,
+          rewards: enabledRewards.length > 0 ? enabledRewards : memberData.suggestedRewards,
           motivationStyle: memberData.motivationStyle
         };
       })
@@ -642,7 +658,7 @@ const OnboardingWithPointEconomy = () => {
           gap: '8px',
           marginBottom: '32px'
         }}>
-          {['Values', 'Family', 'Questions', 'Insights', 'Economy', 'Rewards', 'Complete'].map((label, idx) => (
+          {['Values', 'Family', 'Questions', 'Insights', 'Tasks', 'Economy', 'Rewards', 'Complete'].map((label, idx) => (
             <div key={idx} style={{
               display: 'flex',
               flexDirection: 'column',
@@ -1215,8 +1231,242 @@ const OnboardingWithPointEconomy = () => {
             </div>
           )}
 
-          {/* Step 4: Point Economy Review */}
-          {step === 4 && pointEconomy && (
+          {/* Step 4: Review & Edit Tasks */}
+          {step === 4 && customizedTasks && (
+            <div>
+              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  borderRadius: '12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '16px',
+                  color: 'white'
+                }}>
+                  <Icons.Target />
+                </div>
+                <h2 style={{
+                  fontSize: '24px',
+                  fontWeight: '700',
+                  color: '#0f172a',
+                  margin: '0 0 8px 0',
+                  letterSpacing: '-0.5px'
+                }}>
+                  Review Daily Tasks & Goals
+                </h2>
+                <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>
+                  Customize routines, responsibilities, and character goals
+                </p>
+              </div>
+              
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '20px',
+                maxHeight: '450px',
+                overflowY: 'auto',
+                paddingRight: '8px'
+              }}>
+                {familyMembers.map(member => {
+                  const tasks = customizedTasks[member.id];
+                  if (!tasks) return null;
+                  
+                  return (
+                    <div key={member.id} style={{
+                      background: '#f8fafc',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      <h3 style={{ fontSize: '17px', fontWeight: '600', marginBottom: '16px', color: '#0f172a' }}>
+                        {member.name}
+                        <span style={{ color: '#64748b', fontWeight: '500', marginLeft: '8px', fontSize: '14px' }}>
+                          (Age {member.age})
+                        </span>
+                      </h3>
+                      
+                      {/* Morning Routine */}
+                      <div style={{ marginBottom: '20px' }}>
+                        <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', color: '#475569' }}>
+                          Morning Routine ({tasks.routine.length} items)
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {tasks.routine.map((item, idx) => (
+                            <div key={idx} style={{
+                              display: 'grid',
+                              gridTemplateColumns: '1fr 100px',
+                              gap: '12px',
+                              padding: '10px 12px',
+                              background: 'white',
+                              borderRadius: '8px',
+                              border: '1px solid #e2e8f0'
+                            }}>
+                              <input
+                                type="text"
+                                value={item.text}
+                                onChange={(e) => {
+                                  const updated = {...customizedTasks};
+                                  updated[member.id].routine[idx].text = e.target.value;
+                                  setCustomizedTasks(updated);
+                                }}
+                                style={{
+                                  border: 'none',
+                                  outline: 'none',
+                                  fontSize: '14px',
+                                  color: '#475569',
+                                  fontFamily: 'inherit',
+                                  background: 'transparent'
+                                }}
+                              />
+                              <input
+                                type="number"
+                                value={item.points}
+                                onChange={(e) => {
+                                  const updated = {...customizedTasks};
+                                  updated[member.id].routine[idx].points = parseInt(e.target.value) || 0;
+                                  setCustomizedTasks(updated);
+                                }}
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #e2e8f0',
+                                  fontSize: '13px',
+                                  fontWeight: '600',
+                                  color: '#10b981',
+                                  textAlign: 'right',
+                                  fontFamily: 'inherit'
+                                }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Weekly Responsibilities */}
+                      <div style={{ marginBottom: '20px' }}>
+                        <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', color: '#475569' }}>
+                          Weekly Responsibilities ({tasks.responsibilities.length} items)
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {tasks.responsibilities.map((item, idx) => (
+                            <div key={idx} style={{
+                              display: 'grid',
+                              gridTemplateColumns: '1fr 100px',
+                              gap: '12px',
+                              padding: '10px 12px',
+                              background: 'white',
+                              borderRadius: '8px',
+                              border: '1px solid #e2e8f0'
+                            }}>
+                              <input
+                                type="text"
+                                value={item.text}
+                                onChange={(e) => {
+                                  const updated = {...customizedTasks};
+                                  updated[member.id].responsibilities[idx].text = e.target.value;
+                                  setCustomizedTasks(updated);
+                                }}
+                                style={{
+                                  border: 'none',
+                                  outline: 'none',
+                                  fontSize: '14px',
+                                  color: '#475569',
+                                  fontFamily: 'inherit',
+                                  background: 'transparent'
+                                }}
+                              />
+                              <input
+                                type="number"
+                                value={item.points}
+                                onChange={(e) => {
+                                  const updated = {...customizedTasks};
+                                  updated[member.id].responsibilities[idx].points = parseInt(e.target.value) || 0;
+                                  setCustomizedTasks(updated);
+                                }}
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #e2e8f0',
+                                  fontSize: '13px',
+                                  fontWeight: '600',
+                                  color: '#10b981',
+                                  textAlign: 'right',
+                                  fontFamily: 'inherit'
+                                }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Character Growth Goals */}
+                      <div>
+                        <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', color: '#475569' }}>
+                          Character Growth Goals ({tasks.goals.length} items)
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {tasks.goals.map((item, idx) => (
+                            <div key={idx} style={{
+                              display: 'grid',
+                              gridTemplateColumns: '1fr 100px',
+                              gap: '12px',
+                              padding: '10px 12px',
+                              background: 'white',
+                              borderRadius: '8px',
+                              border: '1px solid #e2e8f0'
+                            }}>
+                              <input
+                                type="text"
+                                value={item.text}
+                                onChange={(e) => {
+                                  const updated = {...customizedTasks};
+                                  updated[member.id].goals[idx].text = e.target.value;
+                                  setCustomizedTasks(updated);
+                                }}
+                                style={{
+                                  border: 'none',
+                                  outline: 'none',
+                                  fontSize: '14px',
+                                  color: '#475569',
+                                  fontFamily: 'inherit',
+                                  background: 'transparent'
+                                }}
+                              />
+                              <input
+                                type="number"
+                                value={item.points}
+                                onChange={(e) => {
+                                  const updated = {...customizedTasks};
+                                  updated[member.id].goals[idx].points = parseInt(e.target.value) || 0;
+                                  setCustomizedTasks(updated);
+                                }}
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #e2e8f0',
+                                  fontSize: '13px',
+                                  fontWeight: '600',
+                                  color: '#10b981',
+                                  textAlign: 'right',
+                                  fontFamily: 'inherit'
+                                }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: Point Economy Review */}
+          {step === 5 && pointEconomy && (
             <div>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <div style={{
@@ -1366,8 +1616,8 @@ const OnboardingWithPointEconomy = () => {
             </div>
           )}
 
-          {/* Step 5: Customize Rewards */}
-          {step === 5 && customizedRewards && (
+          {/* Step 6: Customize Rewards */}
+          {step === 6 && customizedRewards && (
             <div>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <div style={{
@@ -1501,8 +1751,8 @@ const OnboardingWithPointEconomy = () => {
             </div>
           )}
 
-          {/* Step 6: Complete Setup */}
-          {step === 6 && generatedData && (
+          {/* Step 7: Complete Setup */}
+          {step === 7 && generatedData && (
             <div>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <div style={{
@@ -1606,7 +1856,7 @@ const OnboardingWithPointEconomy = () => {
         </div>
 
         {/* Navigation */}
-        {step < 6 && (
+        {step < 7 && (
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -1676,8 +1926,9 @@ const OnboardingWithPointEconomy = () => {
             >
               {step === 2 && currentMemberIndex < familyMembers.length - 1 ? 'Next Person' :
                step === 2 ? 'See Insights' :
-               step === 3 ? 'View Economy' :
-               step === 4 ? 'Customize Rewards' : 'Continue'}
+               step === 3 ? 'Review Tasks' :
+               step === 4 ? 'View Economy' :
+               step === 5 ? 'Customize Rewards' : 'Continue'}
               <Icons.ArrowRight />
             </button>
           </div>
