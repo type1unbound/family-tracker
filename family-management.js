@@ -658,6 +658,25 @@ async function switchToFamily(familyId) {
             if (memberDoc.exists) {
                 window.StateManager.state.data[childId] = memberDoc.data();
                 
+                // Verify critical arrays exist
+                const memberData = window.StateManager.state.data[childId];
+                if (!memberData.schedule) {
+                    console.warn(`⚠️  ${memberData.name} missing schedule array - initializing empty`);
+                    memberData.schedule = [];
+                }
+                if (!memberData.weeklyChores) {
+                    console.warn(`⚠️  ${memberData.name} missing weeklyChores array - initializing empty`);
+                    memberData.weeklyChores = [];
+                }
+                if (!memberData.characterValues) {
+                    console.warn(`⚠️  ${memberData.name} missing characterValues array - initializing empty`);
+                    memberData.characterValues = [];
+                }
+                if (!memberData.rewards) {
+                    console.warn(`⚠️  ${memberData.name} missing rewards array - initializing empty`);
+                    memberData.rewards = [];
+                }
+                
                 if (!window.StateManager.state.data[childId].trackers) {
                     window.StateManager.state.data[childId].trackers = [];
                 }
@@ -673,6 +692,7 @@ async function switchToFamily(familyId) {
                 });
                 
                 console.log('  ✓ Loaded', window.StateManager.state.data[childId].name);
+                console.log(`    - ${memberData.schedule.length} schedule items, ${memberData.weeklyChores.length} chores, ${memberData.characterValues.length} goals`);
             } else if (!window.StateManager.state.data[childId]) {
                 window.StateManager.createChild(childId);
             }
