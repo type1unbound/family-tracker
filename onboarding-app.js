@@ -20,6 +20,7 @@ const OnboardingWithPointEconomy = () => {
   const [generatedData, setGeneratedData] = React.useState(null);
   const [motivationInsights, setMotivationInsights] = React.useState(null);
   const [pointEconomy, setPointEconomy] = React.useState({});
+  const [customizedRewards, setCustomizedRewards] = React.useState({});
 
   // SVG Icons - Professional & Consistent
   const Icons = {
@@ -507,6 +508,20 @@ const OnboardingWithPointEconomy = () => {
     setGeneratedData(recommendations);
     setMotivationInsights(insights);
     setPointEconomy(economies);
+    
+    // Initialize customized rewards (user can edit these)
+    const initialCustomRewards = {};
+    familyMembers.forEach(member => {
+      const memberRecs = recommendations[member.id];
+      if (memberRecs && memberRecs.suggestedRewards) {
+        initialCustomRewards[member.id] = memberRecs.suggestedRewards.map((reward, idx) => ({
+          ...reward,
+          id: `reward_${idx + 1}`,
+          enabled: idx < 10 // Enable first 10 by default
+        }));
+      }
+    });
+    setCustomizedRewards(initialCustomRewards);
   };
 
   // AUTOMATIC SEND TO MAIN APP
@@ -515,16 +530,23 @@ const OnboardingWithPointEconomy = () => {
       readyToImport: true,
       familyName: 'My Family',
       familyValues: orderedValues.map(v => v.name),
-      members: Object.values(generatedData).map(member => ({
-        name: member.name,
-        age: member.age,
-        role: member.role,
-        routine: member.routine,
-        responsibilities: member.responsibilities,
-        goals: member.goals,
-        rewards: member.suggestedRewards,
-        motivationStyle: member.motivationStyle
-      }))
+      members: familyMembers.map(member => {
+        const memberData = generatedData[member.id];
+        // Get customized rewards for this member (only enabled ones)
+        const memberRewards = customizedRewards[member.id] || [];
+        const enabledRewards = memberRewards.filter(r => r.enabled);
+        
+        return {
+          name: memberData.name,
+          age: memberData.age,
+          role: memberData.role,
+          routine: memberData.routine,
+          responsibilities: memberData.responsibilities,
+          goals: memberData.goals,
+          rewards: enabledRewards.length > 0 ? enabledRewards : memberData.suggestedRewards, // Use customized or fallback to suggested
+          motivationStyle: memberData.motivationStyle
+        };
+      })
     };
 
     // Send to parent window (main Compass app)
@@ -620,7 +642,7 @@ const OnboardingWithPointEconomy = () => {
           gap: '8px',
           marginBottom: '32px'
         }}>
-          {['Values', 'Family', 'Questions', 'Insights', 'Complete'].map((label, idx) => (
+          {['Values', 'Family', 'Questions', 'Insights', 'Economy', 'Rewards', 'Complete'].map((label, idx) => (
             <div key={idx} style={{
               display: 'flex',
               flexDirection: 'column',
@@ -1193,8 +1215,294 @@ const OnboardingWithPointEconomy = () => {
             </div>
           )}
 
-          {/* Step 4: Complete Setup */}
-          {step === 4 && generatedData && (
+          {/* Step 4: Point Economy Review */}
+          {step === 4 && pointEconomy && (
+            <div>
+              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  borderRadius: '12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '16px',
+                  color: 'white',
+                  fontSize: '24px',
+                  fontWeight: '700'
+                }}>
+                  $
+                </div>
+                <h2 style={{
+                  fontSize: '24px',
+                  fontWeight: '700',
+                  color: '#0f172a',
+                  margin: '0 0 8px 0',
+                  letterSpacing: '-0.5px'
+                }}>
+                  Point Economy
+                </h2>
+                <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>
+                  Personalized earning and reward systems for each member
+                </p>
+              </div>
+              
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '20px',
+                maxHeight: '450px',
+                overflowY: 'auto',
+                paddingRight: '8px'
+              }}>
+                {familyMembers.map(member => {
+                  const economy = pointEconomy[member.id];
+                  const memberData = generatedData[member.id];
+                  if (!economy || !memberData) return null;
+                  
+                  return (
+                    <div key={member.id} style={{
+                      background: '#f8fafc',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      <h3 style={{ fontSize: '17px', fontWeight: '600', marginBottom: '16px', color: '#0f172a' }}>
+                        {member.name}
+                        <span style={{ color: '#64748b', fontWeight: '500', marginLeft: '8px' }}>
+                          (Age {member.age})
+                        </span>
+                      </h3>
+                      
+                      {/* Point Values */}
+                      <div style={{
+                        background: 'white',
+                        borderRadius: '10px',
+                        padding: '16px',
+                        marginBottom: '16px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#475569' }}>
+                          Point Values
+                        </h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', fontSize: '13px' }}>
+                          <div>
+                            <div style={{ color: '#64748b', marginBottom: '2px' }}>Routine Item</div>
+                            <div style={{ fontWeight: '600', color: '#10b981', fontSize: '16px' }}>
+                              {economy.pointValues.routineItem} pts
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{ color: '#64748b', marginBottom: '2px' }}>Weekly Chore</div>
+                            <div style={{ fontWeight: '600', color: '#10b981', fontSize: '16px' }}>
+                              {economy.pointValues.responsibility} pts
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{ color: '#64748b', marginBottom: '2px' }}>Daily Goal</div>
+                            <div style={{ fontWeight: '600', color: '#10b981', fontSize: '16px' }}>
+                              {economy.pointValues.dailyGoal} pts
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{ color: '#64748b', marginBottom: '2px' }}>Weekly Goal</div>
+                            <div style={{ fontWeight: '600', color: '#10b981', fontSize: '16px' }}>
+                              {economy.pointValues.weeklyGoal} pts
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Weekly Potential */}
+                      <div style={{
+                        background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                        borderRadius: '10px',
+                        padding: '16px',
+                        marginBottom: '16px',
+                        border: '1px solid #bbf7d0'
+                      }}>
+                        <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#0f172a' }}>
+                          Weekly Earning Potential
+                        </h4>
+                        <div style={{ fontSize: '28px', fontWeight: '700', color: '#10b981', marginBottom: '8px' }}>
+                          {economy.weeklyPoints.weeklyTotal} pts
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#475569' }}>
+                          Daily average: ~{economy.weeklyPoints.dailyAverage} pts
+                        </div>
+                      </div>
+                      
+                      {/* Sample Rewards */}
+                      <div>
+                        <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#475569' }}>
+                          Sample Rewards ({memberData.motivationStyle})
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {economy.rewards.slice(0, 5).map((reward, idx) => (
+                            <div key={idx} style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '10px 12px',
+                              background: 'white',
+                              borderRadius: '8px',
+                              border: '1px solid #e2e8f0',
+                              fontSize: '13px'
+                            }}>
+                              <span style={{ color: '#475569' }}>{reward.name}</span>
+                              <span style={{ fontWeight: '600', color: '#10b981' }}>{reward.points} pts</span>
+                            </div>
+                          ))}
+                          <div style={{ fontSize: '12px', color: '#64748b', fontStyle: 'italic', marginTop: '4px' }}>
+                            + {economy.rewards.length - 5} more rewards available
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: Customize Rewards */}
+          {step === 5 && customizedRewards && (
+            <div>
+              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  borderRadius: '12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '16px',
+                  color: 'white',
+                  fontSize: '24px',
+                  fontWeight: '700'
+                }}>
+                  🎁
+                </div>
+                <h2 style={{
+                  fontSize: '24px',
+                  fontWeight: '700',
+                  color: '#0f172a',
+                  margin: '0 0 8px 0',
+                  letterSpacing: '-0.5px'
+                }}>
+                  Customize Rewards
+                </h2>
+                <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>
+                  Adjust point values and select which rewards to include
+                </p>
+              </div>
+              
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '20px',
+                maxHeight: '450px',
+                overflowY: 'auto',
+                paddingRight: '8px'
+              }}>
+                {familyMembers.map(member => {
+                  const rewards = customizedRewards[member.id] || [];
+                  
+                  return (
+                    <div key={member.id} style={{
+                      background: '#f8fafc',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      <h3 style={{ fontSize: '17px', fontWeight: '600', marginBottom: '16px', color: '#0f172a' }}>
+                        {member.name}'s Rewards
+                        <span style={{ color: '#64748b', fontWeight: '500', marginLeft: '8px', fontSize: '14px' }}>
+                          ({rewards.filter(r => r.enabled).length} selected)
+                        </span>
+                      </h3>
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {rewards.map((reward, idx) => (
+                          <div key={reward.id || idx} style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'auto 1fr 120px',
+                            gap: '12px',
+                            alignItems: 'center',
+                            padding: '12px',
+                            background: reward.enabled ? 'white' : '#f1f5f9',
+                            borderRadius: '8px',
+                            border: '1px solid #e2e8f0',
+                            opacity: reward.enabled ? 1 : 0.6
+                          }}>
+                            <input
+                              type="checkbox"
+                              checked={reward.enabled}
+                              onChange={(e) => {
+                                const updated = {...customizedRewards};
+                                updated[member.id][idx].enabled = e.target.checked;
+                                setCustomizedRewards(updated);
+                              }}
+                              style={{
+                                width: '18px',
+                                height: '18px',
+                                cursor: 'pointer'
+                              }}
+                            />
+                            <div style={{ fontSize: '14px', color: '#475569', fontWeight: reward.enabled ? '500' : '400' }}>
+                              {reward.name}
+                              <span style={{ fontSize: '12px', color: '#94a3b8', marginLeft: '8px' }}>
+                                ({reward.category})
+                              </span>
+                            </div>
+                            <input
+                              type="number"
+                              value={reward.points}
+                              onChange={(e) => {
+                                const updated = {...customizedRewards};
+                                updated[member.id][idx].points = parseInt(e.target.value) || 0;
+                                setCustomizedRewards(updated);
+                              }}
+                              disabled={!reward.enabled}
+                              style={{
+                                padding: '6px 10px',
+                                borderRadius: '6px',
+                                border: '1px solid #e2e8f0',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#10b981',
+                                textAlign: 'right',
+                                fontFamily: 'inherit',
+                                background: reward.enabled ? 'white' : '#f8fafc',
+                                outline: 'none'
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      
+                      <div style={{
+                        marginTop: '12px',
+                        padding: '10px 12px',
+                        background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        color: '#475569',
+                        border: '1px solid #bbf7d0'
+                      }}>
+                        <strong>Tip:</strong> Select 8-12 rewards and adjust points to match earning potential (~{pointEconomy[member.id]?.weeklyPoints.weeklyTotal || 0} pts/week)
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Step 6: Complete Setup */}
+          {step === 6 && generatedData && (
             <div>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <div style={{
@@ -1298,7 +1606,7 @@ const OnboardingWithPointEconomy = () => {
         </div>
 
         {/* Navigation */}
-        {step < 4 && (
+        {step < 6 && (
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -1367,7 +1675,9 @@ const OnboardingWithPointEconomy = () => {
               }}
             >
               {step === 2 && currentMemberIndex < familyMembers.length - 1 ? 'Next Person' :
-               step === 2 ? 'See Insights' : 'Continue'}
+               step === 2 ? 'See Insights' :
+               step === 3 ? 'View Economy' :
+               step === 4 ? 'Customize Rewards' : 'Continue'}
               <Icons.ArrowRight />
             </button>
           </div>
