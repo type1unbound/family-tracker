@@ -647,6 +647,11 @@ async function switchToFamily(familyId) {
         
         console.log('  Loading', window.StateManager.state.children.length, 'family members...');
         
+        // Initialize data object if it doesn't exist
+        if (!window.StateManager.state.data) {
+            window.StateManager.state.data = {};
+        }
+        
         for (const childId of window.StateManager.state.children) {
             const memberDoc = await familyRef.collection('familyMembers').doc(childId).get();
             
