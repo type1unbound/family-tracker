@@ -100,7 +100,7 @@ async function createFamilyFromWizard(wizardData) {
         console.log(`    Processing member ${i + 1}:`, member.name);
         console.log(`      - Routine items:`, member.routine ? member.routine.length : 0);
         console.log(`      - Responsibilities:`, member.responsibilities ? member.responsibilities.length : 0);
-        console.log(`      - Goals:`, member.goals ? member.goals.length : 0);
+        console.log(`      - Goal categories:`, member.categoricalGoals ? member.categoricalGoals.length : 0);
         console.log(`      - Rewards:`, member.rewards ? member.rewards.length : 0);
         
         // ============================================
@@ -148,15 +148,17 @@ async function createFamilyFromWizard(wizardData) {
         }
         
         // 3. CHARACTER VALUES TRANSFORMATION
-        // From: [{ text: "Be kind", points: 8 }, { text: "Help others", points: 8 }]
-        // To:   [{ id: "personal_goals", category: "Personal Goals", weight: 1.0, items: ["Be kind", "Help others"] }]
+        // Wizard sends categoricalGoals: [{ id, category, weight, items: [] }]
+        // This ALREADY matches dashboard schema perfectly!
         const characterValues = [];
-        if (Array.isArray(member.goals) && member.goals.length > 0) {
-            characterValues.push({
-                id: 'personal_goals',                    // String ID
-                category: 'Personal Goals',              // String
-                weight: 1.0,                            // Number
-                items: member.goals.map(g => g.text || 'Goal') // Array of strings
+        if (Array.isArray(member.categoricalGoals) && member.categoricalGoals.length > 0) {
+            member.categoricalGoals.forEach(category => {
+                characterValues.push({
+                    id: category.id || `category_${Date.now()}`,
+                    category: category.category,
+                    weight: category.weight || 0.25,
+                    items: Array.isArray(category.items) ? category.items : []
+                });
             });
         }
         
@@ -223,7 +225,8 @@ async function createFamilyFromWizard(wizardData) {
         }
         console.log(`      ✅ Character Values: ${memberData.characterValues.length} categories`);
         if (memberData.characterValues.length > 0) {
-            console.log(`         Sample:`, memberData.characterValues[0]);
+            console.log(`         Categories:`, memberData.characterValues.map(c => c.category).join(', '));
+            console.log(`         Sample category:`, memberData.characterValues[0]);
             console.log(`         ✓ Has 'items' array:`, Array.isArray(memberData.characterValues[0].items));
         }
         console.log(`      ✅ Rewards: ${memberData.rewards.length} rewards`);
