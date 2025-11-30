@@ -1,5 +1,5 @@
 // ========================================
-// FAMILY MANAGEMENT & SELECTION SYSTEMS
+// FAMILY MANAGEMENT & SELECTION SYSTEM
 // With Safe Migration - PROFESSIONAL DESIGN
 // ========================================
 
@@ -344,12 +344,6 @@ function showFamilySetupChoice() {
     `;
     
     setupScreen.innerHTML = `
-        <div style="margin-bottom: 48px;">
-            <div style="font-size: 56px; margin-bottom: 20px; line-height: 1;">🧭</div>
-            <h1 style="margin: 0 0 12px 0; font-size: 32px; font-weight: 700; letter-spacing: -0.8px;">Welcome to Compass</h1>
-            <p style="margin: 0; opacity: 0.85; font-size: 16px; font-weight: 400;">Let's set up your family tracking system</p>
-        </div>
-        
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;">
             <!-- Guided Setup -->
             <button 
@@ -677,6 +671,16 @@ async function switchToFamily(familyId) {
                     memberData.rewards = [];
                 }
                 
+                // Verify schedule items have tasks array
+                if (memberData.schedule && memberData.schedule.length > 0) {
+                    memberData.schedule.forEach((item, idx) => {
+                        if (!item.tasks || !Array.isArray(item.tasks)) {
+                            console.warn(`⚠️  Schedule item ${idx} missing tasks array, fixing...`, item);
+                            item.tasks = [item.name || item.text || 'Task'];
+                        }
+                    });
+                }
+                
                 if (!window.StateManager.state.data[childId].trackers) {
                     window.StateManager.state.data[childId].trackers = [];
                 }
@@ -693,6 +697,9 @@ async function switchToFamily(familyId) {
                 
                 console.log('  ✓ Loaded', window.StateManager.state.data[childId].name);
                 console.log(`    - ${memberData.schedule.length} schedule items, ${memberData.weeklyChores.length} chores, ${memberData.characterValues.length} goals`);
+                if (memberData.schedule.length > 0) {
+                    console.log(`    - Sample schedule:`, memberData.schedule[0]);
+                }
             } else if (!window.StateManager.state.data[childId]) {
                 window.StateManager.createChild(childId);
             }
