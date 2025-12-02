@@ -336,22 +336,134 @@ function showFamilySetupChoice() {
     setupScreen.id = 'family-setup-screen';
     setupScreen.style.cssText = `
         display: block;
-        text-align: center;
-        color: white;
         padding: 48px 32px;
-        max-width: 720px;
+        max-width: 840px;
         margin: 0 auto;
     `;
     
     setupScreen.innerHTML = `
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
             <!-- Guided Setup -->
             <button 
                  onclick="launchSetupWizard()"
                  style="
-                    background: linear-gradient(135deg, rgba(147, 197, 147, 0.25), rgba(107, 168, 107, 0.25));
-                    border: 1.5px solid rgba(147, 197, 147, 0.4);
-                    border-radius: 16px;
+                    background: white;
+                    border: 2px solid transparent;
+                    border-radius: 20px;
+                    padding: 40px 32px;
+                    cursor: pointer;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    text-align: center;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+                    font-family: inherit;
+                "
+                onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(16, 185, 129, 0.2)'; this.style.borderColor='#10b981';"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(0, 0, 0, 0.1)'; this.style.borderColor='transparent';"
+            >
+                <div style="width: 80px; height: 80px; margin: 0 auto 24px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+                    </svg>
+                </div>
+                
+                <h2 style="font-size: 24px; font-weight: 700; color: #0f172a; margin: 0 0 12px 0; letter-spacing: -0.5px;">Guided Setup</h2>
+                <p style="font-size: 15px; color: #64748b; line-height: 1.6; margin: 0 0 24px 0;">
+                    Personalized 20-minute setup wizard that creates routines, goals, and rewards tailored to your family
+                </p>
+                
+                <div style="text-align: left; padding: 0; margin-bottom: 24px;">
+                    <div style="font-size: 14px; color: #475569; padding: 10px 0; display: flex; align-items: center; gap: 12px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>AI-powered recommendations</span>
+                    </div>
+                    <div style="font-size: 14px; color: #475569; padding: 10px 0; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Motivation style analysis</span>
+                    </div>
+                    <div style="font-size: 14px; color: #475569; padding: 10px 0; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Age-appropriate tasks</span>
+                    </div>
+                    <div style="font-size: 14px; color: #475569; padding: 10px 0; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Balanced point economy</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #f1f5f9; font-size: 13px; color: #94a3b8;">
+                    ⏱️ About 20 minutes • Recommended
+                </div>
+            </button>
+
+            <!-- Quick Start -->
+            <button 
+                 onclick="quickStartFamily()"
+                 style="
+                    background: white;
+                    border: 2px solid transparent;
+                    border-radius: 20px;
+                    padding: 40px 32px;
+                    cursor: pointer;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    text-align: center;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+                    font-family: inherit;
+                "
+                onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(16, 185, 129, 0.2)'; this.style.borderColor='#10b981';"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(0, 0, 0, 0.1)'; this.style.borderColor='transparent';"
+            >
+                <div style="width: 80px; height: 80px; margin: 0 auto 24px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
+                
+                <h2 style="font-size: 24px; font-weight: 700; color: #0f172a; margin: 0 0 12px 0; letter-spacing: -0.5px;">Quick Start</h2>
+                <p style="font-size: 15px; color: #64748b; line-height: 1.6; margin: 0 0 24px 0;">
+                    Jump right in with basic templates and customize as you go
+                </p>
+                
+                <div style="text-align: left; padding: 0; margin-bottom: 24px;">
+                    <div style="font-size: 14px; color: #475569; padding: 10px 0; display: flex; align-items: center; gap: 12px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Default routines included</span>
+                    </div>
+                    <div style="font-size: 14px; color: #475569; padding: 10px 0; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Basic reward menu</span>
+                    </div>
+                    <div style="font-size: 14px; color: #475569; padding: 10px 0; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Edit anytime in settings</span>
+                    </div>
+                    <div style="font-size: 14px; color: #475569; padding: 10px 0; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Start tracking immediately</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #f1f5f9; font-size: 13px; color: #94a3b8;">
+                    ⚡ About 2 minutes
+                </div>
+            </button>
+        </div>
+    `;
                     padding: 32px 24px;
                     cursor: pointer;
                     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
