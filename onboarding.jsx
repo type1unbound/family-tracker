@@ -24,7 +24,7 @@ const OnboardingWithPointEconomy = () => {
   const [customizedTasks, setCustomizedTasks] = React.useState({});
   const [recurringEvents, setRecurringEvents] = React.useState({});
 
-  // SVG Icons -- Professional & Consistent
+  // SVG Icons - Professional & Consistent
   const Icons = {
     Heart: () => (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
