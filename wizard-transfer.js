@@ -17,15 +17,15 @@ window.addEventListener('message', async function(event) {
         return;
     }
     
-    // Check if this is wizard data
-    if (event.data.type === 'COMPASS_WIZARD_COMPLETE') {
+    // Check if this is wizard data (support both old and new message types)
+    if (event.data.type === 'COMPASS_WIZARD_COMPLETE' || event.data.type === 'WIZARD_COMPLETE') {
         console.log('📥 Received wizard data from child window');
         console.log('   Data:', event.data.data);
         
         const wizardData = event.data.data;
         
         // Validate data
-        if (!wizardData.readyToImport || !wizardData.members || wizardData.members.length === 0) {
+        if (!wizardData.members || wizardData.members.length === 0) {
             alert('Invalid wizard data received. Please try again.');
             return;
         }
@@ -85,7 +85,7 @@ async function createFamilyFromWizard(wizardData) {
         createdBy: currentUser.uid,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         children: childIds,
-        familyValues: wizardData.familyValues || [],
+        familyValues: wizardData.values || wizardData.familyValues || [],
         familyName: wizardData.familyName || 'My Family'
     });
     
