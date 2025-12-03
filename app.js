@@ -2347,6 +2347,45 @@ function saveReward() {
     RewardsModule.saveReward();
 }
 
+function saveReward() {
+    RewardsModule.saveReward();
+}
+
+// ========================================
+// REWARDS TOGGLE FUNCTIONS
+// ========================================
+
+function toggleRewardsSection() {
+    const rewardsSection = document.querySelector('.rewards-section');
+    const isRewardsVisible = rewardsSection && rewardsSection.style.display === 'block';
+    
+    if (isRewardsVisible) {
+        showGoalsSection();
+    } else {
+        showRewardsSection();
+    }
+}
+
+function updateRewardsButtonState(isShowingRewards) {
+    const buttons = document.querySelectorAll('.sidebar-btn');
+    buttons.forEach(btn => {
+        const btnText = btn.textContent || '';
+        if (btnText.includes('Rewards') || btnText.includes('Back to Goals')) {
+            if (isShowingRewards) {
+                btn.style.background = 'rgba(99, 102, 241, 0.1)';
+                btn.style.borderLeft = '3px solid #6366f1';
+                btn.innerHTML = '<span class="sidebar-icon">←</span><span>Back to Goals</span>';
+                btn.onclick = toggleRewardsSection;
+            } else {
+                btn.style.background = '';
+                btn.style.borderLeft = '';
+                btn.innerHTML = '<span class="sidebar-icon">🎁</span><span>Rewards</span>';
+                btn.onclick = toggleRewardsSection;
+            }
+        }
+    });
+}
+
 function showRewardsSection() {
     // Hide all goal groups (except rewards)
     document.querySelectorAll('.goals-group:not(.rewards-section)').forEach(group => {
@@ -2377,6 +2416,10 @@ function showGoalsSection() {
     document.querySelectorAll('.goals-group:not(.rewards-section)').forEach(group => {
         group.style.display = 'block';
     });
+    
+    // Update button appearance
+    updateRewardsButtonState(false);
+}
     
     // Update button appearance
     updateRewardsButtonState(false);
