@@ -562,12 +562,13 @@
                 </button>
                 
                 <!-- NEW: Rewards Button -->
- <button class="sidebar-btn" onclick="toggleRewardsSection()">
-    <span class="sidebar-icon">🎁</span>
-    <span>Rewards</span>
-</button>
+                <button class="sidebar-btn" onclick="showRewardsSection()">
+                    <span class="sidebar-icon">🎁</span>
+                    <span>Rewards</span>
+                </button>
                 
                 <button class="sidebar-btn" onclick="ProfileModule.openProfileModal()">👤 Profile</button>
+            
                 
                 <!-- NEW: MULTI-FAMILY SWITCH BUTTON (shows only if user has multiple families) -->
                 <button class="sidebar-btn" id="switch-family-btn" onclick="FamilyManagement.showFamilySelection()" 
@@ -1284,72 +1285,78 @@
         }
     }
 
-// Toggle between Rewards and Goals
-function toggleRewardsSection() {
-    const rewardsSection = document.querySelector('.rewards-section');
-    const isRewardsVisible = rewardsSection && rewardsSection.style.display === 'block';
-    
-    if (isRewardsVisible) {
-        // Currently showing rewards, switch to goals
-        showGoalsSection();
-    } else {
-        // Currently showing goals, switch to rewards
-        showRewardsSection();
-    }
-}
-
-function showRewardsSection() {
-    // Hide all goal groups
-    document.querySelectorAll('.goals-group:not(.rewards-section)').forEach(group => {
-        group.style.display = 'none';
-    });
-    
-    // Show rewards section
-    const rewardsSection = document.querySelector('.rewards-section');
-    if (rewardsSection) {
-        rewardsSection.style.display = 'block';
-        if (window.RewardsModule) {
-            RewardsModule.renderRewardsStore();
+    // REWARDS HELPER FUNCTIONS
+    function toggleRewardsSection() {
+        const rewardsSection = document.querySelector('.rewards-section');
+        const isRewardsVisible = rewardsSection && rewardsSection.style.display === 'block';
+        
+        if (isRewardsVisible) {
+            showGoalsSection();
+        } else {
+            showRewardsSection();
         }
     }
-    
-    // Update button appearance
-    updateRewardsButtonState(true);
-}
 
-function showGoalsSection() {
-    // Hide rewards
-    const rewardsSection = document.querySelector('.rewards-section');
-    if (rewardsSection) {
-        rewardsSection.style.display = 'none';
-    }
-    
-    // Show goals
-    document.querySelectorAll('.goals-group:not(.rewards-section)').forEach(group => {
-        group.style.display = 'block';
-    });
-    
-    // Update button appearance
-    updateRewardsButtonState(false);
-}
-
-function updateRewardsButtonState(isShowingRewards) {
-    // Find rewards button in sidebar
-    const buttons = document.querySelectorAll('.sidebar-btn');
-    buttons.forEach(btn => {
-        if (btn.textContent.includes('Rewards') || btn.textContent.includes('Back to Goals')) {
-            if (isShowingRewards) {
-                btn.style.background = 'rgba(99, 102, 241, 0.1)';
-                btn.style.borderLeft = '3px solid #6366f1';
-                btn.innerHTML = '<span class="sidebar-icon">←</span><span>Back to Goals</span>';
-            } else {
-                btn.style.background = '';
-                btn.style.borderLeft = '';
-                btn.innerHTML = '<span class="sidebar-icon">🎁</span><span>Rewards</span>';
+    function showRewardsSection() {
+        // Hide all goal groups (except rewards)
+        document.querySelectorAll('.goals-group:not(.rewards-section)').forEach(group => {
+            group.style.display = 'none';
+        });
+        
+        // Show rewards section
+        const rewardsSection = document.querySelector('.rewards-section');
+        if (rewardsSection) {
+            rewardsSection.style.display = 'block';
+            if (window.RewardsModule) {
+                RewardsModule.renderRewardsStore();
             }
         }
-    });
-}
+        
+        // Update button appearance
+        updateRewardsButtonState(true);
+    }
+
+    function showGoalsSection() {
+        // Hide rewards
+        const rewardsSection = document.querySelector('.rewards-section');
+        if (rewardsSection) {
+            rewardsSection.style.display = 'none';
+        }
+        
+        // Show all goal groups (except rewards)
+        document.querySelectorAll('.goals-group:not(.rewards-section)').forEach(group => {
+            group.style.display = 'block';
+        });
+        
+        // Update button appearance
+        updateRewardsButtonState(false);
+    }
+
+    function updateRewardsButtonState(isShowingRewards) {
+        // Find rewards button in sidebar
+        const buttons = document.querySelectorAll('.sidebar-btn');
+        buttons.forEach(btn => {
+            const btnText = btn.textContent || '';
+            if (btnText.includes('Rewards') || btnText.includes('Back to Goals')) {
+                if (isShowingRewards) {
+                    btn.style.background = 'rgba(99, 102, 241, 0.1)';
+                    btn.style.borderLeft = '3px solid #6366f1';
+                    btn.innerHTML = '<span class="sidebar-icon">←</span><span>Back to Goals</span>';
+                } else {
+                    btn.style.background = '';
+                    btn.style.borderLeft = '';
+                    btn.innerHTML = '<span class="sidebar-icon">🎁</span><span>Rewards</span>';
+                }
+            }
+        });
+    }
+
+    function saveReward() {
+        if (window.RewardsModule) {
+            RewardsModule.saveReward();
+        }
+    }
+    </script>
 
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
