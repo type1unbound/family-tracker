@@ -275,6 +275,7 @@ if (document.readyState === 'loading') {
 console.log('✅ Onboarding Import module loaded');
 
 // ============================================
+// ============================================
 // WIZARD MESSAGE LISTENER (postMessage)
 // ============================================
 window.addEventListener('message', async (event) => {
@@ -283,13 +284,72 @@ window.addEventListener('message', async (event) => {
     }
     
     console.log('📥 Received wizard data via postMessage');
+    const wizardData = event.data.data;
     
-    // Use existing import function!
-    const success = await OnboardingImport.importOnboardingData(event.data.data);
+    if (!currentUser) {
+        console.error('No user logged in');
+        return;
+    }
     
-    if (success) {
-        console.log('✅ Wizard data imported successfully');
+    try {
+        if (typeof showLoading === 'function') showLoading();
+        
+        console.log('💾 Creating new family with wizard data...');
+        
+        // Create new family in Firebase
+        const familyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const familyId = 'family_' + Date.now();
+        
+        // Save family document
+        await db.collection('families').doc(familyId).set({
+            familyCode: familyCode,
+            familyName: wizardData.familyName || 'My Family',
+            values: wizardData.values || [],
+            createdBy: currentUser.uid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            children: wizardData.children || []
+        });
+        
+        console.log('  ✓ Family created:', familyCode);
+        
+        // Save each child's data
+        for (const childId of wizardData.children) {
+            const childData = wizardData.data[childId];
+            
+            await db.collection('families').doc(familyId)
+                .collection('familyMembers').doc(childId).set(childData);
+            
+            console.log('  ✓ Saved:', childData.name);
+        }
+        
+        // Update user document with new family
+        const userRef = db.collection('users').doc(currentUser.uid);
+        const userDoc = await userRef.get();
+        const existingFamilyIds = userDoc.exists && userDoc.data().familyIds ? userDoc.data().familyIds : [];
+        
+        await userRef.set({
+            email: currentUser.email,
+            displayName: currentUser.displayName,
+            familyIds: [...existingFamilyIds, familyId],
+            lastActiveFamilyId: familyId,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        
+        console.log('✅ Wizard data saved to Firebase!');
+        
+        // Switch to the new family (this will load dashboard)
+        if (typeof switchToFamily === 'function') {
+            await switchToFamily(familyId);
+        } else {
+            console.error('switchToFamily function not found');
+            if (typeof hideLoading === 'function') hideLoading();
+        }
+        
+    } catch (error) {
+        console.error('❌ Error saving wizard data:', error);
+        alert('Error saving wizard data: ' + error.message);
+        if (typeof hideLoading === 'function') hideLoading();
     }
 });
 
-console.log('✅ Wizard message listener active');
+console.log('✅ Wizard message listener registered');
