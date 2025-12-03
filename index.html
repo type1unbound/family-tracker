@@ -469,11 +469,19 @@
                         </div>
                     </div>
                     
-                    <!-- NEW: REWARDS SECTION PLACEHOLDER -->
-                    <!-- This will be populated by your separate rewards.html content -->
-                    <div class="section rewards-section" id="rewards-section-container">
-                        <!-- Rewards content from rewards.html will be injected here -->
-                        <!-- Or you can include it directly here -->
+                 <!-- REWARDS SECTION -->
+<div class="goals-group rewards-section" style="display: none;">
+    <div class="goals-header">
+        <span class="section-header-icon">🎁</span>
+        Rewards Store
+        <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 12px; color: #6b7280;">Balance:</span>
+            <span id="rewards-balance" style="font-size: 18px; font-weight: 700; color: var(--theme-gradient-2, #6366f1);">0</span>
+        </div>
+    </div>
+    
+    <div id="rewards-grid" class="rewards-grid"></div>
+</div>
                     </div>
                 </div>
             </div>
@@ -674,6 +682,43 @@
                 </div>
             </div>
         </div>
+
+        <!-- Reward Edit Modal -->
+<div id="reward-edit-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Reward</h2>
+            <button class="close-btn" onclick="RewardsModule.closeModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <div style="margin-bottom: 12px;">
+                <label>Reward Name:</label>
+                <input type="text" id="modal-reward-name" class="edit-input" placeholder="e.g., Extra 30 minutes screen time">
+            </div>
+            
+            <div style="margin-bottom: 12px;">
+                <label>Point Cost:</label>
+                <input type="number" id="modal-reward-cost" class="edit-input" min="1" placeholder="100">
+            </div>
+            
+            <div style="margin-bottom: 12px;">
+                <label>Category:</label>
+                <select id="modal-reward-category" class="edit-input">
+                    <option value="privilege">🎯 Privilege</option>
+                    <option value="experience">🎉 Experience</option>
+                    <option value="item">🎁 Item</option>
+                    <option value="quality-time">💝 Quality Time</option>
+                    <option value="family-time">👨‍👩‍👧‍👦 Family Time</option>
+                    <option value="custom">⭐ Other</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="RewardsModule.closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="RewardsModule.saveReward()">Save Reward</button>
+        </div>
+    </div>
+</div>
 
         <!-- Delete Confirmation Modal -->
         <div id="delete-confirm-modal" class="modal">
