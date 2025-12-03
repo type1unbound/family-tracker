@@ -36,11 +36,9 @@ const OnboardingImport = {
     try {
         console.log('📥 Starting import...');
         
-        // Clear existing
         StateManager.state.children = [];
         StateManager.state.data = {};
 
-        // Import each member
         importData.members.forEach((member, index) => {
             const childId = member.id || `child${index + 1}`;
             
@@ -67,12 +65,10 @@ const OnboardingImport = {
 
         console.log('✅ Import successful!');
         
-        // Save to Firebase
-        if (window.FirebaseManager && window.FirebaseManager.saveState) {
-            await window.FirebaseManager.saveState();
+        if (window.saveData) {
+            await window.saveData();
         }
 
-        // Update UI
         if (window.UICore) {
             UICore.updateUI();
         }
@@ -86,7 +82,7 @@ const OnboardingImport = {
         alert('Import failed: ' + error.message);
         return false;
     }
-}
+},
 
     /**
      * Convert onboarding schedule format to app schedule format
