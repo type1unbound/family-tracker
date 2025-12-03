@@ -10,106 +10,83 @@ const OnboardingImport = {
      * @returns {Promise<boolean>} - Success status
      */
     async importOnboardingData(importData) {
-        if (!importData || !importData.members || !importData.readyToImport) {
-            alert('Invalid import data. Please use data exported from the Compass Onboarding tool.');
-            return false;
+    // NEW: Handle wizard schema (no "members" wrapper)
+    const isWizardData = importData.children && importData.data;
+    
+    if (!isWizardData && (!importData.members || !importData.readyToImport)) {
+        alert('Invalid import data.');
+        return false;
+    }
+    
+    // Convert wizard format to expected format if needed
+    if (isWizardData) {
+        importData = {
+            members: importData.children.map(childId => ({
+                id: childId,
+                ...importData.data[childId]
+            })),
+            readyToImport: true
+        };
+    }
+
+    if (!confirm(`This will replace your current family setup with ${importData.members.length} member(s). Continue?`)) {
+        return false;
+    }
+
+    try {
+        console.log('📥 Starting import...');
+        
+        // Clear existing
+        StateManager.state.children = [];
+        StateManager.state.data = {};
+
+        // Import each member
+        importData.members.forEach((member, index) => {
+            const childId = member.id || `child${index + 1}`;
+            
+            StateManager.state.data[childId] = {
+                name: member.name,
+                photo: member.photo || null,
+                colorPalette: member.colorPalette || 'purple',
+                pointsBalance: member.pointsBalance || 0,
+                pointsSpent: member.pointsSpent || 0,
+                trackers: member.trackers || [],
+                days: member.days || {},
+                schedule: member.schedule || [],
+                characterValues: member.characterValues || [],
+                weeklyChores: member.weeklyChores || [],
+                rewards: member.rewards || []
+            };
+            
+            StateManager.state.children.push(childId);
+        });
+
+        if (StateManager.state.children.length > 0) {
+            StateManager.state.currentChild = StateManager.state.children[0];
         }
 
-        if (!confirm(`This will replace your current family setup with ${importData.members.length} member(s). Continue?`)) {
-            return false;
+        console.log('✅ Import successful!');
+        
+        // Save to Firebase
+        if (window.FirebaseManager && window.FirebaseManager.saveState) {
+            await window.FirebaseManager.saveState();
         }
 
-        try {
-            console.log('📥 Starting onboarding import...');
-            
-            // Clear existing children
-            StateManager.state.children = [];
-            StateManager.state.data = {};
-
-            // Import each family member
-            importData.members.forEach((member, index) => {
-                const childId = member.id || `child${index + 1}`;
-                
-                console.log(`  Creating profile for ${member.name}...`);
-                
-                // Create child with imported data
-                StateManager.state.data[childId] = {
-                    name: member.name,
-                    photo: member.photo || null,
-                    colorPalette: member.colorPalette || 'purple',
-                    pointsBalance: 0,
-                    pointsSpent: 0,
-                    
-                    // Import point system configuration
-                    pointValues: member.pointValues || {
-                        routineItem: 2,
-                        responsibility: 3,
-                        dailyGoal: 8,
-                        weeklyGoal: 12
-                    },
-                    
-                    // Import trackers (empty initially)
-                    trackers: member.trackers || [],
-                    
-                    // Import days data (empty initially)
-                    days: member.days || {},
-                    
-                    // Import schedule with proper format
-                    schedule: this.convertSchedule(member.schedule),
-                    
-                    // Import character values (goals)
-                    characterValues: member.characterValues || [],
-                    
-                    // Import weekly chores (responsibilities)
-                    weeklyChores: member.weeklyChores || [],
-                    
-                    // Import rewards menu
-                    rewards: member.rewards || [],
-                    
-                    // Store motivation style for reference
-                    motivationStyle: member.motivationStyle || 'Personal achievement',
-                    
-                    // Store earning potential for reference
-                    weeklyEarningPotential: member.weeklyEarningPotential || {}
-                };
-                
-                StateManager.state.children.push(childId);
-            });
-
-            // Set first child as current
-            if (StateManager.state.children.length > 0) {
-                StateManager.state.currentChild = StateManager.state.children[0];
-            }
-
-            console.log('✅ Import successful! Loaded', StateManager.state.children.length, 'family members');
-            
-            // Save to Firebase
-            if (window.saveData) {
-                await window.saveData();
-                console.log('✅ Data saved to Firebase');
-            }
-
-            // Update UI
-            if (window.UICore) {
-                UICore.updateUI();
-                UICore.applyColorPalette();
-            }
-            
-            if (window.ProfileModule) {
-                ProfileModule.updateSidebarAvatars();
-                ProfileModule.updateTrackerButtons();
-            }
-
-            alert(`✅ Successfully imported ${importData.members.length} family member(s)!\n\nYour Compass dashboard is now set up with:\n- Daily routines\n- Weekly responsibilities\n- Growth goals\n- Rewards menu\n\nYou can customize everything in Edit mode.`);
-            
-            return true;
-            
-        } catch (error) {
-            console.error('❌ Import failed:', error);
-            alert('Import failed: ' + error.message);
-            return false;
+        // Update UI
+        if (window.UICore) {
+            UICore.updateUI();
         }
-    },
+
+        alert(`✅ Successfully imported ${importData.members.length} family member(s)!`);
+        
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Import failed:', error);
+        alert('Import failed: ' + error.message);
+        return false;
+    }
+}
 
     /**
      * Convert onboarding schedule format to app schedule format
@@ -300,3 +277,23 @@ if (document.readyState === 'loading') {
 }
 
 console.log('✅ Onboarding Import module loaded');
+
+// ============================================
+// WIZARD MESSAGE LISTENER (postMessage)
+// ============================================
+window.addEventListener('message', async (event) => {
+    if (event.data.type !== 'WIZARD_COMPLETE') {
+        return;
+    }
+    
+    console.log('📥 Received wizard data via postMessage');
+    
+    // Use existing import function!
+    const success = await OnboardingImport.importOnboardingData(event.data.data);
+    
+    if (success) {
+        console.log('✅ Wizard data imported successfully');
+    }
+});
+
+console.log('✅ Wizard message listener active');
