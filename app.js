@@ -623,8 +623,8 @@ const PointsModule = {
         const reasonText = reason ? ` for ${reason}` : '';
         const newBalance = child.pointsBalance;
         alert(`✅ Spent ${amount} points${reasonText}!\nNew balance: ${newBalance}`);
-    }
-}; */
+    }*/
+}; 
 
 // ========================================
 // SCHEDULE MODULE
