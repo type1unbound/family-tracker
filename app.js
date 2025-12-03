@@ -580,7 +580,7 @@ const PointsModule = {
         return streak;
     },
 
-    openSpendPointsModal() {
+   /* openSpendPointsModal() {
         const child = StateManager.getCurrentChild();
         document.getElementById('spend-modal-balance').textContent = child.pointsBalance;
         document.getElementById('modal-spend-amount').value = '';
@@ -624,7 +624,7 @@ const PointsModule = {
         const newBalance = child.pointsBalance;
         alert(`✅ Spent ${amount} points${reasonText}!\nNew balance: ${newBalance}`);
     }
-};
+}; */
 
 // ========================================
 // SCHEDULE MODULE
