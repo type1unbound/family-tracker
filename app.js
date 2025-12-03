@@ -2290,7 +2290,6 @@ function toggleRewardsSection() {
     }
 }
 
-// Update button appearance
 function updateRewardsButtonState(isShowingRewards) {
     const buttons = document.querySelectorAll('.sidebar-btn');
     buttons.forEach(btn => {
@@ -2300,10 +2299,12 @@ function updateRewardsButtonState(isShowingRewards) {
                 btn.style.background = 'rgba(99, 102, 241, 0.1)';
                 btn.style.borderLeft = '3px solid #6366f1';
                 btn.innerHTML = '<span class="sidebar-icon">←</span><span>Back to Goals</span>';
+                btn.onclick = toggleRewardsSection; // ← Re-attach click handler!
             } else {
                 btn.style.background = '';
                 btn.style.borderLeft = '';
                 btn.innerHTML = '<span class="sidebar-icon">🎁</span><span>Rewards</span>';
+                btn.onclick = toggleRewardsSection; // ← Re-attach click handler!
             }
         }
     });
