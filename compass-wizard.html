@@ -1,0 +1,2560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compass Family Setup - Getting Started</title>
+        <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .wizard-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .wizard-header h1 {
+            font-size: 36px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .wizard-header p {
+            font-size: 16px;
+            color: #94a3b8;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 24px;
+            letter-spacing: -0.3px;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .step-dot.active {
+            background: #10b981;
+            width: 32px;
+            border-radius: 5px;
+        }
+
+        .step-dot.completed {
+            background: #059669;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="time"],
+        select,
+        textarea {
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .value-card {
+            padding: 20px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            background: white;
+        }
+
+        .value-card:hover {
+            border-color: #10b981;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+        }
+
+        .value-card.selected {
+            border-color: #10b981;
+            background: #d1fae5;
+        }
+
+        .value-icon {
+            width: 32px;
+            height: 32px;
+            margin: 0 auto 12px;
+            color: #10b981;
+        }
+
+        .value-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .question-card {
+            background: #f9fafb;
+            border: 1px solid #f1f5f9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .question-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .question-help {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 8px;
+        }
+
+        .option-btn {
+            padding: 12px 16px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            color: #374151;
+            width: 100%;
+        }
+
+        .option-btn:hover {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .option-btn.selected {
+            border-color: #10b981;
+            background: #d1fae5;
+            font-weight: 600;
+            color: #065f46;
+        }
+
+        .framework-annotation {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 16px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .framework-annotation .title {
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 8px;
+        }
+
+        .framework-annotation .content {
+            color: #78350f;
+            line-height: 1.6;
+        }
+
+        .editable-section {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .editable-section h3 {
+            font-size: 20px;
+            color: #0f172a;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .editable-section h4 {
+            font-size: 16px;
+            color: #10b981;
+            margin: 20px 0 12px 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .editable-item {
+            display: grid;
+            grid-template-columns: 100px 1fr auto;
+            gap: 12px;
+            align-items: center;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .editable-item input {
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .editable-item input:focus {
+            border-color: #10b981;
+            outline: none;
+        }
+
+        .member-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .icon-sm {
+            width: 20px;
+            height: 20px;
+            color: #10b981;
+            flex-shrink: 0;
+        }
+
+        .icon-md {
+            width: 24px;
+            height: 24px;
+            color: #10b981;
+        }
+
+        .logic-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            font-size: 13px;
+            color: #1e40af;
+            line-height: 1.5;
+        }
+
+        .logic-box .title {
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .member-grid {
+            display: grid;
+            grid-template-columns: 2fr 100px auto;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: end;
+        }
+
+        .text-input-large {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .output-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .output-section h3 {
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
+
+        .output-section h4 {
+            color: #10b981;
+            margin-top: 20px;
+            margin-bottom: 12px;
+        }
+
+        .focus-item {
+            margin-left: 112px;
+            font-size: 13px;
+            color: #6366f1;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            background: #eff6ff;
+            border-radius: 6px;
+            border-left: 3px solid #6366f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="wizard-header">
+            <h1>
+                <div class="icon-md" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+                    </svg>
+                </div>
+                Family Routine & Rewards - Getting Started
+            </h1>
+            <p>Research-backed approach to family development</p>
+        </div>
+
+        <div class="card" id="wizardCard">
+            <div class="step-indicator" id="stepIndicator"></div>
+            <div id="wizardContent"></div>
+            <div class="btn-container">
+                <button class="btn btn-secondary" id="backBtn" onclick="goBack()" style="display: none;">← Back</button>
+                <button class="btn btn-primary" id="nextBtn" onclick="goNext()">Next →</button>
+            </div>
+        </div>
+
+        <div class="card" id="outputSection" style="display: none;">
+            <div class="section-title">Generated Plan</div>
+            <div id="outputContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // FRAMEWORK REFERENCES & ANNOTATIONS
+        // ============================================
+        const FRAMEWORKS = {
+            responsibilities: {
+                name: "Age-Appropriate Responsibilities Framework",
+                sources: [
+                    "Montessori Method (Maria Montessori) - Practical Life Skills",
+                    "American Academy of Pediatrics (AAP) - Developmental Milestones",
+                    "Executive Function Development (Adele Diamond, 2013)",
+                    "Self-Determination Theory (Deci & Ryan, 1985) - Competence building"
+                ],
+                description: "Responsibilities are assigned based on cognitive development stages and executive function capacity. Complexity increases with age to build competence without overwhelming the child."
+            },
+            character: {
+                name: "Social-Emotional Learning (SEL) Framework",
+                sources: [
+                    "CASEL Framework - 5 Core Competencies (Self-Awareness, Self-Management, Social Awareness, Relationship Skills, Responsible Decision-Making)",
+                    "VIA Character Strengths (Peterson & Seligman, 2004)",
+                    "Search Institute - 40 Developmental Assets",
+                    "Emotional Regulation Development (Eisenberg & Spinrad, 2004)"
+                ],
+                description: "Character development goals are based on research-backed social-emotional competencies appropriate for each developmental stage."
+            },
+            motivation: {
+                name: "Intrinsic Motivation Framework",
+                sources: [
+                    "Self-Determination Theory (Deci & Ryan, 1985) - Autonomy, Competence, Relatedness",
+                    "Growth Mindset (Carol Dweck, 2006)",
+                    "Process Praise vs. Person Praise (Dweck, 2007)"
+                ],
+                description: "Questions designed to understand what drives the child internally vs. externally, helping build intrinsic motivation."
+            },
+            routine: {
+                name: "Executive Function & Routine Development",
+                sources: [
+                    "Executive Function Development Timeline (Center on the Developing Child, Harvard)",
+                    "Routine-Based Support (McWilliam, 2010)",
+                    "Positive Behavior Support (Carr et al., 2002)"
+                ],
+                description: "Routines support executive function development by reducing cognitive load and building automaticity."
+            }
+        };
+
+        // ============================================
+        // STATE MANAGEMENT
+        // ============================================
+        const state = {
+            currentStep: 0,
+            familyName: '',
+            members: [],
+            values: [],
+            answers: {},
+            memberResponsibilities: {},
+            memberCharacterGoals: {},
+            activities: {} // Store activities by member ID
+        };
+
+        const editableData = {}; // For editable summary
+
+        const STEPS = [
+            { name: 'family_name', title: 'Family Name' },
+            { name: 'members', title: 'Family Members' },
+            { name: 'values', title: 'Family Values' },
+            { name: 'routines', title: 'Routines' },
+            { name: 'motivation', title: 'Motivation' },
+            { name: 'responsibilities', title: 'Responsibilities' },
+            { name: 'character', title: 'Character Goals' },
+            { name: 'rewards', title: 'Rewards' }
+        ];
+
+        // ============================================
+        // FAMILY VALUES
+        // ============================================
+
+        // ==========================================
+        // SVG ICON LIBRARY - Monochrome Professional
+        // ==========================================
+        const ICONS = {
+            // Family Values
+            respect: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+            kindness: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+            honesty: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
+            responsibility: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+            perseverance: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>',
+            gratitude: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+            creativity: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>',
+            faith: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
+            learning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+            courage: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+            empathy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>',
+            service: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+            
+            // Routine Icons
+            sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+            home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+            book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+            coffee: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>',
+            moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+            calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+            smartphone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+            droplet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>',
+            
+            // Reward Icons
+            gift: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>',
+            target: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+            check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
+            users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+            activity: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+            
+            // Brand Icon
+            compass: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>'
+        };
+
+        function renderIcon(iconName, className = 'icon-md') {
+            const icon = ICONS[iconName] || ICONS.check;
+            return `<div class="${className}">${icon}</div>`;
+        }
+
+        const FAMILY_VALUES = [
+            { id: 'respect', icon: 'respect', name: 'Respect' },
+            { id: 'kindness', icon: 'kindness', name: 'Kindness' },
+            { id: 'honesty', icon: 'honesty', name: 'Honesty' },
+            { id: 'responsibility', icon: 'responsibility', name: 'Responsibility' },
+            { id: 'perseverance', icon: 'perseverance', name: 'Perseverance' },
+            { id: 'gratitude', icon: 'gratitude', name: 'Gratitude' },
+            { id: 'creativity', icon: 'creativity', name: 'Creativity' },
+            { id: 'faith', icon: 'faith', name: 'Faith' },
+            { id: 'learning', icon: 'learning', name: 'Love of Learning' },
+            { id: 'courage', icon: 'courage', name: 'Courage' },
+            { id: 'empathy', icon: 'empathy', name: 'Empathy' },
+            { id: 'service', icon: 'service', name: 'Service to Others' }
+        ];
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        function init() {
+            renderStep();
+        }
+
+        function renderStepIndicator() {
+            const indicator = document.getElementById('stepIndicator');
+            indicator.innerHTML = STEPS.map((step, idx) => 
+                `<div class="step-dot ${idx === state.currentStep ? 'active' : ''} ${idx < state.currentStep ? 'completed' : ''}"></div>`
+            ).join('');
+        }
+
+        function renderStep() {
+            renderStepIndicator();
+            const content = document.getElementById('wizardContent');
+            const stepName = STEPS[state.currentStep].name;
+            
+            // Update back button visibility
+            document.getElementById('backBtn').style.display = state.currentStep > 0 ? 'inline-block' : 'none';
+            
+            switch(stepName) {
+                case 'family_name':
+                    content.innerHTML = renderFamilyNameStep();
+                    break;
+                case 'members':
+                    content.innerHTML = renderMembersStep();
+                    break;
+                case 'values':
+                    content.innerHTML = renderValuesStep();
+                    break;
+                case 'routines':
+                    content.innerHTML = renderRoutinesStep();
+                    break;
+                case 'motivation':
+                    content.innerHTML = renderMotivationStep();
+                    break;
+                case 'responsibilities':
+                    content.innerHTML = renderResponsibilitiesStep();
+                    break;
+                case 'character':
+                    content.innerHTML = renderCharacterStep();
+                    break;
+                case 'rewards':
+                    content.innerHTML = renderRewardsStep();
+                    break;
+            }
+        }
+
+        // ============================================
+        // STEP 1: FAMILY NAME
+        // ============================================
+        function renderFamilyNameStep() {
+            return `
+                <div class="section-title">Welcome! Let's start with your family name</div>
+                <div class="input-group">
+                    <label class="input-label">What's your family name?</label>
+                    <input type="text" id="familyName" value="${state.familyName}" 
+                           placeholder="e.g., The Johnsons, Smith Family, or The Awesome Clan">
+                    <div style="font-size: 12px; color: #6b7280; margin-top: 8px;">
+                        This helps you identify your family when switching between multiple families
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // STEP 2: FAMILY MEMBERS
+        // ============================================
+        function renderMembersStep() {
+            let html = `
+                <div class="section-title">Who's in your family?</div>
+                <div class="framework-annotation">
+                    <div class="title">📚 Why We Ask About Ages</div>
+                    <div class="content">Age-based customization is informed by cognitive development stages (Piaget), executive function development timelines (Harvard Center on the Developing Child), and psychosocial development stages (Erikson). Different ages require different levels of complexity, support, and autonomy.</div>
+                </div>
+            `;
+
+            if (state.members.length > 0) {
+                html += '<div style="margin: 20px 0;">';
+                state.members.forEach((member, idx) => {
+                    html += `
+                        <div style="padding: 12px; background: #f9fafb; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="font-weight: 600;">${member.name}</span>
+                                <span style="color: #6b7280; margin-left: 12px;">Age ${member.age} • ${member.role}</span>
+                            </div>
+                            <button class="btn btn-secondary" style="padding: 8px 16px;" onclick="removeMember(${idx})">Remove</button>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            html += `
+                <div class="member-grid">
+                    <div>
+                        <label class="input-label">Name</label>
+                        <input type="text" id="memberName" placeholder="Enter name">
+                    </div>
+                    <div>
+                        <label class="input-label">Age</label>
+                        <input type="number" id="memberAge" min="3" max="100" placeholder="Age">
+                    </div>
+                    <div>
+                        <label class="input-label">&nbsp;</label>
+                        <button class="btn btn-primary" onclick="addMember()">Add Member</button>
+                    </div>
+                </div>
+            `;
+
+            return html;
+        }
+
+        function addMember() {
+            const name = document.getElementById('memberName').value.trim();
+            const age = parseInt(document.getElementById('memberAge').value);
+
+            if (!name || !age) {
+                alert('Please enter both name and age');
+                return;
+            }
+
+            const role = age >= 18 ? 'adult' : 'child';
+            state.members.push({ name, age, role, id: `member_${Date.now()}` });
+            
+            document.getElementById('memberName').value = '';
+            document.getElementById('memberAge').value = '';
+            
+            renderStep();
+        }
+
+        function removeMember(idx) {
+            state.members.splice(idx, 1);
+            renderStep();
+        }
+
+        // ============================================
+        // STEP 3: FAMILY VALUES
+        // ============================================
+        function renderValuesStep() {
+            return `
+                <div class="section-title">Choose Your Family Values</div>
+                <p style="color: #6b7280; margin-bottom: 20px;">Select 3-5 values that are most important to your family. These will shape character goals.</p>
+                
+                <div class="framework-annotation">
+                    <div class="title">📚 Values-Based Character Development</div>
+                    <div class="content">Research shows that character development is most effective when anchored to family values (Character Education Partnership, 2008). This approach aligns with the VIA Character Strengths framework and ensures goals are meaningful and culturally relevant to your family.</div>
+                </div>
+
+                <div class="values-grid">
+                    ${FAMILY_VALUES.map(value => `
+                        <div class="value-card ${state.values.includes(value.id) ? 'selected' : ''}" 
+                             onclick="toggleValue('${value.id}')">
+                            ${renderIcon(value.icon, 'value-icon')}
+                            <div class="value-name">${value.name}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function toggleValue(valueId) {
+            const idx = state.values.indexOf(valueId);
+            if (idx > -1) {
+                state.values.splice(idx, 1);
+            } else {
+                if (state.values.length < 5) {
+                    state.values.push(valueId);
+                } else {
+                    alert('Please select no more than 5 values');
+                    return;
+                }
+            }
+            renderStep();
+        }
+
+        // ============================================
+        // STEP 4: ROUTINES (Comprehensive Interview)
+        // ============================================
+        function renderRoutinesStep() {
+            let html = `
+                <div class="section-title">Daily Routines</div>
+                <p style="color: #6b7280; margin-bottom: 20px;">Let's understand your current routines and what you'd like to improve.</p>
+                
+                <div class="framework-annotation">
+                    <div class="title">📚 Executive Function & Routine Development Framework</div>
+                    <div class="content">
+                        <strong>Sources:</strong> Center on the Developing Child (Harvard), McWilliam's Routine-Based Support (2010), Positive Behavior Support (Carr et al., 2002)<br>
+                        <strong>Framework:</strong> Routines support executive function development by reducing cognitive load, building working memory, and creating automaticity. Friction points in routines often indicate executive function challenges that need support. We ask about difficulty level AND what to change to create targeted support.<br>
+                        <strong>Why Both Questions:</strong> Difficulty shows executive function capacity; change request shows where to focus support.
+                    </div>
+                </div>
+            `;
+
+            state.members.filter(m => m.role === 'child').forEach(member => {
+                html += `<div style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <div class="member-badge">${member.name} (Age ${member.age})</div>`;
+
+                html += renderRoutineQuestions(member);
+                
+                html += `</div>`;
+            });
+
+            return html;
+        }
+
+        function renderRoutineQuestions(member) {
+            const age = member.age;
+            let html = '';
+
+            // === MORNING ROUTINE ===
+            html += `<div class="question-card">
+                <div class="question-text" style="color: #6366f1; font-size: 16px; margin-bottom: 16px;">${renderIcon('sun', 'icon-sm')} Morning Routine</div>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        What time does ${member.name} typically wake up on school days?
+                    </label>
+                    <input type="time" id="${member.id}_wake_time" value="${state.answers[`${member.id}_wake_time`] || ''}" 
+                           onchange="saveAnswer('${member.id}_wake_time', this.value)"
+                           style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px;">
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        How would you describe your morning routine?
+                    </label>
+                    <div class="question-help">Getting up, getting ready, breakfast, out the door</div>
+                    <div class="options-grid">
+                        ${['Smooth and peaceful - everyone gets ready on time', 'Some struggles - need occasional reminders', 'Stressful - lots of reminders and rushing', 'Chaotic - constant battles and running late'].map(opt => `
+                            <button class="option-btn ${state.answers[`${member.id}_morning_difficulty`] === opt ? 'selected' : ''}"
+                                    onclick="saveAnswer('${member.id}_morning_difficulty', '${opt}')">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        What would you most like to change about mornings?
+                    </label>
+                    <div class="question-help">What specific behavior or situation causes the most friction?</div>
+                    <textarea class="text-input-large" id="${member.id}_morning_change" 
+                              placeholder="e.g., Getting dressed without arguing, waking up on time, eating breakfast..."
+                              onchange="saveAnswer('${member.id}_morning_change', this.value)">${state.answers[`${member.id}_morning_change`] || ''}</textarea>
+                </div>
+            </div>`;
+
+            // === AFTER SCHOOL (for school-age) ===
+            if (age >= 5) {
+                html += `<div class="question-card">
+                    <div class="question-text" style="color: #6366f1; font-size: 16px; margin-bottom: 16px;">${renderIcon('home', 'icon-sm')} After School</div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                            What time does ${member.name} get home from school?
+                        </label>
+                        <input type="time" id="${member.id}_school_end" value="${state.answers[`${member.id}_school_end`] || ''}"
+                               onchange="saveAnswer('${member.id}_school_end', this.value)"
+                               style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px;">
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                            How does the after-school transition go?
+                        </label>
+                        <div class="question-help">Coming home, snack, unwinding, transition to homework</div>
+                        <div class="options-grid">
+                            ${['Smooth - they decompress and transition easily', 'Some resistance - need help transitioning', 'Difficult - cranky, resistant, needs lots of support', 'Very challenging - meltdowns, complete shutdown'].map(opt => `
+                                <button class="option-btn ${state.answers[`${member.id}_afterschool_difficulty`] === opt ? 'selected' : ''}"
+                                        onclick="saveAnswer('${member.id}_afterschool_difficulty', '${opt}')">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                            What would help the after-school time go better?
+                        </label>
+                        <textarea class="text-input-large" id="${member.id}_afterschool_change"
+                                  placeholder="e.g., Following the routine, checking in calmly, eating snack without fuss..."
+                                  onchange="saveAnswer('${member.id}_afterschool_change', this.value)">${state.answers[`${member.id}_afterschool_change`] || ''}</textarea>
+                    </div>
+                </div>`;
+            }
+
+            // === HOMEWORK (for ages 6+) ===
+            if (age >= 6) {
+                html += `<div class="question-card">
+                    <div class="question-text" style="color: #6366f1; font-size: 16px; margin-bottom: 16px;">${renderIcon('book', 'icon-sm')} Homework Time</div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                            What time does ${member.name} typically do homework?
+                        </label>
+                        <input type="time" id="${member.id}_homework_time" value="${state.answers[`${member.id}_homework_time`] || ''}"
+                               onchange="saveAnswer('${member.id}_homework_time', this.value)"
+                               style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px;">
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                            How does homework time usually go?
+                        </label>
+                        <div class="question-help">Starting, staying focused, completing assignments</div>
+                        <div class="options-grid">
+                            ${['Gets it done independently', 'Needs some reminders to start and stay focused', 'Requires constant supervision', 'Major battles - very stressful for everyone'].map(opt => `
+                                <button class="option-btn ${state.answers[`${member.id}_homework_difficulty`] === opt ? 'selected' : ''}"
+                                        onclick="saveAnswer('${member.id}_homework_difficulty', '${opt}')">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                            What would help homework time go more smoothly?
+                        </label>
+                        <textarea class="text-input-large" id="${member.id}_homework_change"
+                                  placeholder="e.g., Starting without being asked, working without distractions, asking for help appropriately..."
+                                  onchange="saveAnswer('${member.id}_homework_change', this.value)">${state.answers[`${member.id}_homework_change`] || ''}</textarea>
+                    </div>
+                </div>`;
+            }
+
+            // === DINNER TIME ===
+            html += `<div class="question-card">
+                <div class="question-text" style="color: #6366f1; font-size: 16px; margin-bottom: 16px;">${renderIcon('coffee', 'icon-sm')} Dinner Time</div>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        What time is dinner on weekdays?
+                    </label>
+                    <input type="time" id="${member.id}_dinner_time" value="${state.answers[`${member.id}_dinner_time`] || ''}"
+                           onchange="saveAnswer('${member.id}_dinner_time', this.value)"
+                           style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px;">
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        How does dinner time go?
+                    </label>
+                    <div class="question-help">Coming to table, staying seated, eating, conversation</div>
+                    <div class="options-grid">
+                        ${['Pleasant family time - everyone participates', 'Mostly good with minor issues', 'Challenging - frequent disruptions or complaints', 'Very difficult - battles about food, behavior, or participation'].map(opt => `
+                            <button class="option-btn ${state.answers[`${member.id}_dinner_difficulty`] === opt ? 'selected' : ''}"
+                                    onclick="saveAnswer('${member.id}_dinner_difficulty', '${opt}')">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        What would improve dinner time?
+                    </label>
+                    <textarea class="text-input-large" id="${member.id}_dinner_change"
+                              placeholder="e.g., Coming when called, trying new foods, staying at table, pleasant conversation..."
+                              onchange="saveAnswer('${member.id}_dinner_change', this.value)">${state.answers[`${member.id}_dinner_change`] || ''}</textarea>
+                </div>
+            </div>`;
+
+            // === BEDTIME ===
+            html += `<div class="question-card">
+                <div class="question-text" style="color: #6366f1; font-size: 16px; margin-bottom: 16px;">${renderIcon('moon', 'icon-sm')} Bedtime Routine</div>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        What is ${member.name}'s bedtime on school nights?
+                    </label>
+                    <input type="time" id="${member.id}_bedtime" value="${state.answers[`${member.id}_bedtime`] || ''}"
+                           onchange="saveAnswer('${member.id}_bedtime', this.value)"
+                           style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px;">
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        How does the bedtime routine go?
+                    </label>
+                    <div class="question-help">Winding down, getting ready, staying in bed, falling asleep</div>
+                    <div class="options-grid">
+                        ${['Peaceful and predictable', 'Minor resistance but manageable', 'Frequent delays and arguing', 'Nightly battles - very stressful'].map(opt => `
+                            <button class="option-btn ${state.answers[`${member.id}_bedtime_difficulty`] === opt ? 'selected' : ''}"
+                                    onclick="saveAnswer('${member.id}_bedtime_difficulty', '${opt}')">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        What would you most like to change about bedtime?
+                    </label>
+                    <textarea class="text-input-large" id="${member.id}_bedtime_change"
+                              placeholder="e.g., Going to bed on time, brushing teeth without reminding, staying in bed..."
+                              onchange="saveAnswer('${member.id}_bedtime_change', this.value)">${state.answers[`${member.id}_bedtime_change`] || ''}</textarea>
+                </div>
+            </div>`;
+
+            // === ACTIVITIES / EXTRACURRICULARS ===
+            html += `<div class="question-card">
+                <div class="question-text" style="color: #6366f1; font-size: 16px; margin-bottom: 16px;">${renderIcon('activity', 'icon-sm')} Activities & Extracurriculars</div>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        Does ${member.name} have regular activities (sports, clubs, lessons)?
+                    </label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <button class="option-btn ${state.answers[`${member.id}_has_activities`] === 'yes' ? 'selected' : ''}"
+                                onclick="saveAnswer('${member.id}_has_activities', 'yes'); renderStep();"
+                                style="text-align: center;">
+                            Yes
+                        </button>
+                        <button class="option-btn ${state.answers[`${member.id}_has_activities`] === 'no' ? 'selected' : ''}"
+                                onclick="saveAnswer('${member.id}_has_activities', 'no'); renderStep();"
+                                style="text-align: center;">
+                            No
+                        </button>
+                    </div>
+                </div>
+
+                ${state.answers[`${member.id}_has_activities`] === 'yes' ? `
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                            Add their activities:
+                        </label>
+                        <div id="activities_${member.id}"></div>
+                        <button class="btn btn-secondary" style="padding: 8px 16px; margin-top: 8px;" onclick="addActivity('${member.id}')">
+                            + Add Activity
+                        </button>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                            How does getting ready for and attending activities go?
+                        </label>
+                        <div class="question-help">Getting equipment ready, leaving on time, participation</div>
+                        <div class="options-grid">
+                            ${['Great - excited, prepared, on time', 'Mostly good - occasional forgetfulness or resistance', 'Challenging - frequent battles about going or getting ready', 'Very difficult - major resistance or poor preparation'].map(opt => `
+                                <button class="option-btn ${state.answers[`${member.id}_activities_difficulty`] === opt ? 'selected' : ''}"
+                                        onclick="saveAnswer('${member.id}_activities_difficulty', '${opt}')">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                            What would help activities go more smoothly?
+                        </label>
+                        <textarea class="text-input-large" id="${member.id}_activities_change"
+                                  placeholder="e.g., Packing gear the night before, leaving on time, positive attitude..."
+                                  onchange="saveAnswer('${member.id}_activities_change', this.value)">${state.answers[`${member.id}_activities_change`] || ''}</textarea>
+                    </div>
+                ` : ''}
+            </div>`;
+
+            // === SCREEN TIME ===
+            html += `<div class="question-card">
+                <div class="question-text" style="color: #6366f1; font-size: 16px; margin-bottom: 16px;">${renderIcon('smartphone', 'icon-sm')} Screen Time & Technology</div>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        Does ${member.name} have screen time (TV, games, devices)?
+                    </label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <button class="option-btn ${state.answers[`${member.id}_screen_time_exists`] === 'yes' ? 'selected' : ''}"
+                                onclick="saveAnswer('${member.id}_screen_time_exists', 'yes'); renderStep();"
+                                style="text-align: center;">
+                            Yes
+                        </button>
+                        <button class="option-btn ${state.answers[`${member.id}_screen_time_exists`] === 'no' ? 'selected' : ''}"
+                                onclick="saveAnswer('${member.id}_screen_time_exists', 'no'); renderStep();"
+                                style="text-align: center;">
+                            No
+                        </button>
+                    </div>
+                </div>
+
+                ${state.answers[`${member.id}_screen_time_exists`] === 'yes' ? `
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                            How does screen time go?
+                        </label>
+                        <div class="question-help">Following limits, turning off when asked, appropriate content</div>
+                        <div class="options-grid">
+                            ${['Respects limits and turns off when asked', 'Some reminders needed to follow rules', 'Frequent battles about limits or turning off', 'Major conflicts - very difficult to manage'].map(opt => `
+                                <button class="option-btn ${state.answers[`${member.id}_screen_time_difficulty`] === opt ? 'selected' : ''}"
+                                        onclick="saveAnswer('${member.id}_screen_time_difficulty', '${opt}')">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                            What would help screen time go better?
+                        </label>
+                        <textarea class="text-input-large" id="${member.id}_screen_time_change"
+                                  placeholder="e.g., Following time limits, turning off without arguing, earning screen time..."
+                                  onchange="saveAnswer('${member.id}_screen_time_change', this.value)">${state.answers[`${member.id}_screen_time_change`] || ''}</textarea>
+                    </div>
+                ` : ''}
+            </div>`;
+
+            // === BATH/SHOWER ===
+            html += `<div class="question-card">
+                <div class="question-text" style="color: #6366f1; font-size: 16px; margin-bottom: 16px;">${renderIcon('droplet', 'icon-sm')} Bath/Shower Routine</div>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        How often does ${member.name} bathe/shower?
+                    </label>
+                    <div class="options-grid">
+                        ${['Daily', 'Every other day', '2-3 times per week', 'As needed/varies'].map(opt => `
+                            <button class="option-btn ${state.answers[`${member.id}_bath_frequency`] === opt ? 'selected' : ''}"
+                                    onclick="saveAnswer('${member.id}_bath_frequency', '${opt}')">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        How does bath/shower time go?
+                    </label>
+                    <div class="question-help">Getting in, washing properly, getting out on time</div>
+                    <div class="options-grid">
+                        ${['No issues - handles it independently', 'Some reminders needed', 'Frequent battles - getting in or out', 'Major struggles - very resistant or prolonged'].map(opt => `
+                            <button class="option-btn ${state.answers[`${member.id}_bath_difficulty`] === opt ? 'selected' : ''}"
+                                    onclick="saveAnswer('${member.id}_bath_difficulty', '${opt}')">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        What would help bath/shower time go better?
+                    </label>
+                    <textarea class="text-input-large" id="${member.id}_bath_change"
+                              placeholder="e.g., Getting in without arguing, washing hair properly, getting out on time..."
+                              onchange="saveAnswer('${member.id}_bath_change', this.value)">${state.answers[`${member.id}_bath_change`] || ''}</textarea>
+                </div>
+            </div>`;
+
+            // === WEEKEND ROUTINE ===
+            html += `<div class="question-card">
+                <div class="question-text" style="color: #f59e0b; font-size: 16px; margin-bottom: 16px;">${renderIcon('calendar', 'icon-sm')} Weekend Routine</div>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        What time does ${member.name} typically wake up on weekends?
+                    </label>
+                    <input type="time" id="${member.id}_weekend_wake" value="${state.answers[`${member.id}_weekend_wake`] || ''}"
+                           onchange="saveAnswer('${member.id}_weekend_wake', this.value)"
+                           style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px;">
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        How structured are your weekends?
+                    </label>
+                    <div class="options-grid">
+                        ${['Very structured - similar schedule to weekdays', 'Some structure - key routines but more flexible', 'Mostly flexible - go with the flow', 'Completely unstructured - no routine'].map(opt => `
+                            <button class="option-btn ${state.answers[`${member.id}_weekend_structure`] === opt ? 'selected' : ''}"
+                                    onclick="saveAnswer('${member.id}_weekend_structure', '${opt}')">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        What time is bedtime on weekend nights?
+                    </label>
+                    <input type="time" id="${member.id}_weekend_bedtime" value="${state.answers[`${member.id}_weekend_bedtime`] || ''}"
+                           onchange="saveAnswer('${member.id}_weekend_bedtime', this.value)"
+                           style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px;">
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        How do weekends typically go?
+                    </label>
+                    <div class="question-help">Overall family harmony, cooperation, behavior</div>
+                    <div class="options-grid">
+                        ${['Great - enjoyable family time', 'Mostly good with some challenges', 'Difficult - frequent conflicts', 'Very challenging - exhausting for everyone'].map(opt => `
+                            <button class="option-btn ${state.answers[`${member.id}_weekend_difficulty`] === opt ? 'selected' : ''}"
+                                    onclick="saveAnswer('${member.id}_weekend_difficulty', '${opt}')">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">
+                        What would improve weekends?
+                    </label>
+                    <textarea class="text-input-large" id="${member.id}_weekend_change"
+                              placeholder="e.g., Better cooperation with chores, less sibling conflict, following house rules..."
+                              onchange="saveAnswer('${member.id}_weekend_change', this.value)">${state.answers[`${member.id}_weekend_change`] || ''}</textarea>
+                </div>
+            </div>`;
+
+            // Render activities if they exist
+            if (state.answers[`${member.id}_has_activities`] === 'yes') {
+                setTimeout(() => renderActivities(member.id), 0);
+            }
+
+            return html;
+        }
+
+        // ============================================
+        // STEP 5: MOTIVATION
+        // ============================================
+        function renderMotivationStep() {
+            return `
+                <div class="section-title">Understanding Motivation</div>
+                <p style="color: #6b7280; margin-bottom: 20px;">These questions help us understand what motivates each child.</p>
+                
+                <div class="framework-annotation">
+                    <div class="title">📚 Self-Determination Theory</div>
+                    <div class="content">
+                        <strong>Source:</strong> Deci & Ryan (1985), Growth Mindset (Dweck, 2006)<br>
+                        <strong>Framework:</strong> These questions assess the three core needs for intrinsic motivation: Autonomy (choice and self-direction), Competence (mastery and success), and Relatedness (connection and belonging). Understanding these helps create reward systems that build internal rather than external motivation.
+                    </div>
+                </div>
+
+                ${state.members.filter(m => m.role === 'child').map(member => renderMotivationQuestions(member)).join('')}
+            `;
+        }
+
+        function renderMotivationQuestions(member) {
+            const questions = [
+                {
+                    id: 'autonomy',
+                    text: `How does ${member.name} respond to choices?`,
+                    help: 'Autonomy - the need for self-direction',
+                    options: [
+                        'Loves making own decisions',
+                        'Likes some choice but needs guidance',
+                        'Prefers clear instructions',
+                        'Gets overwhelmed by too many choices'
+                    ]
+                },
+                {
+                    id: 'competence',
+                    text: `What motivates ${member.name} to try hard things?`,
+                    help: 'Competence - the drive for mastery',
+                    options: [
+                        'Enjoys challenge for its own sake',
+                        'Wants to get better at skills',
+                        'Motivated by praise and recognition',
+                        'Motivated by rewards or avoiding consequences'
+                    ]
+                },
+                {
+                    id: 'relatedness',
+                    text: `What matters most to ${member.name}?`,
+                    help: 'Relatedness - connection to others',
+                    options: [
+                        'Making parents/family proud',
+                        'Being part of the team/family',
+                        'Individual achievement',
+                        'Fairness and following rules'
+                    ]
+                }
+            ];
+
+            return questions.map(q => `
+                <div class="question-card">
+                    <div class="member-badge">${member.name} (Age ${member.age})</div>
+                    <div class="question-text">${q.text}</div>
+                    <div class="question-help">${q.help}</div>
+                    <div class="options-grid">
+                        ${q.options.map((opt, idx) => `
+                            <button class="option-btn ${state.answers[`${member.id}_${q.id}`] === opt ? 'selected' : ''}"
+                                    onclick="saveAnswer('${member.id}_${q.id}', '${opt}')">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ============================================
+        // STEP 6: RESPONSIBILITIES
+        // ============================================
+        function renderResponsibilitiesStep() {
+            return `
+                <div class="section-title">Age-Appropriate Responsibilities</div>
+                <p style="color: #6b7280; margin-bottom: 20px;">We'll recommend responsibilities based on developmental stage and executive function capacity.</p>
+                
+                <div class="framework-annotation">
+                    <div class="title">📚 Responsibility Development Framework</div>
+                    <div class="content">
+                        <strong>Sources:</strong> Montessori Practical Life Skills, AAP Developmental Milestones, Executive Function Development (Adele Diamond, 2013)<br>
+                        <strong>Framework:</strong> Responsibilities build competence and self-efficacy when matched to developmental capacity. We use executive function development stages to determine:<br>
+                        • <strong>Number:</strong> 3-4 for young children, 5-7 for middle childhood, 7-10 for teens<br>
+                        • <strong>Complexity:</strong> Single-step (ages 3-7), multi-step (ages 8-11), planning required (ages 12+)<br>
+                        • <strong>Independence:</strong> High support → Reminders → Full independence
+                    </div>
+                </div>
+
+                ${state.members.filter(m => m.role === 'child').map(member => renderResponsibilityQuestions(member)).join('')}
+            `;
+        }
+
+        function renderResponsibilityQuestions(member) {
+            const questions = [
+                {
+                    id: 'current_chores',
+                    text: `What responsibilities does ${member.name} currently have?`,
+                    help: 'This helps us understand their current capacity',
+                    options: [
+                        'None or very few',
+                        'A few simple tasks (making bed, putting dishes away)',
+                        'Several routine tasks they do regularly',
+                        'Many responsibilities, manages them well'
+                    ]
+                },
+                {
+                    id: 'completion',
+                    text: `How does ${member.name} handle current responsibilities?`,
+                    help: 'Executive function capacity indicator',
+                    options: [
+                        'Completes independently without reminders',
+                        'Completes with occasional reminders',
+                        'Needs frequent reminders and supervision',
+                        'Struggles even with heavy support'
+                    ]
+                },
+                {
+                    id: 'new_responsibilities',
+                    text: `Is ${member.name} ready for more responsibilities?`,
+                    help: 'Competence building opportunity',
+                    options: [
+                        'Yes, ready for more complex tasks',
+                        'Yes, ready for more tasks at current level',
+                        'Not yet, still building current skills',
+                        'Need to reduce current load first'
+                    ]
+                }
+            ];
+
+            return `
+                <div style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <div class="member-badge">${member.name} (Age ${member.age})</div>
+                    ${questions.map(q => `
+                        <div class="question-card">
+                            <div class="question-text">${q.text}</div>
+                            <div class="question-help">${q.help}</div>
+                            <div class="options-grid">
+                                ${q.options.map((opt, idx) => `
+                                    <button class="option-btn ${state.answers[`${member.id}_${q.id}`] === opt ? 'selected' : ''}"
+                                            onclick="saveAnswer('${member.id}_${q.id}', '${opt}')">
+                                        ${opt}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // ============================================
+        // STEP 7: CHARACTER GOALS
+        // ============================================
+        function renderCharacterStep() {
+            return `
+                <div class="section-title">Character Development Goals</div>
+                <p style="color: #6b7280; margin-bottom: 20px;">Based on your family values and each child's developmental stage, we'll create personalized character goals.</p>
+                
+                <div class="framework-annotation">
+                    <div class="title">📚 Social-Emotional Learning (SEL) Framework</div>
+                    <div class="content">
+                        <strong>Sources:</strong> CASEL 5 Core Competencies, VIA Character Strengths (Peterson & Seligman), Search Institute 40 Developmental Assets, Emotional Regulation Development (Eisenberg & Spinrad)<br>
+                        <strong>Framework:</strong> Character goals are organized into age-appropriate categories based on SEL competencies:<br>
+                        • <strong>Ages 3-7:</strong> Emotional Regulation (60%), Daily Cooperation (40%)<br>
+                        • <strong>Ages 8-11:</strong> Emotional Regulation (35%), Responsibility & Independence (35%), Social Skills (30%)<br>
+                        • <strong>Ages 12-17:</strong> Self-Management (25%), Time Management (25%), Communication (25%), Personal Growth (25%)<br>
+                        Goals are weighted and linked to your family values.
+                    </div>
+                </div>
+
+                ${state.members.filter(m => m.role === 'child').map(member => renderCharacterQuestions(member)).join('')}
+            `;
+        }
+
+        function renderCharacterQuestions(member) {
+            const questions = [
+                {
+                    id: 'emotional_regulation',
+                    text: `How does ${member.name} handle frustration or disappointment?`,
+                    help: 'Emotional regulation - core SEL competency',
+                    options: [
+                        'Handles calmly, can self-regulate',
+                        'Usually manages with some support',
+                        'Often struggles, needs help regulating',
+                        'Frequently has strong reactions'
+                    ]
+                },
+                {
+                    id: 'social_awareness',
+                    text: `How does ${member.name} show awareness of others\' feelings?`,
+                    help: 'Social awareness and empathy',
+                    options: [
+                        'Naturally empathetic and considerate',
+                        'Shows empathy when prompted',
+                        'Still developing awareness',
+                        'Struggles to see others\' perspectives'
+                    ]
+                },
+                {
+                    id: 'self_management',
+                    text: `How does ${member.name} manage impulses and follow through?`,
+                    help: 'Self-management and responsible decision-making',
+                    options: [
+                        'Strong impulse control and follow-through',
+                        'Usually manages well',
+                        'Needs reminders to stay on track',
+                        'Very impulsive, struggles with follow-through'
+                    ]
+                }
+            ];
+
+            return `
+                <div style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <div class="member-badge">${member.name} (Age ${member.age})</div>
+                    ${questions.map(q => `
+                        <div class="question-card">
+                            <div class="question-text">${q.text}</div>
+                            <div class="question-help">${q.help}</div>
+                            <div class="options-grid">
+                                ${q.options.map((opt, idx) => `
+                                    <button class="option-btn ${state.answers[`${member.id}_${q.id}`] === opt ? 'selected' : ''}"
+                                            onclick="saveAnswer('${member.id}_${q.id}', '${opt}')">
+                                        ${opt}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // ============================================
+        // STEP 8: REWARDS
+        // ============================================
+        function renderRewardsStep() {
+            return `
+                <div class="section-title">Personalized Rewards</div>
+                <p style="color: #6b7280; margin-bottom: 20px;">Based on each child's motivations, age, and your family values, we'll recommend rewards that build intrinsic motivation.</p>
+                
+                <div class="framework-annotation">
+                    <div class="title">📚 Intrinsic Motivation & Reward Framework</div>
+                    <div class="content">
+                        <strong>Sources:</strong> Self-Determination Theory (Deci & Ryan, 1985), Growth Mindset (Dweck, 2006), Operant Conditioning Balance (Skinner, 1953)<br>
+                        <strong>Framework:</strong> Effective rewards satisfy the three psychological needs (autonomy, competence, relatedness) identified in motivation assessment. We balance tangible rewards with privileges and experiences to avoid undermining intrinsic motivation.<br>
+                        <strong>Key Principles:</strong>
+                        <ul style="margin-top: 8px; margin-left: 20px;">
+                            <li><strong>Autonomy-focused:</strong> Rewards that offer choice and control</li>
+                            <li><strong>Competence-focused:</strong> Rewards that recognize mastery and growth</li>
+                            <li><strong>Relatedness-focused:</strong> Rewards involving family connection</li>
+                            <li><strong>Age-appropriate:</strong> Younger = tangible, Older = privileges/experiences</li>
+                            <li><strong>Values-aligned:</strong> Rewards reflect chosen family values</li>
+                        </ul>
+                    </div>
+                </div>
+
+                ${state.members.filter(m => m.role === 'child').map(member => renderRewardsPreview(member)).join('')}
+
+                <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px; margin-top: 20px;">
+                    <p style="font-size: 14px; color: #1e40af; margin: 0;">
+                        💡 <strong>Note:</strong> These are recommended rewards based on research. You can customize the final list after the wizard completes. The goal is to create a reward economy that builds intrinsic motivation, not dependence on external rewards.
+                    </p>
+                </div>
+            `;
+        }
+
+        function renderRewardsPreview(member) {
+            const rewards = generateRewards(member);
+            
+            return `
+                <div style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <div class="member-badge">${member.name} (Age ${member.age})</div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 12px;">
+                        ${rewards.slice(0, 6).map(reward => `
+                            <div style="background: white; border: 2px solid #e5e7eb; border-radius: 8px; padding: 12px;">
+                                ${renderIcon('gift', 'icon-md')}
+                                <div style="font-weight: 600; font-size: 14px; color: #1f2937; margin-bottom: 4px;">${reward.name}</div>
+                                <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">${reward.points} points</div>
+                                <div style="font-size: 11px; color: #9ca3af;">${reward.motivation}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="margin-top: 12px; font-size: 13px; color: #6b7280;">
+                        ...and ${rewards.length - 6} more rewards (${rewards.length} total)
+                    </div>
+                    
+                    <div class="logic-box" style="margin-top: 12px;">
+                        <div class="title">💡 Personalization Logic</div>
+                        ${rewards[0].logic}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // GENERATION LOGIC
+        // ============================================
+        function generateResponsibilities(member) {
+            const age = member.age;
+            const currentChores = state.answers[`${member.id}_current_chores`];
+            const completion = state.answers[`${member.id}_completion`];
+            const readiness = state.answers[`${member.id}_new_responsibilities`];
+
+            // Determine number and complexity based on age and capacity
+            let count, complexity, support;
+
+            if (age <= 7) {
+                count = 3;
+                complexity = 'single-step';
+                support = 'high';
+            } else if (age <= 11) {
+                count = 5;
+                complexity = 'multi-step';
+                support = 'moderate';
+            } else {
+                count = 7;
+                complexity = 'planning-required';
+                support = 'minimal';
+            }
+
+            // Adjust based on current capacity
+            if (completion?.includes('Struggles')) {
+                count = Math.max(2, count - 2);
+                support = 'high';
+            } else if (completion?.includes('frequent reminders')) {
+                count = Math.max(3, count - 1);
+            } else if (completion?.includes('independently')) {
+                count = Math.min(10, count + 1);
+            }
+
+            const responsibilities = generateResponsibilitiesList(age, count, complexity);
+
+            // ===================================
+            // SERVICE-BASED RESPONSIBILITIES (Added based on family values)
+            // ===================================
+            if (state.values.includes('service') || state.values.includes('kindness')) {
+                if (age <= 7) {
+                    responsibilities.push("Help with family kindness project");
+                } else if (age <= 11) {
+                    responsibilities.push("Participate in family service activity");
+                } else {
+                    responsibilities.push("Complete community service project (monthly)");
+                }
+            }
+
+            return {
+                count,
+                complexity,
+                support,
+                responsibilities,
+                logic: `Based on age ${age}, current capacity (${completion}), and readiness (${readiness}). Using ${FRAMEWORKS.responsibilities.name}.`
+            };
+        }
+
+        function generateResponsibilitiesList(age, count, complexity) {
+            const responsibilities = {
+                young: [
+                    'Make bed each morning',
+                    'Put dirty clothes in hamper',
+                    'Clear own dishes after meals',
+                    'Put away toys after playing',
+                    'Feed pet with supervision',
+                    'Water plants with help'
+                ],
+                middle: [
+                    'Make bed and tidy room daily',
+                    'Set and clear table for meals',
+                    'Take out trash',
+                    'Load/unload dishwasher',
+                    'Care for pets independently',
+                    'Fold and put away own laundry',
+                    'Pack own lunch with guidance'
+                ],
+                teen: [
+                    'Manage personal space completely',
+                    'Do own laundry start to finish',
+                    'Prepare simple meals',
+                    'Manage homework and schedule',
+                    'Care for siblings occasionally',
+                    'Contribute to family meal planning',
+                    'Help with yard work or home maintenance',
+                    'Manage own morning routine',
+                    'Clean bathroom weekly'
+                ]
+            };
+
+            let pool;
+            if (age <= 7) pool = responsibilities.young;
+            else if (age <= 11) pool = responsibilities.middle;
+            else pool = responsibilities.teen;
+
+            return pool.slice(0, count);
+        }
+
+        function generateCharacterGoals(member) {
+            const age = member.age;
+            const emotionalReg = state.answers[`${member.id}_emotional_regulation`];
+            const socialAware = state.answers[`${member.id}_social_awareness`];
+            const selfManage = state.answers[`${member.id}_self_management`];
+
+            let categories = [];
+
+            if (age <= 7) {
+                categories = [
+                    {
+                        id: 'emotional_regulation',
+                        category: 'Emotional Regulation',
+                        weight: 0.6,
+                        items: [
+                            'Pause before reacting when upset',
+                            'Use words to express feelings',
+                            'Ask for help when overwhelmed'
+                        ]
+                    },
+                    {
+                        id: 'daily_cooperation',
+                        category: 'Daily Cooperation',
+                        weight: 0.4,
+                        items: [
+                            'Follow directions the first time',
+                            'Share toys and take turns'
+                        ]
+                    }
+                ];
+            } else if (age <= 11) {
+                categories = [
+                    {
+                        id: 'emotional_regulation',
+                        category: 'Emotional Regulation',
+                        weight: 0.35,
+                        items: [
+                            'Manage disappointment constructively',
+                            'Take breaks when frustrated',
+                            'Apologize when wrong'
+                        ]
+                    },
+                    {
+                        id: 'responsibility_independence',
+                        category: 'Responsibility & Independence',
+                        weight: 0.35,
+                        items: [
+                            'Complete tasks without reminders',
+                            'Manage own belongings',
+                            'Plan ahead for activities'
+                        ]
+                    },
+                    {
+                        id: 'social_skills',
+                        category: 'Social Skills',
+                        weight: 0.3,
+                        items: [
+                            'Show empathy to family members',
+                            'Resolve conflicts peacefully'
+                        ]
+                    }
+                ];
+            } else {
+                categories = [
+                    {
+                        id: 'self_management',
+                        category: 'Self-Management',
+                        weight: 0.25,
+                        items: [
+                            'Regulate emotions independently',
+                            'Make responsible choices',
+                            'Manage stress constructively'
+                        ]
+                    },
+                    {
+                        id: 'time_management',
+                        category: 'Time Management',
+                        weight: 0.25,
+                        items: [
+                            'Plan and prioritize tasks',
+                            'Meet deadlines consistently',
+                            'Balance responsibilities'
+                        ]
+                    },
+                    {
+                        id: 'communication',
+                        category: 'Communication',
+                        weight: 0.25,
+                        items: [
+                            'Express needs clearly',
+                            'Listen actively to others',
+                            'Handle disagreements maturely'
+                        ]
+                    },
+                    {
+                        id: 'personal_growth',
+                        category: 'Personal Growth',
+                        weight: 0.25,
+                        items: [
+                            'Set personal goals',
+                            'Learn from mistakes'
+                        ]
+                    }
+                ];
+            }
+
+            // Link to family values
+            const valueNames = state.values.map(v => FAMILY_VALUES.find(fv => fv.id === v)?.name).join(', ');
+
+            return {
+                categories,
+                logic: `Based on age ${age} developmental stage, interview responses, and family values (${valueNames}). Using ${FRAMEWORKS.character.name}.`
+            };
+        }
+
+        function generateRewards(member) {
+            const age = member.age;
+            const autonomy = state.answers[`${member.id}_autonomy`];
+            const competence = state.answers[`${member.id}_competence`];
+            const relatedness = state.answers[`${member.id}_relatedness`];
+            
+            // Determine motivation profile
+            let motivationProfile = 'balanced';
+            if (autonomy?.includes('Loves making own decisions')) motivationProfile = 'autonomy';
+            else if (competence?.includes('Enjoys challenge') || competence?.includes('Wants to get better')) motivationProfile = 'competence';
+            else if (relatedness?.includes('Making parents') || relatedness?.includes('Being part of')) motivationProfile = 'relatedness';
+
+            const rewards = [];
+
+            // ===================================
+            // AGE-BASED REWARD CATEGORIES
+            // ===================================
+            
+            // Determine point values based on age
+            const pointRange = age <= 7 ? { small: 50, medium: 100, large: 200 } :
+                              age <= 11 ? { small: 75, medium: 150, large: 300 } :
+                              { small: 100, medium: 200, large: 400 };
+
+            // ===================================
+            // AUTONOMY REWARDS (Choice & Control)
+            // ===================================
+            if (motivationProfile === 'autonomy' || motivationProfile === 'balanced') {
+                if (age <= 7) {
+                    rewards.push(
+                        { name: 'Pick dinner menu', points: pointRange.small, emoji: '🍽️', category: 'privileges', motivation: 'Autonomy: Choice' },
+                        { name: 'Choose family game night', points: pointRange.small, emoji: '🎲', category: 'experiences', motivation: 'Autonomy: Choice' },
+                        { name: 'Stay up 15 minutes late', points: pointRange.medium, emoji: '🌙', category: 'privileges', motivation: 'Autonomy: Control' },
+                        { name: 'Pick movie for family', points: pointRange.medium, emoji: '🎬', category: 'experiences', motivation: 'Autonomy: Choice' }
+                    );
+                } else if (age <= 11) {
+                    rewards.push(
+                        { name: 'Choose weekend activity', points: pointRange.small, emoji: '🎯', category: 'privileges', motivation: 'Autonomy: Choice' },
+                        { name: 'Plan own Saturday', points: pointRange.medium, emoji: '📅', category: 'privileges', motivation: 'Autonomy: Control' },
+                        { name: 'Stay up 30 minutes late', points: pointRange.medium, emoji: '🌙', category: 'privileges', motivation: 'Autonomy: Control' },
+                        { name: 'Device time (30 min extra)', points: pointRange.small, emoji: '📱', category: 'privileges', motivation: 'Autonomy: Control' }
+                    );
+                } else {
+                    rewards.push(
+                        { name: 'Weekend curfew extension', points: pointRange.medium, emoji: '🕐', category: 'privileges', motivation: 'Autonomy: Control' },
+                        { name: 'Plan own evening', points: pointRange.small, emoji: '🎯', category: 'privileges', motivation: 'Autonomy: Choice' },
+                        { name: 'Choose family outing', points: pointRange.medium, emoji: '🚗', category: 'experiences', motivation: 'Autonomy: Choice' },
+                        { name: 'Device autonomy evening', points: pointRange.medium, emoji: '📱', category: 'privileges', motivation: 'Autonomy: Control' }
+                    );
+                }
+            }
+
+            // ===================================
+            // COMPETENCE REWARDS (Mastery & Growth)
+            // ===================================
+            if (motivationProfile === 'competence' || motivationProfile === 'balanced') {
+                if (age <= 7) {
+                    rewards.push(
+                        { name: 'Art supplies', points: pointRange.medium, emoji: '🎨', category: 'tangible', motivation: 'Competence: Skill-building' },
+                        { name: 'New book', points: pointRange.small, emoji: '📚', category: 'tangible', motivation: 'Competence: Learning' },
+                        { name: 'Help cook dinner', points: pointRange.small, emoji: '👨‍🍳', category: 'experiences', motivation: 'Competence: Mastery' },
+                        { name: 'Build project with parent', points: pointRange.large, emoji: '🔨', category: 'experiences', motivation: 'Competence: Challenge' }
+                    );
+                } else if (age <= 11) {
+                    rewards.push(
+                        { name: 'Craft/hobby supplies', points: pointRange.medium, emoji: '🧰', category: 'tangible', motivation: 'Competence: Skill-building' },
+                        { name: 'Book of choice', points: pointRange.small, emoji: '📖', category: 'tangible', motivation: 'Competence: Learning' },
+                        { name: 'Cooking lesson', points: pointRange.medium, emoji: '👨‍🍳', category: 'experiences', motivation: 'Competence: Mastery' },
+                        { name: 'Sports equipment', points: pointRange.large, emoji: '⚽', category: 'tangible', motivation: 'Competence: Challenge' },
+                        { name: 'Music/lesson upgrade', points: pointRange.large, emoji: '🎵', category: 'experiences', motivation: 'Competence: Mastery' }
+                    );
+                } else {
+                    rewards.push(
+                        { name: 'Skill course/class', points: pointRange.large, emoji: '🎓', category: 'experiences', motivation: 'Competence: Learning' },
+                        { name: 'Tech/hobby gear', points: pointRange.large, emoji: '🎮', category: 'tangible', motivation: 'Competence: Skill-building' },
+                        { name: 'Workshop/seminar', points: pointRange.large, emoji: '🔧', category: 'experiences', motivation: 'Competence: Challenge' },
+                        { name: 'Book series', points: pointRange.medium, emoji: '📚', category: 'tangible', motivation: 'Competence: Learning' }
+                    );
+                }
+            }
+
+            // ===================================
+            // RELATEDNESS REWARDS (Connection & Belonging)
+            // ===================================
+            if (motivationProfile === 'relatedness' || motivationProfile === 'balanced') {
+                if (age <= 7) {
+                    rewards.push(
+                        { name: 'Special time with parent', points: pointRange.medium, emoji: '💝', category: 'experiences', motivation: 'Relatedness: Connection' },
+                        { name: 'Ice cream outing', points: pointRange.small, emoji: '🍦', category: 'experiences', motivation: 'Relatedness: Family time' },
+                        { name: 'Park trip with family', points: pointRange.medium, emoji: '🏞️', category: 'experiences', motivation: 'Relatedness: Connection' },
+                        { name: 'Sleepover with sibling', points: pointRange.medium, emoji: '🏕️', category: 'experiences', motivation: 'Relatedness: Belonging' }
+                    );
+                } else if (age <= 11) {
+                    rewards.push(
+                        { name: 'One-on-one time with parent', points: pointRange.medium, emoji: '☕', category: 'experiences', motivation: 'Relatedness: Connection' },
+                        { name: 'Friend sleepover', points: pointRange.large, emoji: '🏠', category: 'experiences', motivation: 'Relatedness: Belonging' },
+                        { name: 'Family game tournament', points: pointRange.medium, emoji: '🎮', category: 'experiences', motivation: 'Relatedness: Family time' },
+                        { name: 'Restaurant choice outing', points: pointRange.large, emoji: '🍕', category: 'experiences', motivation: 'Relatedness: Connection' }
+                    );
+                } else {
+                    rewards.push(
+                        { name: 'Coffee date with parent', points: pointRange.medium, emoji: '☕', category: 'experiences', motivation: 'Relatedness: Connection' },
+                        { name: 'Friend hangout (parent-approved)', points: pointRange.large, emoji: '🎉', category: 'experiences', motivation: 'Relatedness: Belonging' },
+                        { name: 'Family outing of choice', points: pointRange.large, emoji: '🎭', category: 'experiences', motivation: 'Relatedness: Connection' },
+                        { name: 'Host friends for dinner', points: pointRange.large, emoji: '🍽️', category: 'experiences', motivation: 'Relatedness: Belonging' }
+                    );
+                }
+            }
+
+            // ===================================
+            // VALUES-ALIGNED REWARDS
+            // ===================================
+            state.values.forEach(valueId => {
+                const value = FAMILY_VALUES.find(v => v.id === valueId);
+                if (!value) return;
+
+                switch(valueId) {
+                    case 'kindness':
+                        // Service items moved to responsibilities
+                        break;
+                    case 'creativity':
+                        rewards.push(
+                            { name: 'Art museum trip', points: pointRange.large, emoji: '🎨', category: 'experiences', motivation: `Value: ${value.name}` },
+                            { name: 'Creative supplies', points: pointRange.medium, emoji: '✏️', category: 'tangible', motivation: `Value: ${value.name}` }
+                        );
+                        break;
+                    case 'learning':
+                        rewards.push(
+                            { name: 'Educational outing', points: pointRange.large, emoji: '🏛️', category: 'experiences', motivation: `Value: ${value.name}` },
+                            { name: 'Magazine subscription', points: pointRange.medium, emoji: '📰', category: 'tangible', motivation: `Value: ${value.name}` }
+                        );
+                        break;
+                    case 'service':
+                        // Service items moved to responsibilities
+                        break;
+                    case 'faith':
+                        // Service items moved to responsibilities
+                        break;
+                    case 'perseverance':
+                        rewards.push(
+                            { name: 'Challenge activity', points: pointRange.large, emoji: '🏔️', category: 'experiences', motivation: `Value: ${value.name}` }
+                        );
+                        break;
+                    case 'gratitude':
+                        // Service items moved to responsibilities
+                        break;
+                }
+            });
+
+            // ===================================
+            // UNIVERSAL REWARDS (All ages enjoy)
+            // ===================================
+            if (age <= 11) {
+                rewards.push(
+                    { name: 'Small toy', points: pointRange.small, emoji: '🧸', category: 'tangible', motivation: 'Universal: Tangible' },
+                    { name: 'Movie night', points: pointRange.medium, emoji: '🎬', category: 'experiences', motivation: 'Universal: Entertainment' },
+                    { name: 'Baking together', points: pointRange.medium, emoji: '🧁', category: 'experiences', motivation: 'Universal: Family activity' }
+                );
+            } else {
+                rewards.push(
+                    { name: 'Gift card', points: pointRange.large, emoji: '💳', category: 'tangible', motivation: 'Universal: Tangible' },
+                    { name: 'Concert/event tickets', points: pointRange.large * 2, emoji: '🎟️', category: 'experiences', motivation: 'Universal: Entertainment' }
+                );
+            }
+
+
+            
+            // Deduplicate by name
+            const uniqueRewards = [];
+            const seenNames = new Set();
+            rewards.forEach(r => {
+                if (!seenNames.has(r.name)) {
+                    seenNames.add(r.name);
+                    uniqueRewards.push(r);
+                }
+            });
+
+            const valueNames = state.values.map(v => FAMILY_VALUES.find(fv => fv.id === v)?.name).join(', ');
+            const logic = `Personalized for age ${age}, motivation profile (${motivationProfile}), and family values (${valueNames}). 
+            Balances tangible rewards (${age <= 7 ? '40%' : age <= 11 ? '30%' : '20%'}) with experiences and privileges to build intrinsic motivation. 
+            Using Self-Determination Theory (Deci & Ryan, 1985) - rewards satisfy autonomy, competence, and relatedness needs.`;
+
+            // Add logic to first reward
+            if (uniqueRewards.length > 0) {
+                uniqueRewards[0].logic = logic;
+            }
+
+            return uniqueRewards;
+        }
+
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
+        function saveAnswer(key, value) {
+            state.answers[key] = value;
+            renderStep();
+        }
+
+        function addActivity(memberId) {
+            if (!state.activities[memberId]) {
+                state.activities[memberId] = [];
+            }
+            state.activities[memberId].push({ name: '', day: 'Monday', time: '' });
+            renderActivities(memberId);
+        }
+
+        function removeActivity(memberId, index) {
+            state.activities[memberId].splice(index, 1);
+            renderActivities(memberId);
+        }
+
+        function updateActivity(memberId, index, field, value) {
+            if (state.activities[memberId] && state.activities[memberId][index]) {
+                state.activities[memberId][index][field] = value;
+            }
+        }
+
+        function renderActivities(memberId) {
+            const container = document.getElementById(`activities_${memberId}`);
+            if (!container) return;
+
+            const activities = state.activities[memberId] || [];
+            
+            container.innerHTML = activities.map((activity, idx) => `
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 8px; margin-bottom: 8px; align-items: end;">
+                    <input type="text" placeholder="Activity name (e.g., Soccer practice)" value="${activity.name}"
+                           onchange="updateActivity('${memberId}', ${idx}, 'name', this.value)"
+                           style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 13px;">
+                    <select onchange="updateActivity('${memberId}', ${idx}, 'day', this.value)"
+                            style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 13px; background: white;">
+                        <option ${activity.day === 'Monday' ? 'selected' : ''}>Monday</option>
+                        <option ${activity.day === 'Tuesday' ? 'selected' : ''}>Tuesday</option>
+                        <option ${activity.day === 'Wednesday' ? 'selected' : ''}>Wednesday</option>
+                        <option ${activity.day === 'Thursday' ? 'selected' : ''}>Thursday</option>
+                        <option ${activity.day === 'Friday' ? 'selected' : ''}>Friday</option>
+                        <option ${activity.day === 'Saturday' ? 'selected' : ''}>Saturday</option>
+                        <option ${activity.day === 'Sunday' ? 'selected' : ''}>Sunday</option>
+                    </select>
+                    <input type="time" value="${activity.time}"
+                           onchange="updateActivity('${memberId}', ${idx}, 'time', this.value)"
+                           style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 13px;">
+                    <button onclick="removeActivity('${memberId}', ${idx})" 
+                            style="padding: 8px 12px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        ✕
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function goNext() {
+            // Validation for each step
+            const stepName = STEPS[state.currentStep].name;
+            
+            if (stepName === 'family_name') {
+                const name = document.getElementById('familyName').value.trim();
+                if (!name) {
+                    alert('Please enter your family name');
+                    return;
+                }
+                state.familyName = name;
+            } else if (stepName === 'members') {
+                if (state.members.length === 0) {
+                    alert('Please add at least one family member');
+                    return;
+                }
+            } else if (stepName === 'values') {
+                if (state.values.length < 3) {
+                    alert('Please select at least 3 family values');
+                    return;
+                }
+            }
+
+            // If this is the last step, generate output
+            if (state.currentStep === STEPS.length - 1) {
+                generateOutput();
+                return;
+            }
+
+            state.currentStep++;
+            renderStep();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function goBack() {
+            state.currentStep--;
+            renderStep();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function generateOutput() {
+            let html = `<h2 style="margin-bottom: 24px;">📋 Personalized Family Plan</h2>`;
+            
+            html += `<div class="output-section">
+                <h3>👨‍👩‍👧‍👦 Family: ${state.familyName}</h3>
+                <p><strong>Family Values:</strong> ${state.values.map(v => FAMILY_VALUES.find(fv => fv.id === v)?.name).join(', ')}</p>
+            </div>`;
+
+            state.members.filter(m => m.role === 'child').forEach(member => {
+                html += `<div class="output-section">
+                    <h3>${member.name} (Age ${member.age})</h3>`;
+
+                // === DAILY ROUTINE ===
+                const routine = generateRoutine(member);
+                
+                // Weekday Routine
+                if (routine.weekday.length > 0) {
+                    html += `<h4 style="margin-top: 16px; color: #8b5cf6;">📅 Weekday Routine (${routine.weekday.length} time blocks)</h4>`;
+                    html += `<ul>`;
+                    routine.weekday.forEach(item => {
+                        html += `<li><strong>${item.time} - ${item.name}</strong>`;
+                        if (item.focus) {
+                            html += `<br><span style="color: #6366f1; font-size: 13px;">🎯 Focus: ${item.focus}</span>`;
+                        }
+                        html += `</li>`;
+                    });
+                    html += `</ul>`;
+                }
+
+                // Weekend Routine
+                if (routine.weekend.length > 0) {
+                    html += `<h4 style="margin-top: 16px; color: #f59e0b;">🎉 Weekend Routine (${routine.weekend.length} time blocks)</h4>`;
+                    html += `<ul>`;
+                    routine.weekend.forEach(item => {
+                        html += `<li><strong>${item.time} - ${item.name}</strong>`;
+                        if (item.focus) {
+                            html += `<br><span style="color: #d97706; font-size: 13px;">🎯 Focus: ${item.focus}</span>`;
+                        }
+                        html += `</li>`;
+                    });
+                    html += `</ul>`;
+                }
+
+                html += `<div class="logic-box">
+                    <div class="title">💡 Logic</div>
+                    ${routine.logic}
+                </div>`;
+
+                // === RESPONSIBILITIES ===
+                const responsibilities = generateResponsibilities(member);
+                html += `<h4 style="margin-top: 16px; color: #6366f1;">Responsibilities (${responsibilities.count} tasks)</h4>`;
+                html += `<ul>`;
+                responsibilities.responsibilities.forEach(r => {
+                    html += `<li>${r}</li>`;
+                });
+                html += `</ul>`;
+                html += `<div class="logic-box">
+                    <div class="title">💡 Logic</div>
+                    ${responsibilities.logic}
+                </div>`;
+
+                // === CHARACTER GOALS ===
+                const characterGoals = generateCharacterGoals(member);
+                html += `<h4 style="margin-top: 16px; color: #10b981;">Character Development Goals</h4>`;
+                characterGoals.categories.forEach(cat => {
+                    html += `<p style="margin-top: 12px;"><strong>${cat.category}</strong> (Weight: ${(cat.weight * 100).toFixed(0)}%)</p>`;
+                    html += `<ul>`;
+                    cat.items.forEach(item => {
+                        html += `<li>${item}</li>`;
+                    });
+                    html += `</ul>`;
+                });
+                html += `<div class="logic-box">
+                    <div class="title">💡 Logic</div>
+                    ${characterGoals.logic}
+                </div>`;
+
+                // === REWARDS ===
+                const rewards = generateRewards(member);
+                html += `<h4 style="margin-top: 16px; color: #f59e0b;">🎁 Personalized Rewards (${rewards.length} total)</h4>`;
+                html += `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 12px;">`;
+                rewards.forEach(reward => {
+                    html += `
+                        <div style="background: #fef3c7; border: 2px solid #fbbf24; border-radius: 8px; padding: 12px;">
+                            ${renderIcon('gift', 'icon-md')}
+                            <div style="font-weight: 600; font-size: 13px; color: #78350f; margin-bottom: 4px;">${reward.name}</div>
+                            <div style="font-size: 12px; color: #92400e; margin-bottom: 4px;">${reward.points} points</div>
+                            <div style="font-size: 10px; color: #b45309;">${reward.motivation}</div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+                html += `<div class="logic-box" style="margin-top: 12px;">
+                    <div class="title">💡 Logic</div>
+                    ${rewards[0]?.logic || 'Personalized rewards based on age, motivation, and family values.'}
+                </div>`;
+
+                html += `</div>`;
+            });
+
+            // Don't show old output, show editable summary instead
+            renderEditableSummary();
+        }
+
+        function generateRoutine(member) {
+            const age = member.age;
+            const weekdayItems = [];
+            const weekendItems = [];
+
+            // WEEKDAY ROUTINES
+
+            // Morning
+            if (state.answers[`${member.id}_wake_time`]) {
+                weekdayItems.push({
+                    time: state.answers[`${member.id}_wake_time`],
+                    name: 'Morning Routine',
+                    focus: state.answers[`${member.id}_morning_change`] || null,
+                    difficulty: state.answers[`${member.id}_morning_difficulty`]
+                });
+            }
+
+            // After School
+            if (age >= 5 && state.answers[`${member.id}_school_end`]) {
+                weekdayItems.push({
+                    time: state.answers[`${member.id}_school_end`],
+                    name: 'After School',
+                    focus: state.answers[`${member.id}_afterschool_change`] || null,
+                    difficulty: state.answers[`${member.id}_afterschool_difficulty`]
+                });
+            }
+
+            // Activities (weekday only)
+            if (state.activities[member.id]) {
+                state.activities[member.id].forEach(activity => {
+                    if (activity.name && activity.time) {
+                        const isWeekend = activity.day === 'Saturday' || activity.day === 'Sunday';
+                        const target = isWeekend ? weekendItems : weekdayItems;
+                        
+                        target.push({
+                            time: activity.time,
+                            name: `${activity.name} (${activity.day})`,
+                            focus: state.answers[`${member.id}_activities_change`] || null,
+                            difficulty: state.answers[`${member.id}_activities_difficulty`],
+                            isActivity: true
+                        });
+                    }
+                });
+            }
+
+            // Homework
+            if (age >= 6 && state.answers[`${member.id}_homework_time`]) {
+                weekdayItems.push({
+                    time: state.answers[`${member.id}_homework_time`],
+                    name: 'Homework Time',
+                    focus: state.answers[`${member.id}_homework_change`] || null,
+                    difficulty: state.answers[`${member.id}_homework_difficulty`]
+                });
+            }
+
+            // Screen Time (if applicable)
+            if (state.answers[`${member.id}_screen_time_exists`] === 'yes') {
+                weekdayItems.push({
+                    time: 'Varies',
+                    name: 'Screen Time',
+                    focus: state.answers[`${member.id}_screen_time_change`] || null,
+                    difficulty: state.answers[`${member.id}_screen_time_difficulty`]
+                });
+            }
+
+            // Dinner
+            if (state.answers[`${member.id}_dinner_time`]) {
+                weekdayItems.push({
+                    time: state.answers[`${member.id}_dinner_time`],
+                    name: 'Dinner Time',
+                    focus: state.answers[`${member.id}_dinner_change`] || null,
+                    difficulty: state.answers[`${member.id}_dinner_difficulty`]
+                });
+            }
+
+            // Bath/Shower
+            if (state.answers[`${member.id}_bath_frequency`]) {
+                const frequency = state.answers[`${member.id}_bath_frequency`];
+                weekdayItems.push({
+                    time: 'Evening',
+                    name: `Bath/Shower (${frequency})`,
+                    focus: state.answers[`${member.id}_bath_change`] || null,
+                    difficulty: state.answers[`${member.id}_bath_difficulty`]
+                });
+            }
+
+            // Bedtime
+            if (state.answers[`${member.id}_bedtime`]) {
+                weekdayItems.push({
+                    time: state.answers[`${member.id}_bedtime`],
+                    name: 'Bedtime Routine',
+                    focus: state.answers[`${member.id}_bedtime_change`] || null,
+                    difficulty: state.answers[`${member.id}_bedtime_difficulty`]
+                });
+            }
+
+            // WEEKEND ROUTINES
+
+            // Weekend Morning
+            if (state.answers[`${member.id}_weekend_wake`]) {
+                weekendItems.push({
+                    time: state.answers[`${member.id}_weekend_wake`],
+                    name: 'Weekend Morning',
+                    focus: null,
+                    difficulty: state.answers[`${member.id}_weekend_structure`]
+                });
+            }
+
+            // Weekend Responsibilities
+            if (state.answers[`${member.id}_weekend_difficulty`]) {
+                weekendItems.push({
+                    time: 'Throughout Day',
+                    name: 'Weekend Responsibilities',
+                    focus: state.answers[`${member.id}_weekend_change`] || null,
+                    difficulty: state.answers[`${member.id}_weekend_difficulty`]
+                });
+            }
+
+            // Weekend Bedtime
+            if (state.answers[`${member.id}_weekend_bedtime`]) {
+                weekendItems.push({
+                    time: state.answers[`${member.id}_weekend_bedtime`],
+                    name: 'Weekend Bedtime',
+                    focus: null,
+                    difficulty: state.answers[`${member.id}_weekend_structure`]
+                });
+            }
+
+            // Sort by time
+            weekdayItems.sort((a, b) => {
+                if (a.time === 'Varies' || a.time === 'Evening') return 1;
+                if (b.time === 'Varies' || b.time === 'Evening') return -1;
+                return a.time.localeCompare(b.time);
+            });
+
+            weekendItems.sort((a, b) => {
+                if (a.time === 'Throughout Day') return 1;
+                if (b.time === 'Throughout Day') return -1;
+                return a.time.localeCompare(b.time);
+            });
+
+            return {
+                weekday: weekdayItems,
+                weekend: weekendItems,
+                logic: `Based on comprehensive routine interview covering weekday and weekend schedules. Each routine block includes specific times, difficulty assessment, and focus areas identified by parent. Using Executive Function Development Framework (Harvard) - routines reduce cognitive load and build automaticity. Activities integrated into appropriate day schedules.`
+            };
+        }
+
+        // ==========================================
+        // EDITABLE SUMMARY
+        // ==========================================
+        
+        function renderEditableSummary() {
+            // Populate editable data
+            editableData.familyName = state.familyName;
+            editableData.values = state.values;
+            editableData.members = {};
+            
+            state.members.filter(m => m.role === 'child').forEach(member => {
+                const routine = generateRoutine(member);
+                const responsibilities = generateResponsibilities(member);
+                const characterGoals = generateCharacterGoals(member);
+                const rewards = generateRewards(member);
+                
+                editableData.members[member.id] = {
+                    name: member.name,
+                    age: member.age,
+                    weekdayRoutine: routine.weekday,
+                    weekendRoutine: routine.weekend,
+                    responsibilities: responsibilities.responsibilities.map(r => ({ text: r, points: 10 })),
+                    characterGoals: characterGoals.categories.flatMap(cat => 
+                        cat.items.map(item => ({ text: item, category: cat.category, weight: cat.weight }))
+                    ),
+                    rewards: rewards
+                };
+            });
+            
+            // Render editable summary
+            let html = `
+                <div class="section-title">Your Personalized Family Plan</div>
+                <p style="color: #64748b; margin-bottom: 24px;">Review and edit any details before completing setup. All fields are editable.</p>
+            `;
+            
+            Object.entries(editableData.members).forEach(([memberId, data]) => {
+                html += `
+                    <div class="editable-section">
+                        <h3>${renderIcon('users', 'icon-sm')} ${data.name} (Age ${data.age})</h3>`;
+                
+                // Weekday Routine
+                if (data.weekdayRoutine && data.weekdayRoutine.length > 0) {
+                    html += `<h4>${renderIcon('sun', 'icon-sm')} Weekday Routine</h4>`;
+                    data.weekdayRoutine.forEach((item, idx) => {
+                        html += `<div class="editable-item">
+                            <input type="time" value="${item.time || ''}" 
+                                   onchange="updateItem('${memberId}', 'weekdayRoutine', ${idx}, 'time', this.value)">
+                            <input type="text" value="${item.name || ''}"
+                                   onchange="updateItem('${memberId}', 'weekdayRoutine', ${idx}, 'name', this.value)">
+                            <span>-</span>
+                        </div>`;
+                        if (item.focus) {
+                            html += `<div class="focus-item">🎯 Focus: ${item.focus}</div>`;
+                        }
+                    });
+                }
+                
+                // Weekend Routine
+                if (data.weekendRoutine && data.weekendRoutine.length > 0) {
+                    html += `<h4>${renderIcon('calendar', 'icon-sm')} Weekend Routine</h4>`;
+                    data.weekendRoutine.forEach((item, idx) => {
+                        html += `<div class="editable-item">
+                            <input type="time" value="${item.time || ''}"
+                                   onchange="updateItem('${memberId}', 'weekendRoutine', ${idx}, 'time', this.value)">
+                            <input type="text" value="${item.name || ''}"
+                                   onchange="updateItem('${memberId}', 'weekendRoutine', ${idx}, 'name', this.value)">
+                            <span>-</span>
+                        </div>`;
+                    });
+                }
+                
+                // Responsibilities
+                html += `<h4>${renderIcon('check', 'icon-sm')} Responsibilities</h4>`;
+                data.responsibilities.forEach((item, idx) => {
+                    html += `<div class="editable-item">
+                        <span></span>
+                        <input type="text" value="${item.text}"
+                               onchange="updateItem('${memberId}', 'responsibilities', ${idx}, 'text', this.value)">
+                        <div>
+                            <input type="number" value="${item.points}" style="width: 60px;"
+                                   onchange="updateItem('${memberId}', 'responsibilities', ${idx}, 'points', this.value)"> pts
+                        </div>
+                    </div>`;
+                });
+                
+                // Character Goals
+                html += `<h4>${renderIcon('target', 'icon-sm')} Character Goals</h4>`;
+                data.characterGoals.forEach((item, idx) => {
+                    html += `<div class="editable-item">
+                        <span></span>
+                        <input type="text" value="${item.text}"
+                               onchange="updateItem('${memberId}', 'characterGoals', ${idx}, 'text', this.value)">
+                        <span style="font-size: 13px; color: #64748b;">${(item.weight * 100).toFixed(0)}%</span>
+                    </div>`;
+                });
+                
+                // Rewards
+                html += `<h4>${renderIcon('gift', 'icon-sm')} Rewards</h4>`;
+                data.rewards.forEach((item, idx) => {
+                    html += `<div class="editable-item">
+                        <span></span>
+                        <input type="text" value="${item.name}"
+                               onchange="updateItem('${memberId}', 'rewards', ${idx}, 'name', this.value)">
+                        <div>
+                            <input type="number" value="${item.points}" style="width: 60px;"
+                                   onchange="updateItem('${memberId}', 'rewards', ${idx}, 'points', this.value)"> pts
+                            <span style="font-size: 12px; color: #64748b; margin-left: 8px;">${item.category}</span>
+                        </div>
+                    </div>`;
+                });
+                
+                html += `</div>`;
+            });
+            
+            html += `
+                <div class="btn-container">
+                    <button class="btn btn-secondary" onclick="editPlan()">← Edit Plan</button>
+                    <button class="btn btn-primary" onclick="exportData()">Complete Setup →</button>
+                </div>
+            `;
+            
+            document.getElementById('outputContent').innerHTML = html;
+            document.getElementById('outputSection').style.display = 'block';
+            document.getElementById('wizardCard').style.display = 'none';
+        }
+
+        function updateItem(memberId, section, index, field, value) {
+            if (editableData.members[memberId] && editableData.members[memberId][section][index]) {
+                editableData.members[memberId][section][index][field] = value;
+            }
+        }
+
+        function editPlan() {
+            document.getElementById('outputSection').style.display = 'none';
+            document.getElementById('wizardCard').style.display = 'block';
+            state.currentStep = STEPS.length - 1;
+            renderStep();
+        }
+
+        function exportData() {
+            // Convert wizard data to dashboard schema
+            const dashboardData = convertToDashboardSchema(editableData);
+            
+            console.log('=== WIZARD OUTPUT ===');
+            console.log('Editable Data:', JSON.stringify(editableData, null, 2));
+            console.log('\n=== DASHBOARD SCHEMA ===');
+            console.log('Ready to import:', JSON.stringify(dashboardData, null, 2));
+            
+            // Store in localStorage for dashboard to pick up
+            localStorage.setItem('compassWizardData', JSON.stringify(dashboardData));
+            
+            alert('✅ Setup complete!\n\n' +
+                  'Data has been formatted for your dashboard and saved to localStorage.\n\n' +
+                  'Check console (F12) to see the formatted data.\n\n' +
+                  'Key: compassWizardData');
+        }
+        
+        function convertToDashboardSchema(wizardData) {
+            const dashboardSchema = {
+                familyName: wizardData.familyName,
+                values: wizardData.values,
+                children: [],
+                data: {}
+            };
+            
+            // Convert each member
+            Object.entries(wizardData.members).forEach(([memberId, memberData]) => {
+                const childId = `child_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                
+                // Add to children array
+                dashboardSchema.children.push(childId);
+                
+                // Convert to dashboard child format
+                dashboardSchema.data[childId] = {
+                    name: memberData.name,
+                    photo: null,
+                    colorPalette: 'purple', // Default, user can change
+                    pointsBalance: 0,
+                    pointsSpent: 0,
+                    trackers: [],
+                    days: {},
+                    schedule: convertSchedule(memberData),
+                    characterValues: convertCharacterValues(memberData),
+                    weeklyChores: convertWeeklyChores(memberData),
+                    rewards: convertRewards(memberData)
+                };
+            });
+            
+            return dashboardSchema;
+        }
+        
+        function convertSchedule(memberData) {
+            const schedule = [];
+            let idCounter = 1;
+            
+            // Convert weekday routine
+            if (memberData.weekdayRoutine) {
+                memberData.weekdayRoutine.forEach(item => {
+                    if (item.time && item.name) {
+                        schedule.push({
+                            id: idCounter++,
+                            time: convertTo12Hour(item.time),
+                            name: item.name,
+                            tasks: item.focus ? [item.focus] : [],
+                            days: [1, 2, 3, 4, 5] // Monday-Friday
+                        });
+                    }
+                });
+            }
+            
+            // Convert weekend routine
+            if (memberData.weekendRoutine) {
+                memberData.weekendRoutine.forEach(item => {
+                    if (item.time && item.name) {
+                        schedule.push({
+                            id: idCounter++,
+                            time: convertTo12Hour(item.time),
+                            name: item.name,
+                            tasks: item.focus ? [item.focus] : [],
+                            days: [0, 6] // Sunday, Saturday
+                        });
+                    }
+                });
+            }
+            
+            return schedule;
+        }
+        
+        function convertTo12Hour(time24) {
+            if (!time24) return '';
+            const [hours, minutes] = time24.split(':');
+            const hour = parseInt(hours);
+            const period = hour >= 12 ? 'pm' : 'am';
+            const hour12 = hour % 12 || 12;
+            return `${hour12}:${minutes}${period}`;
+        }
+        
+        function convertCharacterValues(memberData) {
+            if (!memberData.characterGoals || memberData.characterGoals.length === 0) {
+                return [];
+            }
+            
+            // Group goals by category
+            const categoriesMap = {};
+            memberData.characterGoals.forEach(goal => {
+                if (!categoriesMap[goal.category]) {
+                    categoriesMap[goal.category] = {
+                        id: goal.category.toLowerCase().replace(/\s+/g, '_'),
+                        category: goal.category,
+                        weight: goal.weight,
+                        items: []
+                    };
+                }
+                categoriesMap[goal.category].items.push(goal.text);
+            });
+            
+            return Object.values(categoriesMap);
+        }
+        
+        function convertWeeklyChores(memberData) {
+            if (!memberData.responsibilities || memberData.responsibilities.length === 0) {
+                return [];
+            }
+            
+            return memberData.responsibilities.map((resp, index) => ({
+                id: `chore_${index + 1}`,
+                name: resp.text,
+                points: resp.points || 10
+            }));
+        }
+        
+        function convertRewards(memberData) {
+            if (!memberData.rewards || memberData.rewards.length === 0) {
+                return [];
+            }
+            
+            return memberData.rewards.map((reward, index) => ({
+                id: `reward_${index + 1}_${Date.now()}`,
+                name: reward.name,
+                cost: reward.points || 100,
+                category: mapRewardCategory(reward.category)
+            }));
+        }
+        
+        function mapRewardCategory(wizardCategory) {
+            // Map wizard categories to dashboard categories
+            const categoryMap = {
+                'Tangible': 'item',
+                'Experience': 'experience',
+                'Experiences': 'experience',
+                'Privilege': 'privilege',
+                'Privileges': 'privilege',
+                'Family Connection': 'family-time',
+                'Connection': 'quality-time'
+            };
+            
+            return categoryMap[wizardCategory] || 'custom';
+        }
+
+        // Initialize on load
+        window.onload = init;
+    </script>
+</body>
+</html>
