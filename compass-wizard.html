@@ -2393,23 +2393,33 @@
             renderStep();
         }
 
-        function exportData() {
-            // Convert wizard data to dashboard schema
-            const dashboardData = convertToDashboardSchema(editableData);
-            
-            console.log('=== WIZARD OUTPUT ===');
-            console.log('Editable Data:', JSON.stringify(editableData, null, 2));
-            console.log('\n=== DASHBOARD SCHEMA ===');
-            console.log('Ready to import:', JSON.stringify(dashboardData, null, 2));
-            
-            // Store in localStorage for dashboard to pick up
-            localStorage.setItem('compassWizardData', JSON.stringify(dashboardData));
-            
-            alert('✅ Setup complete!\n\n' +
-                  'Data has been formatted for your dashboard and saved to localStorage.\n\n' +
-                  'Check console (F12) to see the formatted data.\n\n' +
-                  'Key: compassWizardData');
-        }
+function exportData() {
+    // Convert wizard data to dashboard schema
+    const dashboardData = convertToDashboardSchema(editableData);
+    
+    console.log('📤 Sending data to dashboard...');
+    console.log('Dashboard Schema:', JSON.stringify(dashboardData, null, 2));
+    
+    // Send to parent window (dashboard) via postMessage
+    if (window.opener) {
+        window.opener.postMessage({
+            type: 'WIZARD_COMPLETE',
+            data: dashboardData
+        }, '*');
+        
+        console.log('✅ Data sent to dashboard');
+        
+        alert('✅ Setup Complete!\n\nYour family data has been sent to the dashboard.\n\nThis window will close in 2 seconds.');
+        
+        // Close wizard window after 2 seconds
+        setTimeout(() => {
+            window.close();
+        }, 2000);
+    } else {
+        console.error('❌ No parent window found - cannot send data');
+        alert('Error: Could not connect to dashboard. Please ensure you opened this wizard from the dashboard.');
+    }
+}
         
         function convertToDashboardSchema(wizardData) {
             const dashboardSchema = {
