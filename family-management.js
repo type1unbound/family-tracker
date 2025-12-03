@@ -659,16 +659,17 @@ function showCreateFamilyOptions() {
  * Launch the setup wizard - NO INSTRUCTION MODAL (automatic import)
  */
 function launchSetupWizard() {
-    const wizardUrl = 'https://type1unbound.github.io/family-tracker/onboarding.html';
-    const wizardWindow = window.open(wizardUrl, '_blank', 'width=1000,height=800');
+    // NEW: Point to the new HTML wizard
+    const wizardUrl = 'https://type1unbound.github.io/family-tracker/compass-professional-COMPLETE.html';
+    const wizardWindow = window.open(wizardUrl, '_blank', 'width=1200,height=900');
     
     if (!wizardWindow) {
         alert('Please allow popups to use the Setup Wizard.');
         return;
     }
     
-    // No instruction modal - automatic import handles everything!
-    console.log('🧙‍♂️ Wizard opened - waiting for automatic data transfer...');
+    console.log('🧙‍♂️ Wizard opened - data will save to localStorage automatically');
+    console.log('💡 When wizard completes, return here and click "Import Wizard Setup"');
 }
 
 /**
