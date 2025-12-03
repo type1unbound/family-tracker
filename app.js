@@ -578,57 +578,11 @@ const PointsModule = {
         }
         
         return streak;
-    },
-
-   /* openSpendPointsModal() {
-        const child = StateManager.getCurrentChild();
-        document.getElementById('spend-modal-balance').textContent = child.pointsBalance;
-        document.getElementById('modal-spend-amount').value = '';
-        document.getElementById('modal-spend-reason').value = '';
-        document.getElementById('spend-points-modal').classList.add('active');
-    },
-
-    spendPoints() {
-        const amount = parseInt(document.getElementById('modal-spend-amount').value);
-        const reason = document.getElementById('modal-spend-reason').value;
-        const child = StateManager.getCurrentChild();
-        
-        if (!amount || amount <= 0) {
-            alert('Please enter a valid amount');
-            return;
-        }
-        
-        if (amount > child.pointsBalance) {
-            alert('Not enough points! Current balance: ' + child.pointsBalance);
-            return;
-        }
-        
-        if (child.pointsSpent === undefined) {
-            child.pointsSpent = 0;
-        }
-        child.pointsSpent += amount;
-        
-        if (window.saveData) {
-            window.saveData();
-        }
-        
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.classList.remove('active');
-        });
-        
-        if (window.UICore) {
-            UICore.updateUI();
-        }
-        
-        const reasonText = reason ? ` for ${reason}` : '';
-        const newBalance = child.pointsBalance;
-        alert(`✅ Spent ${amount} points${reasonText}!\nNew balance: ${newBalance}`);
-    }*/
+    }
 }; 
 
 // ========================================
 // SCHEDULE MODULE
-// (No changes needed - keeping all existing code)
 // ========================================
 const ScheduleModule = {
     currentFocusedItemId: null,
@@ -1058,7 +1012,6 @@ const ScheduleModule = {
 
 // ========================================
 // CHARACTER MODULE
-// (No changes needed - keeping all existing code)
 // ========================================
 const CharacterModule = {
     renderCharacterSections() {
@@ -1406,9 +1359,9 @@ const CharacterModule = {
     }
 };
 
+// ... (continuing in next message due to length)
 // ========================================
 // PROFILE MODULE
-// (No changes needed - keeping all existing code)
 // ========================================
 const ProfileModule = {
     openProfileModal() {
@@ -2278,38 +2231,6 @@ const RewardsModule = {
     }
 };
 
-// Toggle between Rewards and Goals
-function toggleRewardsSection() {
-    const rewardsSection = document.querySelector('.rewards-section');
-    const isRewardsVisible = rewardsSection && rewardsSection.style.display === 'block';
-    
-    if (isRewardsVisible) {
-        showGoalsSection();
-    } else {
-        showRewardsSection();
-    }
-}
-
-function updateRewardsButtonState(isShowingRewards) {
-    const buttons = document.querySelectorAll('.sidebar-btn');
-    buttons.forEach(btn => {
-        const btnText = btn.textContent || '';
-        if (btnText.includes('Rewards') || btnText.includes('Back to Goals')) {
-            if (isShowingRewards) {
-                btn.style.background = 'rgba(99, 102, 241, 0.1)';
-                btn.style.borderLeft = '3px solid #6366f1';
-                btn.innerHTML = '<span class="sidebar-icon">←</span><span>Back to Goals</span>';
-                btn.onclick = toggleRewardsSection; // ← Re-attach click handler!
-            } else {
-                btn.style.background = '';
-                btn.style.borderLeft = '';
-                btn.innerHTML = '<span class="sidebar-icon">🎁</span><span>Rewards</span>';
-                btn.onclick = toggleRewardsSection; // ← Re-attach click handler!
-            }
-        }
-    });
-}
-
 // ========================================
 // GLOBAL EXPORTS
 // ========================================
@@ -2320,6 +2241,7 @@ window.ScheduleModule = ScheduleModule;
 window.CharacterModule = CharacterModule;
 window.ProfileModule = ProfileModule;
 window.UICore = UICore;
+window.RewardsModule = RewardsModule;
 window.state = StateManager.state;
 window.saveData = saveData;
 window.loadData = loadData;
@@ -2337,119 +2259,11 @@ window.getSchedule = StateManager.getSchedule.bind(StateManager);
 window.getCharacterValues = StateManager.getCharacterValues.bind(StateManager);
 window.getWeeklyChores = StateManager.getWeeklyChores.bind(StateManager);
 
-// ADD these exports to the GLOBAL EXPORTS section (around line 1750):
-
-window.RewardsModule = RewardsModule;
-
-// ADD these callback functions at the bottom with the other HTML callbacks:
-
-function saveReward() {
-    RewardsModule.saveReward();
-}
-
 // ========================================
-// REWARDS TOGGLE FUNCTIONS
+// HTML CALLBACK FUNCTIONS
 // ========================================
 
-function toggleRewardsSection() {
-    const rewardsSection = document.querySelector('.rewards-section');
-    const isRewardsVisible = rewardsSection && rewardsSection.style.display === 'block';
-    
-    if (isRewardsVisible) {
-        showGoalsSection();
-    } else {
-        showRewardsSection();
-    }
-}
-
-function updateRewardsButtonState(isShowingRewards) {
-    const buttons = document.querySelectorAll('.sidebar-btn');
-    buttons.forEach(btn => {
-        const btnText = btn.textContent || '';
-        if (btnText.includes('Rewards') || btnText.includes('Back to Goals')) {
-            if (isShowingRewards) {
-                btn.style.background = 'rgba(99, 102, 241, 0.1)';
-                btn.style.borderLeft = '3px solid #6366f1';
-                btn.innerHTML = '<span class="sidebar-icon">←</span><span>Back to Goals</span>';
-                btn.onclick = toggleRewardsSection;
-            } else {
-                btn.style.background = '';
-                btn.style.borderLeft = '';
-                btn.innerHTML = '<span class="sidebar-icon">🎁</span><span>Rewards</span>';
-                btn.onclick = toggleRewardsSection;
-            }
-        }
-    });
-}
-
-function showRewardsSection() {
-    // Hide all goal groups (except rewards)
-    document.querySelectorAll('.goals-group:not(.rewards-section)').forEach(group => {
-        group.style.display = 'none';
-    });
-    
-    // Show rewards section
-    const rewardsSection = document.querySelector('.rewards-section');
-    if (rewardsSection) {
-        rewardsSection.style.display = 'block';
-        if (window.RewardsModule) {
-            RewardsModule.renderRewardsStore();
-        }
-    }
-    
-    // Update button appearance
-    updateRewardsButtonState(true);
-}
-
-function showGoalsSection() {
-    // Hide rewards
-    const rewardsSection = document.querySelector('.rewards-section');
-    if (rewardsSection) {
-        rewardsSection.style.display = 'none';
-    }
-    
-    // Show goals (except rewards)
-    document.querySelectorAll('.goals-group:not(.rewards-section)').forEach(group => {
-        group.style.display = 'block';
-    });
-    
-    // Update button appearance
-    updateRewardsButtonState(false);
-}
-    
-
-// Toggle between Rewards and Goals
-function toggleRewardsSection() {
-    const rewardsSection = document.querySelector('.rewards-section');
-    const isRewardsVisible = rewardsSection && rewardsSection.style.display === 'block';
-    
-    if (isRewardsVisible) {
-        showGoalsSection();
-    } else {
-        showRewardsSection();
-    }
-}
-
-// Update button appearance
-function updateRewardsButtonState(isShowingRewards) {
-    const buttons = document.querySelectorAll('.sidebar-btn');
-    buttons.forEach(btn => {
-        const btnText = btn.textContent || '';
-        if (btnText.includes('Rewards') || btnText.includes('Back to Goals')) {
-            if (isShowingRewards) {
-                btn.style.background = 'rgba(99, 102, 241, 0.1)';
-                btn.style.borderLeft = '3px solid #6366f1';
-                btn.innerHTML = '<span class="sidebar-icon">←</span><span>Back to Goals</span>';
-            } else {
-                btn.style.background = '';
-                btn.style.borderLeft = '';
-                btn.innerHTML = '<span class="sidebar-icon">🎁</span><span>Rewards</span>';
-            }
-        }
-    });
-}
-
-// HTML callback functions
+// Photo/Crop functions
 function handlePhotoUpload(event) {
     ProfileModule.handlePhotoUpload(event);
 }
@@ -2466,6 +2280,7 @@ function removePhoto() {
     ProfileModule.removePhoto();
 }
 
+// Modal functions
 function closeModal() {
     ProfileModule.closeModal();
 }
@@ -2482,6 +2297,7 @@ function confirmDeleteChild() {
     ProfileModule.confirmDeleteChild();
 }
 
+// Schedule functions
 function addModalTask() {
     ScheduleModule.addModalTask();
 }
@@ -2494,6 +2310,7 @@ function saveScheduleItem() {
     ScheduleModule.saveScheduleItem();
 }
 
+// Character functions
 function addModalCharacterItem() {
     CharacterModule.addModalCharacterItem();
 }
@@ -2518,8 +2335,73 @@ function confirmDeleteGoal() {
     CharacterModule.confirmDeleteGoal();
 }
 
-function spendPoints() {
-    PointsModule.spendPoints();
+// Rewards functions
+function saveReward() {
+    RewardsModule.saveReward();
+}
+
+// ========================================
+// REWARDS TOGGLE FUNCTIONS (ONLY ONCE!)
+// ========================================
+
+function toggleRewardsSection() {
+    const rewardsSection = document.querySelector('.rewards-section');
+    const isRewardsVisible = rewardsSection && rewardsSection.style.display === 'block';
+    
+    if (isRewardsVisible) {
+        showGoalsSection();
+    } else {
+        showRewardsSection();
+    }
+}
+
+function showRewardsSection() {
+    document.querySelectorAll('.goals-group:not(.rewards-section)').forEach(group => {
+        group.style.display = 'none';
+    });
+    
+    const rewardsSection = document.querySelector('.rewards-section');
+    if (rewardsSection) {
+        rewardsSection.style.display = 'block';
+        if (window.RewardsModule) {
+            RewardsModule.renderRewardsStore();
+        }
+    }
+    
+    updateRewardsButtonState(true);
+}
+
+function showGoalsSection() {
+    const rewardsSection = document.querySelector('.rewards-section');
+    if (rewardsSection) {
+        rewardsSection.style.display = 'none';
+    }
+    
+    document.querySelectorAll('.goals-group:not(.rewards-section)').forEach(group => {
+        group.style.display = 'block';
+    });
+    
+    updateRewardsButtonState(false);
+}
+
+function updateRewardsButtonState(isShowingRewards) {
+    const buttons = document.querySelectorAll('.sidebar-btn');
+    buttons.forEach(btn => {
+        const btnText = btn.textContent || '';
+        if (btnText.includes('Rewards') || btnText.includes('Back to Goals')) {
+            if (isShowingRewards) {
+                btn.style.background = 'rgba(99, 102, 241, 0.1)';
+                btn.style.borderLeft = '3px solid #6366f1';
+                btn.innerHTML = '<span class="sidebar-icon">←</span><span>Back to Goals</span>';
+                btn.onclick = toggleRewardsSection;
+            } else {
+                btn.style.background = '';
+                btn.style.borderLeft = '';
+                btn.innerHTML = '<span class="sidebar-icon">🎁</span><span>Rewards</span>';
+                btn.onclick = toggleRewardsSection;
+            }
+        }
+    });
 }
 
 console.log('✅ Family Tracker App (Multi-Family Support) loaded');
