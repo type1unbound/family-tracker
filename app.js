@@ -2347,10 +2347,6 @@ function saveReward() {
     RewardsModule.saveReward();
 }
 
-function saveReward() {
-    RewardsModule.saveReward();
-}
-
 // ========================================
 // REWARDS TOGGLE FUNCTIONS
 // ========================================
