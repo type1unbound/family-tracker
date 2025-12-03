@@ -2417,9 +2417,6 @@ function showGoalsSection() {
     updateRewardsButtonState(false);
 }
     
-    // Update button appearance
-    updateRewardsButtonState(false);
-}
 
 // Toggle between Rewards and Goals
 function toggleRewardsSection() {
