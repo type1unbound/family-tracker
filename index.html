@@ -442,6 +442,60 @@
             }
         }
 
+        /* ========================================
+           GREEN LINE ICONS FOR APP
+           ======================================== */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .goals-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .green-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+        }
+
+        .green-icon svg {
+            width: 14px;
+            height: 14px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .green-icon-inline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+            vertical-align: middle;
+        }
+
+        .green-icon-inline svg {
+            width: 12px;
+            height: 12px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2;
+        }
+
         /* PROFESSIONAL LOGIN SCREEN STYLES */
         .login-container-modern {
             max-width: 440px;
@@ -1059,30 +1113,14 @@
             <!-- Utility Bar - Header -->
             <div class="utility-bar">
                 <div class="app-title-section">
-                    <div class="app-title">
-                        <svg class="compass-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                                <linearGradient id="compassGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
-                                </linearGradient>
-                            </defs>
-                            <path d="M 50 5 A 45 45 0 1 0 50 95" 
-                                  fill="none" 
-                                  stroke="url(#compassGradient)" 
-                                  stroke-width="8" 
-                                  stroke-linecap="round"/>
-                            <circle cx="50" cy="50" r="20" fill="none" stroke="url(#compassGradient)" stroke-width="2" opacity="0.3"/>
-                            <path d="M 50 30 L 45 45 L 50 42 L 55 45 Z" 
-                                  fill="url(#compassGradient)"/>
-                            <path d="M 50 70 L 45 55 L 50 58 L 55 55 Z" 
-                                  fill="url(#compassGradient)" 
-                                  opacity="0.4"/>
-                            <line x1="70" y1="50" x2="65" y2="50" stroke="url(#compassGradient)" stroke-width="2" opacity="0.3"/>
-                            <line x1="30" y1="50" x2="35" y2="50" stroke="url(#compassGradient)" stroke-width="2" opacity="0.3"/>
-                            <circle cx="50" cy="50" r="3" fill="url(#compassGradient)"/>
-                        </svg>
-                        <span>Compass</span>
+                    <div class="app-title" style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                            <svg viewBox="0 0 24 24" stroke="white" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-width="2.5" style="width: 20px; height: 20px;">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                            </svg>
+                        </div>
+                        <span style="color: #1e293b; font-size: 20px; font-weight: 700;">Compass</span>
                     </div>
                     <div class="app-tagline">Guiding families toward their true North</div>
                 </div>
@@ -1103,7 +1141,6 @@
                     <div class="score-label">Point Balance</div>
                     <div class="score-value" id="base-points">0</div>
                     <div class="score-subtext" id="balance-sublabel">+0 today</div>
-                    <button class="score-action-btn" onclick="PointsModule.openSpendPointsModal()">💸 Spend Points</button>
                 </div>
                 <div class="score-item">
                     <div class="score-label">Daily Progress</div>
@@ -1133,7 +1170,14 @@
                 <!-- LEFT COLUMN - Daily Routine Schedule -->
                 <div class="schedule-section">
                     <div class="section-header">
-                        <span class="section-header-icon">📅</span>
+                        <span class="green-icon">
+                            <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </span>
                         Daily Routine
                     </div>
                     <div id="schedule-list">
@@ -1184,7 +1228,15 @@
                     
                     <!-- Notes Section -->
                     <div style="margin-top: 24px;">
-                        <div class="section-subtitle">📝 Daily Notes & Reflection</div>
+                        <div class="section-subtitle" style="display: flex; align-items: center; gap: 8px;">
+                            <span class="green-icon-inline">
+                                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                            </span>
+                            Daily Notes & Reflection
+                        </div>
                         <textarea id="daily-notes" 
                                   rows="6" 
                                   placeholder="General notes about the day, celebrations, challenges, or things to work on..." 
@@ -1198,7 +1250,13 @@
                     <!-- Weekly Goals -->
                     <div class="goals-group">
                         <div class="goals-header">
-                            <span class="section-header-icon">🎯</span>
+                            <span class="green-icon">
+                                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <circle cx="12" cy="12" r="6"></circle>
+                                    <circle cx="12" cy="12" r="2"></circle>
+                                </svg>
+                            </span>
                             Weekly Responsibilities
                         </div>
                         
@@ -1214,7 +1272,11 @@
                     <!-- Personal Growth / Character Development -->
                     <div class="goals-group">
                         <div class="goals-header">
-                            <span class="section-header-icon">⭐</span>
+                            <span class="green-icon">
+                                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                            </span>
                             Personal Growth
                         </div>
                         
@@ -1223,7 +1285,22 @@
                         </div>
                         
                         <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); padding: 12px; border-radius: 10px; border: 1px solid #86efac; margin-top: 12px;">
-                            <div style="font-size: 11px; font-weight: 700; color: #166534; margin-bottom: 4px;">💡 Growth Multipliers</div> 
+                            <div style="font-size: 11px; font-weight: 700; color: #166534; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                                <span class="green-icon-inline" style="background: #22c55e;">
+                                    <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="5"></circle>
+                                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                    </svg>
+                                </span>
+                                Growth Multipliers
+                            </div> 
                             <div style="font-size: 10px; color: #166534; line-height: 1.4;">
                                 <strong>Starting</strong> 1.0x · <strong>Progress</strong> 1.5x · <strong>Excelling</strong> 2.0x
                             </div>
@@ -1233,7 +1310,15 @@
                     <!-- REWARDS SECTION -->
                     <div class="goals-group rewards-section" style="display: none;">
                         <div class="goals-header">
-                            <span class="section-header-icon">🎁</span>
+                            <span class="green-icon">
+                                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                                    <rect x="2" y="7" width="20" height="5"></rect>
+                                    <line x1="12" y1="22" x2="12" y2="7"></line>
+                                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+                                </svg>
+                            </span>
                             Rewards Store
                             <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
                                 <span style="font-size: 12px; color: #6b7280;">Balance:</span>
@@ -1268,7 +1353,14 @@
                         <label>Profile Photo:</label>
                         <div id="upload-area" style="border: 2px dashed #d1d5db; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; margin-top: 8px;" onclick="document.getElementById('photo-upload').click()">
                             <div id="photo-preview-container">
-                                <div style="font-size: 48px; margin-bottom: 8px;">📷</div>
+                                <div style="margin-bottom: 8px; display: inline-flex;">
+                                    <span class="green-icon" style="width: 48px; height: 48px;">
+                                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px;">
+                                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                            <circle cx="12" cy="13" r="4"></circle>
+                                        </svg>
+                                    </span>
+                                </div>
                                 <div style="color: #6b7280; font-size: 14px;">Click to upload photo</div>
                                 <div style="color: #9ca3af; font-size: 12px; margin-top: 4px;">JPG, PNG or GIF</div>
                             </div>
@@ -1479,11 +1571,22 @@
             </div>
         </div>
 
+        <!-- Delete Confirmation Modals and other modals continue... -->
+
         <!-- Delete Confirmation Modal -->
         <div id="delete-confirm-modal" class="modal">
             <div class="modal-content" style="max-width: 400px;">
                 <div class="modal-header">
-                    <h2>⚠️ Confirm Delete</h2>
+                    <h2 style="display: flex; align-items: center; gap: 10px;">
+                        <span class="green-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                            <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </span>
+                        Confirm Delete
+                    </h2>
                     <button class="close-btn" onclick="closeDeleteConfirm()">×</button>
                 </div>
                 <div class="modal-body">
@@ -1502,7 +1605,16 @@
         <div id="delete-goal-confirm-modal" class="modal">
             <div class="modal-content" style="max-width: 400px;">
                 <div class="modal-header">
-                    <h2>⚠️ Confirm Delete</h2>
+                    <h2 style="display: flex; align-items: center; gap: 10px;">
+                        <span class="green-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                            <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </span>
+                        Confirm Delete
+                    </h2>
                     <button class="close-btn" onclick="closeDeleteGoalConfirm()">×</button>
                 </div>
                 <div class="modal-body">
@@ -1527,16 +1639,16 @@
                 <!-- Tabs -->
                 <div style="display: flex; border-bottom: 2px solid #e5e7eb; margin-bottom: 20px;">
                     <button class="tracker-tab active" data-tab="entry" onclick="switchMedTab('entry')">
-                        📝 Entry
+                        Entry
                     </button>
                     <button class="tracker-tab" data-tab="history" onclick="switchMedTab('history')">
-                        📋 History
+                        History
                     </button>
                     <button class="tracker-tab" data-tab="analytics" onclick="switchMedTab('analytics')">
-                        📊 Analytics
+                        Analytics
                     </button>
                     <button class="tracker-tab" data-tab="settings" onclick="switchMedTab('settings')">
-                        ⚙️ Settings
+                        Settings
                     </button>
                 </div>
                 
