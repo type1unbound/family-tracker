@@ -309,28 +309,33 @@ const StateManager = {
         return child.weeklyChores;
     },
 
-    getDayData() {
-        const child = this.getCurrentChild();
-        if (!child) return { schedule: {}, weeklyChores: {}, categoryMultipliers: {}, notes: '', characterNotes: {} };
+getDayData() {
+    const child = this.getCurrentChild();
+    if (!child) return { schedule: {}, weeklyChores: {}, categoryMultipliers: {}, notes: '', characterNotes: {} };
+    
+    // ADD THIS LINE - Initialize days object if it doesn't exist
+    if (!child.days) {
+        child.days = {};
+    }
+    
+    if (!child.days[this.state.currentDate]) {
+        // Initialize with all current character categories
+        const categoryMultipliers = {};
+        const characterValues = this.getCharacterValues();
+        characterValues.forEach(cat => {
+            categoryMultipliers[cat.id] = 1.0;
+        });
         
-        if (!child.days[this.state.currentDate]) {
-            // Initialize with all current character categories
-            const categoryMultipliers = {};
-            const characterValues = this.getCharacterValues();
-            characterValues.forEach(cat => {
-                categoryMultipliers[cat.id] = 1.0;
-            });
-            
-            child.days[this.state.currentDate] = {
-                schedule: {},
-                weeklyChores: {},
-                categoryMultipliers: categoryMultipliers,
-                notes: '',
-                characterNotes: {}
-            };
-        }
-        
-        const dayData = child.days[this.state.currentDate];
+        child.days[this.state.currentDate] = {
+            schedule: {},
+            weeklyChores: {},
+            categoryMultipliers: categoryMultipliers,
+            notes: '',
+            characterNotes: {}
+        };
+    }
+    
+    const dayData = child.days[this.state.currentDate];
         
         // Migrate old data structure
         if (dayData.characterMultiplier && !dayData.categoryMultipliers) {
