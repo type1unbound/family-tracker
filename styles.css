@@ -160,10 +160,12 @@ body {
 
 /* Sidebar Divider */
 .sidebar-divider {
-    width: 100%;
+.sidebar-divider {
     height: 1px;
-    background: rgba(255, 255, 255, 0.15);
-    margin: 8px 0;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 16px 0;
+    width: 100%; /* Add this */
+    min-height: 1px; /* Add this to ensure it always has height */
 }
 
 /* Sidebar Section Titles */
