@@ -175,7 +175,8 @@ const StateManager = {
         children: [],  // CHANGED: was ['child1', 'child2'], now empty until loaded
         data: {},  // CHANGED: was hardcoded children, now empty until loaded
         familyId: null,  // NEW: current family ID
-        familyCode: null  // NEW: current family code
+        familyCode: null,  // NEW: current family code
+        familyName: null  // ADD THIS LINE
     },
 
     getCurrentChild() {
@@ -1780,6 +1781,61 @@ const ProfileModule = {
         StateManager.state.modalData = null;
     }
 };
+
+
+// ========================================
+// FAMILY SETTINGS MODULE
+// ========================================
+const FamilySettingsModule = {
+    openFamilySettings() {
+        const familyName = StateManager.state.familyName || 'Your Family';
+        const familyCode = StateManager.state.familyCode || 'No code set';
+        
+        document.getElementById('settings-family-name').textContent = familyName;
+        document.getElementById('settings-family-code').textContent = familyCode;
+        
+        document.getElementById('family-settings-modal').classList.add('active');
+    },
+    
+    closeModal() {
+        document.getElementById('family-settings-modal').classList.remove('active');
+    },
+    
+    openAddMemberChoice() {
+        document.getElementById('add-member-choice-modal').classList.add('active');
+    },
+    
+    closeAddMemberChoice() {
+        document.getElementById('add-member-choice-modal').classList.remove('active');
+    },
+    
+    addMemberManually() {
+        this.closeAddMemberChoice();
+        ProfileModule.addNewChild();
+    },
+    
+    addMemberWithWizard() {
+        this.closeAddMemberChoice();
+        // Open wizard in "add member" mode
+        if (window.openWizard) {
+            window.openWizard('add-member');
+        } else {
+            alert('Wizard integration coming soon!');
+        }
+    },
+    
+    updateMemberWithWizard(childId) {
+        // Open wizard to update specific member
+        if (window.openWizard) {
+            window.openWizard('update-member', childId);
+        } else {
+            alert('Wizard integration coming soon!');
+        }
+    }
+};
+
+// Export to window
+window.FamilySettingsModule = FamilySettingsModule;
 
 // ========================================
 // UI CORE
