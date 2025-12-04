@@ -17,163 +17,410 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* ========================================
+           SIDEBAR - NEW DARK DESIGN
+           ======================================== */
+        .sidebar {
+            width: 200px;
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            transition: width 0.3s ease;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        /* Avatar Container - Centered Layout */
+        #sidebar-avatars-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+
+        .sidebar-avatar-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 8px;
+        }
+
+        .sidebar-avatar-btn:hover .avatar-icon-circle {
+            transform: scale(1.05);
+        }
+
+        /* Avatar Icon Circle */
+        .avatar-icon-circle {
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s;
+            opacity: 0.4;
+        }
+
+        .sidebar-avatar-btn.active .avatar-icon-circle {
+            opacity: 1;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3),
+                        0 4px 12px rgba(16, 185, 129, 0.4);
+            transform: scale(1.1);
+        }
+
+        .avatar-icon-circle svg {
+            width: 28px;
+            height: 28px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .avatar-icon-circle img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Avatar Name */
+        .avatar-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .sidebar-avatar-btn.active .avatar-name {
+            color: white;
+            font-weight: 700;
+        }
+
+        /* Add Member Button */
+        .sidebar-avatar-btn.add-member .avatar-icon-circle {
+            opacity: 0.6;
+            border: 2px dashed rgba(16, 185, 129, 0.5);
+            background: transparent;
+        }
+
+        .sidebar-avatar-btn.add-member:hover .avatar-icon-circle {
+            opacity: 1;
+            border-color: #10b981;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 16px 0;
+        }
+
+        .sidebar-section-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        /* Tracker Buttons - No Background */
+        .sidebar-tracker-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 6px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            font-size: 13px;
+            color: white;
+            margin-bottom: 4px;
+            font-family: inherit;
+        }
+
+        .sidebar-tracker-btn:hover {
+            opacity: 0.8;
+        }
+
+        .sidebar-tracker-btn:hover .tracker-icon-circle {
+            transform: scale(1.1);
+        }
+
+        .tracker-icon-circle {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+            transition: transform 0.2s;
+        }
+
+        .tracker-icon-circle svg {
+            width: 16px;
+            height: 16px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        /* Control Buttons - No Background */
+        .sidebar-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sidebar-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 6px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            font-size: 13px;
+            font-weight: 500;
+            color: white;
+            font-family: inherit;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-btn:hover {
+            opacity: 0.8;
+        }
+
+        .sidebar-btn:hover .sidebar-btn-icon {
+            transform: scale(1.1);
+        }
+
+        .sidebar-btn-icon {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+            transition: transform 0.2s;
+        }
+
+        .sidebar-btn-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 64px;
+                padding: 20px 8px;
+            }
+            
+            .sidebar-title,
+            .sidebar-section-title,
+            .avatar-name,
+            .sidebar-btn span,
+            .sidebar-tracker-btn span {
+                display: none;
+            }
+            
+            #sidebar-avatars-container {
+                gap: 8px;
+            }
+            
+            .avatar-icon-circle {
+                width: 40px;
+                height: 40px;
+                min-width: 40px;
+            }
+        }
+
         /* PROFESSIONAL LOGIN SCREEN STYLES */
-.login-container-modern {
-    max-width: 440px;
-    width: 100%;
-    text-align: center;
-}
+        .login-container-modern {
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+        }
 
-.brand-section-modern {
-    margin-bottom: 48px;
-}
+        .brand-section-modern {
+            margin-bottom: 48px;
+        }
 
-.logo-icon-modern {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 20px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    border-radius: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
-}
+        .logo-icon-modern {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+        }
 
-.logo-icon-modern svg {
-    width: 44px;
-    height: 44px;
-    stroke: white;
-    fill: none;
-    stroke-width: 2.5;
-}
+        .logo-icon-modern svg {
+            width: 44px;
+            height: 44px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2.5;
+        }
 
-.brand-title-modern {
-    font-size: 36px;
-    font-weight: 700;
-    color: white;
-    margin: 0 0 12px 0;
-    letter-spacing: -1px;
-}
+        .brand-title-modern {
+            font-size: 36px;
+            font-weight: 700;
+            color: white;
+            margin: 0 0 12px 0;
+            letter-spacing: -1px;
+        }
 
-.brand-tagline-modern {
-    font-size: 16px;
-    color: #94a3b8;
-    font-weight: 400;
-    letter-spacing: 0.3px;
-    margin: 0;
-    font-style: normal;
-}
+        .brand-tagline-modern {
+            font-size: 16px;
+            color: #94a3b8;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            margin: 0;
+            font-style: normal;
+        }
 
-.login-card-modern {
-    background: white;
-    border-radius: 20px;
-    padding: 40px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
+        .login-card-modern {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
 
-#google-signin-btn {
-    width: 100%;
-    padding: 16px 24px;
-    background: white;
-    border: 2px solid #e5e7eb;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    color: #0f172a;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    transition: all 0.2s ease;
-    font-family: inherit;
-    margin-bottom: 32px;
-}
+        #google-signin-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f172a;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            margin-bottom: 32px;
+        }
 
-#google-signin-btn:hover {
-    background: #f9fafb;
-    border-color: #d1d5db;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
+        #google-signin-btn:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
 
-.features-list-modern {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    text-align: left;
-}
+        .features-list-modern {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
 
-.features-list-modern li {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 0;
-    color: #475569;
-    font-size: 14px;
-}
+        .features-list-modern li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            color: #475569;
+            font-size: 14px;
+        }
 
-.features-list-modern li:not(:last-child) {
-    border-bottom: 1px solid #f1f5f9;
-}
+        .features-list-modern li:not(:last-child) {
+            border-bottom: 1px solid #f1f5f9;
+        }
 
-.feature-icon-modern {
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-}
+        .feature-icon-modern {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
 
-.feature-icon-modern svg {
-    width: 100%;
-    height: 100%;
-    stroke: #10b981;
-    fill: none;
-    stroke-width: 2;
-}
+        .feature-icon-modern svg {
+            width: 100%;
+            height: 100%;
+            stroke: #10b981;
+            fill: none;
+            stroke-width: 2;
+        }
 
-.loading-card-modern {
-    background: white;
-    border-radius: 20px;
-    padding: 60px 40px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    display: none;
-    text-align: center;
-}
+        .loading-card-modern {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: none;
+            text-align: center;
+        }
 
-.loading-card-modern.active {
-    display: block;
-}
+        .loading-card-modern.active {
+            display: block;
+        }
 
-.spinner-modern {
-    width: 56px;
-    height: 56px;
-    border: 4px solid #e5e7eb;
-    border-top-color: #10b981;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 24px;
-}
+        .spinner-modern {
+            width: 56px;
+            height: 56px;
+            border: 4px solid #e5e7eb;
+            border-top-color: #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 24px;
+        }
 
-.loading-text-modern {
-    color: #64748b;
-    font-size: 15px;
-    margin: 0;
-}
+        .loading-text-modern {
+            color: #64748b;
+            font-size: 15px;
+            margin: 0;
+        }
 
-@media (max-width: 480px) {
-    .login-card-modern, .loading-card-modern {
-        padding: 32px 24px;
-    }
-
-    .brand-title-modern {
-        font-size: 28px;
-    }
-
-    .brand-tagline-modern {
-        font-size: 14px;
-    }
-}
+        @media (max-width: 480px) {
+            .login-card-modern, .loading-card-modern {
+                padding: 32px 24px;
+            }
+            .brand-title-modern {
+                font-size: 28px;
+            }
+            .brand-tagline-modern {
+                font-size: 14px;
+            }
+        }
         
         /* FAMILY SELECTION OVERLAY */
         #family-selection-overlay {
@@ -540,32 +787,8 @@
     <!-- Main App Container -->
     <div class="app-container">
         <!-- Sidebar - Family Member Selection -->
-<div class="sidebar-section">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 id="family-name-display" style="margin: 0;">The Family</h3>
-        <button onclick="FamilySettingsModule.openFamilySettings()" 
-                style="background: none; border: none; cursor: pointer; padding: 4px; opacity: 0.6; transition: opacity 0.2s;"
-                onmouseover="this.style.opacity='1'" 
-                onmouseout="this.style.opacity='0.6'"
-                title="Family Settings">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m15.364 6.364l-4.243-4.243m-6.364 0L3.636 18.364m12.728 0l-4.243-4.243m-6.364 0L3.636 5.636"></path>
-            </svg>
-        </button>
-    </div>
-    <div id="child-selector"></div>
-    <button class="sidebar-btn" onclick="FamilySettingsModule.openAddMemberChoice()" 
-            style="margin-top: 12px; width: 100%; justify-content: center; border: 2px dashed rgba(99, 102, 241, 0.3); background: transparent; color: #6366f1;">
-        <span class="sidebar-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-        </span>
-        <span>Add Family Member</span>
-    </button>
-</div>
+        <div class="sidebar">
+            <div class="sidebar-title">Family</div>
             
             <!-- Family member avatars will be inserted here by JavaScript -->
             <div id="sidebar-avatars-container"></div>
@@ -578,30 +801,77 @@
 
             <div class="sidebar-divider"></div>
             
-            <!-- Bottom Controls -->
+            <!-- Bottom Controls - Group 1: Main Actions -->
             <div class="sidebar-controls">
-                <button class="sidebar-btn" onclick="UICore.toggleEditMode()" id="sidebar-edit-btn">
-                    <span id="sidebar-edit-icon">✏️</span>
-                    <span id="sidebar-edit-text">Edit</span>
-                </button>
-                
-                <!-- NEW: Rewards Button -->
                 <button class="sidebar-btn" onclick="showRewardsSection()">
-                    <span class="sidebar-icon">🎁</span>
+                    <div class="sidebar-btn-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                    </div>
                     <span>Rewards</span>
                 </button>
                 
-                <button class="sidebar-btn" onclick="ProfileModule.openProfileModal()">👤 Profile</button>
-            
-                
-                <!-- NEW: MULTI-FAMILY SWITCH BUTTON (shows only if user has multiple families) -->
-                <button class="sidebar-btn" id="switch-family-btn" onclick="FamilyManagement.showFamilySelection()" 
-                        style="display: none;">
-                    <span class="sidebar-icon">🏠</span>
-                    <span class="sidebar-text">Switch Family</span>
+                <button class="sidebar-btn" onclick="ProfileModule.openProfileModal()">
+                    <div class="sidebar-btn-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <span>Profile</span>
                 </button>
                 
-                <button class="sidebar-btn" onclick="logout()">🔒 Logout</button>
+                <button class="sidebar-btn" onclick="UICore.toggleEditMode()" id="sidebar-edit-btn">
+                    <div class="sidebar-btn-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </div>
+                    <span id="sidebar-edit-text">Edit</span>
+                </button>
+            </div>
+            
+            <div class="sidebar-divider"></div>
+            
+            <!-- Bottom Controls - Group 2: Settings & System -->
+            <div class="sidebar-controls">
+                <button class="sidebar-btn" onclick="FamilySettingsModule.openFamilySettings()">
+                    <div class="sidebar-btn-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <span>Family Settings</span>
+                </button>
+                
+                <!-- MULTI-FAMILY SWITCH BUTTON (shows only if user has multiple families) -->
+                <button class="sidebar-btn" id="switch-family-btn" onclick="FamilyManagement.showFamilySelection()" 
+                        style="display: none;">
+                    <div class="sidebar-btn-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="17 1 21 5 17 9"></polyline>
+                            <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                            <polyline points="7 23 3 19 7 15"></polyline>
+                            <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                        </svg>
+                    </div>
+                    <span>Switch Family</span>
+                </button>
+                
+                <button class="sidebar-btn" onclick="logout()">
+                    <div class="sidebar-btn-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <span>Logout</span>
+                </button>
             </div>
         </div>
         
@@ -654,6 +924,7 @@
                     <div class="score-label">Point Balance</div>
                     <div class="score-value" id="base-points">0</div>
                     <div class="score-subtext" id="balance-sublabel">+0 today</div>
+                    <button class="score-action-btn" onclick="PointsModule.openSpendPointsModal()">💸 Spend Points</button>
                 </div>
                 <div class="score-item">
                     <div class="score-label">Daily Progress</div>
@@ -780,7 +1051,7 @@
                         </div>
                     </div>
                     
-                    <!-- NEW: REWARDS SECTION -->
+                    <!-- REWARDS SECTION -->
                     <div class="goals-group rewards-section" style="display: none;">
                         <div class="goals-header">
                             <span class="section-header-icon">🎁</span>
@@ -853,24 +1124,6 @@
                     <div style="margin-bottom: 16px;">
                         <label>Wellness Journals:</label>
                         <div id="tracker-list-container" style="margin-top: 8px;">
-
-
-                            <!-- ADD THIS after the color palette section, before the trackers section -->
-<div style="margin-top: 20px; padding: 16px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2">
-            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-        </svg>
-        <div>
-            <strong style="color: #0ea5e9;">Update from Setup Wizard</strong>
-            <p style="margin: 4px 0 0 0; font-size: 12px; color: #6b7280;">Use the guided wizard to update this member's routine and goals</p>
-        </div>
-    </div>
-    <button onclick="FamilySettingsModule.updateMemberWithWizard(StateManager.state.currentChild)" 
-            style="width: 100%; padding: 10px; background: #0ea5e9; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">
-        Open Setup Wizard
-    </button>
-</div>
                             <!-- Tracker list will be rendered here -->
                         </div>
                         <button onclick="TrackerTemplates.openAddTrackerModal()" style="margin-top: 8px; padding: 8px 16px; background: #6366f1; color: white; border: none; border-radius: 6px; cursor: pointer; width: 100%;">+ Add Health Tracker</button>
@@ -1012,7 +1265,7 @@
             </div>
         </div>
 
-        <!-- NEW: REWARD EDIT MODAL -->
+        <!-- REWARD EDIT MODAL -->
         <div id="reward-modal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -1128,9 +1381,111 @@
                 </div>
             </div>
         </div>
+
+        <!-- Family Settings Modal -->
+        <div id="family-settings-modal" class="modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h2>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        Family Settings
+                    </h2>
+                    <button class="close-btn" onclick="FamilySettingsModule.closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div style="margin-bottom: 24px;">
+                        <label style="font-weight: 600; color: #374151; display: block; margin-bottom: 8px;">Family Name</label>
+                        <div id="settings-family-name" style="padding: 12px; background: #f3f4f6; border-radius: 8px; font-size: 18px; font-weight: 500; color: #1f2937;">
+                            The Smith Family
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 24px;">
+                        <label style="font-weight: 600; color: #374151; display: block; margin-bottom: 8px;">Family Access Code</label>
+                        <div style="padding: 12px; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <div style="flex: 1;">
+                                <div id="settings-family-code" style="font-family: 'Courier New', monospace; font-size: 18px; font-weight: 700; color: #92400e; letter-spacing: 2px;">
+                                    XXXX-XXXX
+                                </div>
+                                <div style="font-size: 11px; color: #92400e; margin-top: 2px;">Share this code with other devices to sync data</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="padding: 16px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="font-weight: 600; color: #0369a1; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0369a1" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="8.5" cy="7" r="4"></circle>
+                                <line x1="20" y1="8" x2="20" y2="14"></line>
+                                <line x1="23" y1="11" x2="17" y2="11"></line>
+                            </svg>
+                            Add Family Members
+                        </div>
+                        <button onclick="FamilySettingsModule.openAddMemberChoice()" 
+                                style="width: 100%; padding: 12px; background: #0ea5e9; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Add New Member
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Member Choice Modal -->
+        <div id="add-member-choice-modal" class="modal">
+            <div class="modal-content" style="max-width: 450px;">
+                <div class="modal-header">
+                    <h2>Add Family Member</h2>
+                    <button class="close-btn" onclick="FamilySettingsModule.closeAddMemberChoice()">×</button>
+                </div>
+                <div class="modal-body">
+                    <p style="color: #6b7280; margin-bottom: 20px;">How would you like to add a new family member?</p>
+                    
+                    <button onclick="FamilySettingsModule.addMemberWithWizard()" 
+                            style="width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; cursor: pointer; margin-bottom: 12px; text-align: left;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                            </svg>
+                            <div>
+                                <div style="font-weight: 600; font-size: 16px;">Setup Wizard</div>
+                                <div style="font-size: 13px; opacity: 0.9;">Guided setup with templates and recommendations</div>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <button onclick="FamilySettingsModule.addMemberManually()" 
+                            style="width: 100%; padding: 16px; background: white; color: #374151; border: 2px solid #e5e7eb; border-radius: 12px; cursor: pointer; text-align: left;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                            <div>
+                                <div style="font-weight: 600; font-size: 16px; color: #374151;">Manual Setup</div>
+                                <div style="font-size: 13px; color: #6b7280;">Create profile and customize from scratch</div>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- NEW: FAMILY SELECTION OVERLAY -->
+    <!-- FAMILY SELECTION OVERLAY -->
     <!-- This overlay is populated dynamically by family-management.js -->
     <div id="family-selection-overlay" style="display: none;">
         <!-- Content will be dynamically injected by FamilyManagement module -->
@@ -1138,7 +1493,7 @@
 
     <!-- Sidebar Rendering Scripts -->
     <script>
-    // Render sidebar avatars
+    // Render sidebar avatars - NEW CENTERED STACKED LAYOUT
     function renderSidebarAvatars() {
         const container = document.getElementById('sidebar-avatars-container');
         if (!container) {
@@ -1162,20 +1517,37 @@
             
             let avatarContent;
             if (child.photo) {
-                avatarContent = `<img src="${child.photo}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+                avatarContent = `<img src="${child.photo}" alt="${child.name}">`;
             } else {
-                avatarContent = '<span style="font-size: 24px;">👤</span>';
+                avatarContent = `
+                    <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                `;
             }
             
             return `
-                <button class="sidebar-avatar ${isActive ? 'active' : ''}" 
+                <button class="sidebar-avatar-btn ${isActive ? 'active' : ''}" 
                         onclick="UICore.selectChild('${childId}')"
-                        title="${child.name}"
-                        style="width: 48px; height: 48px; border-radius: 50%; border: 3px solid ${isActive ? '#6366f1' : 'transparent'}; background: ${isActive ? '#f0f0f0' : '#fff'}; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; overflow: hidden;">
-                    ${avatarContent}
+                        title="${child.name}">
+                    <div class="avatar-icon-circle">${avatarContent}</div>
+                    <span class="avatar-name">${child.name}</span>
                 </button>
             `;
-        }).join('');
+        }).join('') + `
+            <button class="sidebar-avatar-btn add-member" 
+                    onclick="FamilySettingsModule.openAddMemberChoice()"
+                    title="Add Family Member">
+                <div class="avatar-icon-circle">
+                    <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </div>
+                <span class="avatar-name">Add Member</span>
+            </button>
+        `;
         
         console.log('✅ Sidebar avatars rendered');
     }
@@ -1194,13 +1566,19 @@
         const trackers = currentChild.trackers || [];
         
         if (trackers.length === 0) {
-            container.innerHTML = '<div style="padding:12px 16px;font-size:12px;color:#9ca3af;text-align:center">No trackers yet</div>';
+            container.innerHTML = '<div style="padding:12px 6px;font-size:12px;color:#94a3b8;text-align:center">No trackers yet</div>';
             return;
         }
         
         container.innerHTML = trackers.map(tracker => `
             <button class="sidebar-tracker-btn" onclick="openSpecificTracker('${tracker.id}')">
-                <span style="font-size:16px">${tracker.icon || '📊'}</span>
+                <div class="tracker-icon-circle">
+                    <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="20" x2="12" y2="10"></line>
+                        <line x1="18" y1="20" x2="18" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="16"></line>
+                    </svg>
+                </div>
                 <span>${tracker.templateName || 'Health Tracker'}</span>
             </button>
         `).join('');
@@ -1298,11 +1676,14 @@
     function switchMedTab(tab) {
         const tabs = ['entry', 'history', 'analytics', 'settings'];
         tabs.forEach(t => {
-            const tabBtn = document.getElementById(`med-tab-${t}`);
-            const content = document.getElementById(`med-content-${t}`);
+            const tabBtn = document.querySelector(`[data-tab="${t}"]`);
+            const content = document.getElementById(`tracker-${t}-content`);
             if (tabBtn) {
-                tabBtn.style.borderBottomColor = tab === t ? '#6366f1' : 'transparent';
-                tabBtn.style.color = tab === t ? '#6366f1' : '#6b7280';
+                if (tab === t) {
+                    tabBtn.classList.add('active');
+                } else {
+                    tabBtn.classList.remove('active');
+                }
             }
             if (content) {
                 content.style.display = tab === t ? 'block' : 'none';
@@ -1326,20 +1707,22 @@
         }
     }
 
-    // REWARDS HELPER FUNCTIONS
+    // Toggle between Rewards and Goals
     function toggleRewardsSection() {
         const rewardsSection = document.querySelector('.rewards-section');
         const isRewardsVisible = rewardsSection && rewardsSection.style.display === 'block';
         
         if (isRewardsVisible) {
+            // Currently showing rewards, switch to goals
             showGoalsSection();
         } else {
+            // Currently showing goals, switch to rewards
             showRewardsSection();
         }
     }
 
     function showRewardsSection() {
-        // Hide all goal groups (except rewards)
+        // Hide all goal groups
         document.querySelectorAll('.goals-group:not(.rewards-section)').forEach(group => {
             group.style.display = 'none';
         });
@@ -1352,9 +1735,6 @@
                 RewardsModule.renderRewardsStore();
             }
         }
-        
-        // Update button appearance
-        updateRewardsButtonState(true);
     }
 
     function showGoalsSection() {
@@ -1364,31 +1744,9 @@
             rewardsSection.style.display = 'none';
         }
         
-        // Show all goal groups (except rewards)
+        // Show goals
         document.querySelectorAll('.goals-group:not(.rewards-section)').forEach(group => {
             group.style.display = 'block';
-        });
-        
-        // Update button appearance
-        updateRewardsButtonState(false);
-    }
-
-    function updateRewardsButtonState(isShowingRewards) {
-        // Find rewards button in sidebar
-        const buttons = document.querySelectorAll('.sidebar-btn');
-        buttons.forEach(btn => {
-            const btnText = btn.textContent || '';
-            if (btnText.includes('Rewards') || btnText.includes('Back to Goals')) {
-                if (isShowingRewards) {
-                    btn.style.background = 'rgba(99, 102, 241, 0.1)';
-                    btn.style.borderLeft = '3px solid #6366f1';
-                    btn.innerHTML = '<span class="sidebar-icon">←</span><span>Back to Goals</span>';
-                } else {
-                    btn.style.background = '';
-                    btn.style.borderLeft = '';
-                    btn.innerHTML = '<span class="sidebar-icon">🎁</span><span>Rewards</span>';
-                }
-            }
         });
     }
 
@@ -1399,120 +1757,18 @@
     }
     </script>
 
-   <!-- Family Settings Modal -->
-<div id="family-settings-modal" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h2>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-                Family Settings
-            </h2>
-            <button class="close-modal" onclick="FamilySettingsModule.closeModal()">×</button>
-        </div>
-        <div class="modal-body">
-            <div style="margin-bottom: 24px;">
-                <label style="font-weight: 600; color: #374151; display: block; margin-bottom: 8px;">Family Name</label>
-                <div id="settings-family-name" style="padding: 12px; background: #f3f4f6; border-radius: 8px; font-size: 18px; font-weight: 500; color: #1f2937;">
-                    The Smith Family
-                </div>
-            </div>
-            
-            <div style="margin-bottom: 24px;">
-                <label style="font-weight: 600; color: #374151; display: block; margin-bottom: 8px;">Family Access Code</label>
-                <div style="padding: 12px; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
-                    <div style="flex: 1;">
-                        <div id="settings-family-code" style="font-family: 'Courier New', monospace; font-size: 18px; font-weight: 700; color: #92400e; letter-spacing: 2px;">
-                            XXXX-XXXX
-                        </div>
-                        <div style="font-size: 11px; color: #92400e; margin-top: 2px;">Share this code with other devices to sync data</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="padding: 16px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; margin-bottom: 16px;">
-                <div style="font-weight: 600; color: #0369a1; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0369a1" stroke-width="2">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="8.5" cy="7" r="4"></circle>
-                        <line x1="20" y1="8" x2="20" y2="14"></line>
-                        <line x1="23" y1="11" x2="17" y2="11"></line>
-                    </svg>
-                    Add Family Members
-                </div>
-                <button onclick="FamilySettingsModule.openAddMemberChoice()" 
-                        style="width: 100%; padding: 12px; background: #0ea5e9; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    Add New Member
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
 
-<!-- Add Member Choice Modal -->
-<div id="add-member-choice-modal" class="modal">
-    <div class="modal-content" style="max-width: 450px;">
-        <div class="modal-header">
-            <h2>Add Family Member</h2>
-            <button class="close-modal" onclick="FamilySettingsModule.closeAddMemberChoice()">×</button>
-        </div>
-        <div class="modal-body">
-            <p style="color: #6b7280; margin-bottom: 20px;">How would you like to add a new family member?</p>
-            
-            <button onclick="FamilySettingsModule.addMemberWithWizard()" 
-                    style="width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; cursor: pointer; margin-bottom: 12px; text-align: left;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-                    </svg>
-                    <div>
-                        <div style="font-weight: 600; font-size: 16px;">Setup Wizard</div>
-                        <div style="font-size: 13px; opacity: 0.9;">Guided setup with templates and recommendations</div>
-                    </div>
-                </div>
-            </button>
-            
-            <button onclick="FamilySettingsModule.addMemberManually()" 
-                    style="width: 100%; padding: 16px; background: white; color: #374151; border: 2px solid #e5e7eb; border-radius: 12px; cursor: pointer; text-align: left;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                    </svg>
-                    <div>
-                        <div style="font-weight: 600; font-size: 16px; color: #374151;">Manual Setup</div>
-                        <div style="font-size: 13px; color: #6b7280;">Create profile and customize from scratch</div>
-                    </div>
-                </div>
-            </button>
-        </div>
-    </div>
-</div>     
-
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
-
-<!-- Your App Scripts - IN ORDER -->
-<script src="https://type1unbound.github.io/family-tracker/app.js"></script>
-<script src="https://type1unbound.github.io/family-tracker/tracker.js"></script>
-<script src="https://type1unbound.github.io/family-tracker/family-management.js"></script>
-<script src="https://type1unbound.github.io/family-tracker/firebase.js"></script>
-<script src="https://type1unbound.github.io/family-tracker/import.js"></script>
+    <!-- Your App Scripts - IN ORDER -->
+    <script src="https://type1unbound.github.io/family-tracker/app.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/tracker.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/family-management.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/firebase.js"></script>
+    <script src="https://type1unbound.github.io/family-tracker/import.js"></script>
     
 </body>
 </html>
