@@ -1440,13 +1440,6 @@ const ProfileModule = {
         this.updateTrackerButtons();
         if (window.UICore) {
             UICore.applyColorPalette();
-            updateFamilyName() {
-    const familyNameEl = document.getElementById('family-name-display');
-    if (familyNameEl) {
-        const familyName = StateManager.state.familyName || 'Your Family';
-        familyNameEl.textContent = familyName;
-    }
-},
             UICore.updateUI();
         }
     },
@@ -1848,18 +1841,14 @@ window.FamilySettingsModule = FamilySettingsModule;
 // UI CORE
 // ========================================
 const UICore = {
-    updateUI() {
-        const child = StateManager.getCurrentChild();
-        
-        
-        // Safety check - if no child, don't try to update
-        if (!child) {
-            console.warn('⚠️ No current child selected, skipping UI update');
-            return;
-
-            this.updateFamilyName();  // ADD THIS LINE at the end
+updateUI() {
+    const child = StateManager.getCurrentChild();
     
-        }
+    // Safety check - if no child, don't try to update
+    if (!child) {
+        console.warn('⚠️ No current child selected, skipping UI update');
+        return;
+    }
         
         const dayData = StateManager.getDayData();
         const points = PointsModule.calculatePoints(StateManager.state.currentChild, StateManager.state.currentDate);
@@ -1952,6 +1941,7 @@ const UICore = {
         if (window.RewardsModule && document.getElementById('rewards-grid')) {
             RewardsModule.renderRewardsStore();
         }
+    this.updateFamilyName(); 
     },
 
     applyColorPalette() {
@@ -1978,6 +1968,14 @@ const UICore = {
             fill.style.background = `linear-gradient(135deg, ${palette.bgGradient1} 0%, ${palette.bgGradient2} 100%)`;
         });
     },
+
+    updateFamilyName() {
+    const familyNameEl = document.getElementById('family-name-display');
+    if (familyNameEl) {
+        const familyName = StateManager.state.familyName || 'Your Family';
+        familyNameEl.textContent = familyName;
+    }
+},
 
     selectChild(childId) {
         StateManager.state.currentChild = childId;
