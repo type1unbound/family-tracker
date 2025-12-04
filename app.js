@@ -1440,6 +1440,13 @@ const ProfileModule = {
         this.updateTrackerButtons();
         if (window.UICore) {
             UICore.applyColorPalette();
+            updateFamilyName() {
+    const familyNameEl = document.getElementById('family-name-display');
+    if (familyNameEl) {
+        const familyName = StateManager.state.familyName || 'Your Family';
+        familyNameEl.textContent = familyName;
+    }
+},
             UICore.updateUI();
         }
     },
@@ -1844,10 +1851,14 @@ const UICore = {
     updateUI() {
         const child = StateManager.getCurrentChild();
         
+        
         // Safety check - if no child, don't try to update
         if (!child) {
             console.warn('⚠️ No current child selected, skipping UI update');
             return;
+
+            this.updateFamilyName();  // ADD THIS LINE at the end
+    
         }
         
         const dayData = StateManager.getDayData();
@@ -2394,6 +2405,23 @@ function confirmDeleteGoal() {
 // Rewards functions
 function saveReward() {
     RewardsModule.saveReward();
+}
+
+// Family Settings functions
+function openFamilySettings() {
+    FamilySettingsModule.openFamilySettings();
+}
+
+function closeFamilySettings() {
+    FamilySettingsModule.closeModal();
+}
+
+function openAddMemberChoice() {
+    FamilySettingsModule.openAddMemberChoice();
+}
+
+function closeAddMemberChoice() {
+    FamilySettingsModule.closeAddMemberChoice();
 }
 
 // ========================================
