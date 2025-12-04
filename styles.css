@@ -181,7 +181,7 @@ body {
     width: calc(100% - 16px);
     margin: 0 8px 6px 8px;
     padding: 10px 12px;
-    background: transparent;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
     border-radius: 8px;
