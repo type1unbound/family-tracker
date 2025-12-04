@@ -2419,4 +2419,117 @@ function updateRewardsButtonState(isShowingRewards) {
     });
 }
 
+// ============================================
+// FAMILY SETTINGS MODULE
+// ============================================
+const FamilySettingsModule = {
+    openFamilySettings() {
+        const modal = document.getElementById('family-settings-modal');
+        if (!modal) {
+            console.error('Family settings modal not found');
+            return;
+        }
+        
+        // Update family name
+        const familyNameEl = document.getElementById('settings-family-name');
+        if (familyNameEl) {
+            familyNameEl.textContent = StateManager.state.familyName || 'Your Family';
+        }
+        
+        // Update family code
+        const familyCodeEl = document.getElementById('settings-family-code');
+        if (familyCodeEl) {
+            familyCodeEl.textContent = StateManager.state.familyCode || 'XXXX-XXXX';
+        }
+        
+        modal.style.display = 'flex';
+    },
+    
+    closeModal() {
+        const modal = document.getElementById('family-settings-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    },
+    
+    openAddMemberChoice() {
+        // Close family settings modal
+        this.closeModal();
+        
+        // Open add member choice modal
+        const modal = document.getElementById('add-member-choice-modal');
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    },
+    
+    closeAddMemberChoice() {
+        const modal = document.getElementById('add-member-choice-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    },
+    
+    addMemberWithWizard() {
+        this.closeAddMemberChoice();
+        
+        // Check if wizard exists
+        if (window.openWizard) {
+            window.openWizard('add-member');
+        } else {
+            alert('Setup wizard is not available. Please use manual setup.');
+            this.addMemberManually();
+        }
+    },
+    
+    addMemberManually() {
+        this.closeAddMemberChoice();
+        
+        // Create a new child with default data
+        const newChildId = 'child-' + Date.now();
+        const newChild = {
+            id: newChildId,
+            name: 'New Member',
+            emoji: '👤',
+            schedule: [],
+            weeklyChores: [],
+            character: [],
+            days: {},
+            basePoints: 0,
+            colorPalette: 'purple',
+            trackers: []
+        };
+        
+        // Add to state
+        StateManager.state.childData[newChildId] = newChild;
+        StateManager.state.children.push(newChildId);
+        
+        // Select the new child
+        StateManager.state.currentChild = newChildId;
+        
+        // Save to Firebase
+        StateManager.saveState();
+        
+        // Update UI
+        UICore.updateUI();
+        
+        // Open profile modal to edit
+        ProfileModule.openProfileModal();
+        
+        console.log('✅ New member created:', newChildId);
+    },
+    
+    updateMemberWithWizard(childId) {
+        // Check if wizard exists
+        if (window.openWizard) {
+            window.openWizard('update-member', childId);
+        } else {
+            alert('Setup wizard is not available yet.');
+        }
+    }
+};
+
+// Export to window
+window.FamilySettingsModule = FamilySettingsModule;
+
 console.log('✅ Family Tracker App (Multi-Family Support) loaded');
