@@ -1,6 +1,6 @@
 // ========================================
 // FAMILY MANAGEMENT & SELECTION SYSTEM
-// With Safe Migration - PROFESSIONAL DESIGNS
+// With Join Family Feature & Wizard Integration
 // ========================================
 
 // Track user's families
@@ -120,7 +120,7 @@ async function migrateOldUserData(userRef, userData) {
         if (existingFamilyDoc.exists) {
             console.log('   ✓ Family document already exists in /families - skipping family creation');
         } else {
-            const familyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            const familyCode = Math.random().toString(36).substring(2, 10).toUpperCase();
             
             console.log('   - Creating family document with code:', familyCode);
             
@@ -130,6 +130,7 @@ async function migrateOldUserData(userRef, userData) {
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 migratedFrom: 'legacy',
                 migratedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                members: [userId],
                 children: []
             });
         }
@@ -321,7 +322,7 @@ function showFamilySelectionScreen(defaultFamilyId) {
 }
 
 /**
- * Show setup choice for new users - PROFESSIONAL DESIGN (NO TAGLINE)
+ * Show setup choice for new users - PROFESSIONAL DESIGN
  */
 function showFamilySetupChoice() {
     const loginOverlay = document.getElementById('login-overlay');
@@ -342,6 +343,17 @@ function showFamilySetupChoice() {
     `;
     
     setupScreen.innerHTML = `
+        <div style="text-align: center; color: white; margin-bottom: 32px;">
+            <div style="width: 64px; height: 64px; margin: 0 auto 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);">
+                <svg viewBox="0 0 24 24" stroke="white" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-width="2.5" style="width: 32px; height: 32px;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="white"></polygon>
+                </svg>
+            </div>
+            <h1 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">Welcome to Compass</h1>
+            <p style="margin: 0; opacity: 0.85; font-size: 15px;">Choose how you'd like to get started</p>
+        </div>
+        
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
             <!-- Guided Setup -->
             <button 
@@ -362,13 +374,15 @@ function showFamilySetupChoice() {
             >
                 <div style="width: 80px; height: 80px; margin: 0 auto 24px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <circle cx="12" cy="12" r="6"></circle>
+                        <circle cx="12" cy="12" r="2"></circle>
                     </svg>
                 </div>
                 
                 <h2 style="font-size: 24px; font-weight: 700; color: #0f172a; margin: 0 0 12px 0; letter-spacing: -0.5px;">Guided Setup</h2>
                 <p style="font-size: 15px; color: #64748b; line-height: 1.6; margin: 0 0 24px 0;">
-                    Personalized 20-minute setup wizard that creates routines, goals, and rewards tailored to your family
+                    Personalized setup wizard that creates routines, goals, and rewards tailored to your family
                 </p>
                 
                 <div style="text-align: left; padding: 0; margin-bottom: 24px;">
@@ -377,12 +391,6 @@ function showFamilySetupChoice() {
                             <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
                         <span>AI-powered recommendations</span>
-                    </div>
-                    <div style="font-size: 14px; color: #475569; padding: 10px 0; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Motivation style analysis</span>
                     </div>
                     <div style="font-size: 14px; color: #475569; padding: 10px 0; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -398,8 +406,8 @@ function showFamilySetupChoice() {
                     </div>
                 </div>
                 
-                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #f1f5f9; font-size: 13px; color: #94a3b8;">
-                    ⏱️ About 20 minutes • Recommended
+                <div style="padding: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 10px; font-size: 13px; font-weight: 600;">
+                    ⭐ RECOMMENDED
                 </div>
             </button>
 
@@ -448,19 +456,34 @@ function showFamilySetupChoice() {
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
-                        <span>Edit anytime in settings</span>
-                    </div>
-                    <div style="font-size: 14px; color: #475569; padding: 10px 0; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
                         <span>Start tracking immediately</span>
                     </div>
                 </div>
                 
-                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #f1f5f9; font-size: 13px; color: #94a3b8;">
+                <div style="padding: 12px; background: #f3f4f6; border-radius: 10px; font-size: 13px; color: #6b7280; font-weight: 600;">
                     ⚡ About 2 minutes
                 </div>
+            </button>
+        </div>
+        
+        <div style="text-align: center; margin-top: 24px;">
+            <button 
+                onclick="showJoinFamilyDialog()"
+                style="
+                    padding: 12px 24px;
+                    background: rgba(255,255,255,0.1);
+                    border: 1px solid rgba(255,255,255,0.3);
+                    border-radius: 10px;
+                    color: white;
+                    font-size: 14px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                "
+                onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.borderColor='rgba(255,255,255,0.4)'"
+                onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.3)'"
+            >
+                🔗 Join Existing Family
             </button>
         </div>
     `;
@@ -473,7 +496,7 @@ function showFamilySetupChoice() {
 }
 
 /**
- * Show options for creating additional families - PROFESSIONAL DESIGN
+ * Show options for creating additional families
  */
 function showCreateFamilyOptions() {
     const modal = document.createElement('div');
@@ -517,7 +540,7 @@ function showCreateFamilyOptions() {
                     </button>
                     
                     <button 
-                        onclick="this.closest('.modal').remove(); createEmptyFamily();"
+                        onclick="this.closest('.modal').remove(); quickStartFamily();"
                         style="
                             width: 100%;
                             padding: 18px;
@@ -579,50 +602,322 @@ function showCreateFamilyOptions() {
 }
 
 /**
- * Launch the setup wizard - NO INSTRUCTION MODAL (automatic import)
+ * Launch the setup wizard - loads compass-wizard.html in new window
  */
 function launchSetupWizard() {
-    // NEW: Point to new professional wizard
+    // Point to the wizard URL
     const wizardUrl = 'https://type1unbound.github.io/family-tracker/compass-wizard.html';
-    const wizardWindow = window.open(wizardUrl, '_blank', 'width=1200,height=900');
+    
+    // Open in new window with specific dimensions
+    const wizardWindow = window.open(wizardUrl, 'compassWizard', 'width=1200,height=900,menubar=no,toolbar=no,location=no,status=no');
     
     if (!wizardWindow) {
-        alert('Please allow popups to use the Setup Wizard.');
+        alert('Please allow popups to use the Setup Wizard. You can also use Quick Start instead.');
         return;
     }
     
-    console.log('🧙‍♂️ Professional wizard opened - waiting for data...');
+    console.log('🧙‍♂️ Setup wizard opened - waiting for completion...');
+    
+    // Listen for wizard completion message
+    window.addEventListener('message', handleWizardCompletion);
 }
 
 /**
- * Show join family dialog
+ * Handle wizard completion - receives data from compass-wizard.html
  */
-function showJoinFamilyDialog() {
-    if (window.showFamilyCodeModal) {
-        showFamilyCodeModal();
+async function handleWizardCompletion(event) {
+    // Verify origin for security
+    if (!event.origin.includes('type1unbound.github.io') && !event.origin.includes('localhost')) {
+        return;
+    }
+    
+    if (event.data.type === 'WIZARD_COMPLETE') {
+        console.log('✅ Wizard completed, received data:', event.data);
+        
+        try {
+            showLoading();
+            
+            // Import wizard data into new family
+            const familyId = await importWizardData(event.data.familyData);
+            
+            // Switch to the new family
+            await switchToFamily(familyId);
+            
+            console.log('✅ Wizard import complete!');
+            
+        } catch (error) {
+            console.error('❌ Error importing wizard data:', error);
+            alert('Error setting up family from wizard: ' + error.message);
+            hideLoading();
+        }
+        
+        // Remove event listener
+        window.removeEventListener('message', handleWizardCompletion);
     }
 }
 
 /**
- * Create empty family with defaults
+ * Import wizard data into Firebase
  */
-async function createEmptyFamily() {
+async function importWizardData(wizardData) {
+    if (!currentUser) {
+        throw new Error('No user logged in');
+    }
+    
+    const familyId = 'family_' + Date.now();
+    const familyCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+    
+    // Create family document
+    await db.collection('families').doc(familyId).set({
+        familyCode: familyCode,
+        createdBy: currentUser.uid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        members: [currentUser.uid],
+        children: wizardData.children.map(c => c.id)
+    });
+    
+    // Create each child
+    for (const child of wizardData.children) {
+        await db.collection('families').doc(familyId)
+            .collection('familyMembers').doc(child.id)
+            .set({
+                name: child.name,
+                age: child.age,
+                photo: child.photo || null,
+                colorPalette: child.colorPalette || 'purple',
+                pointsBalance: 0,
+                pointsSpent: 0,
+                schedule: child.schedule || [],
+                characterValues: child.characterValues || [],
+                weeklyChores: child.weeklyChores || [],
+                rewards: child.rewards || [],
+                trackers: [],
+                days: {}
+            });
+    }
+    
+    // Add family to user's list
+    const userRef = db.collection('users').doc(currentUser.uid);
+    const userDoc = await userRef.get();
+    const existingFamilyIds = userDoc.exists && userDoc.data().familyIds ? userDoc.data().familyIds : [];
+    
+    await userRef.set({
+        email: currentUser.email,
+        displayName: currentUser.displayName,
+        familyIds: [...existingFamilyIds, familyId],
+        lastActiveFamilyId: familyId,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    
+    return familyId;
+}
+
+/**
+ * Show join family dialog - allows user to join existing family by code
+ */
+function showJoinFamilyDialog() {
+    const existingModal = document.getElementById('join-family-modal');
+    if (existingModal) existingModal.remove();
+    
+    const modal = document.createElement('div');
+    modal.id = 'join-family-modal';
+    modal.className = 'modal active';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 450px; border-radius: 16px;">
+            <div class="modal-header" style="padding: 24px; border-bottom: 1px solid #e5e7eb;">
+                <h2 style="margin: 0; font-size: 20px; font-weight: 600;">Join Existing Family</h2>
+                <button class="close-btn" onclick="document.getElementById('join-family-modal').remove()">×</button>
+            </div>
+            <div class="modal-body" style="padding: 24px;">
+                <p style="color: #6b7280; margin-bottom: 20px; font-size: 14px;">
+                    Enter the family code shared with you to join and sync your data.
+                </p>
+                
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px;">Family Code</label>
+                    <input 
+                        type="text" 
+                        id="join-family-code-input" 
+                        placeholder="XXXX-XXXX"
+                        style="
+                            width: 100%;
+                            padding: 12px;
+                            border: 2px solid #e5e7eb;
+                            border-radius: 8px;
+                            font-size: 16px;
+                            font-family: 'Courier New', monospace;
+                            text-transform: uppercase;
+                            letter-spacing: 2px;
+                        "
+                        maxlength="20"
+                    >
+                </div>
+                
+                <div id="join-error-message" style="display: none; padding: 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #dc2626; font-size: 13px; margin-bottom: 16px;"></div>
+                
+                <button 
+                    onclick="joinFamilyByCode()"
+                    style="
+                        width: 100%;
+                        padding: 14px;
+                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 10px;
+                        font-size: 15px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    "
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+                >
+                    Join Family
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Focus the input
+    setTimeout(() => {
+        document.getElementById('join-family-code-input').focus();
+    }, 100);
+}
+
+/**
+ * Join family by code - adds user to existing family
+ */
+async function joinFamilyByCode() {
+    const codeInput = document.getElementById('join-family-code-input');
+    const errorDiv = document.getElementById('join-error-message');
+    const code = codeInput.value.trim().toUpperCase();
+    
+    if (!code) {
+        errorDiv.textContent = 'Please enter a family code';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    if (!currentUser) {
+        errorDiv.textContent = 'You must be logged in to join a family';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    try {
+        errorDiv.style.display = 'none';
+        showLoading();
+        
+        console.log('🔍 Looking for family with code:', code);
+        
+        // Search for family with this code
+        const familiesSnapshot = await db.collection('families')
+            .where('familyCode', '==', code)
+            .limit(1)
+            .get();
+        
+        if (familiesSnapshot.empty) {
+            hideLoading();
+            errorDiv.textContent = 'Family code not found. Please check the code and try again.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        
+        const familyDoc = familiesSnapshot.docs[0];
+        const familyId = familyDoc.id;
+        const familyData = familyDoc.data();
+        
+        console.log('✅ Found family:', familyId);
+        
+        // Check if user is already in this family
+        const userRef = db.collection('users').doc(currentUser.uid);
+        const userDoc = await userRef.get();
+        const userData = userDoc.data() || {};
+        const existingFamilyIds = userData.familyIds || [];
+        
+        if (existingFamilyIds.includes(familyId)) {
+            hideLoading();
+            document.getElementById('join-family-modal').remove();
+            alert('You are already a member of this family!');
+            await switchToFamily(familyId);
+            return;
+        }
+        
+        // Add user to family members list
+        const members = familyData.members || [];
+        if (!members.includes(currentUser.uid)) {
+            await db.collection('families').doc(familyId).update({
+                members: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
+            });
+        }
+        
+        // Add family to user's familyIds
+        await userRef.set({
+            email: currentUser.email,
+            displayName: currentUser.displayName,
+            familyIds: [...existingFamilyIds, familyId],
+            lastActiveFamilyId: familyId,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        
+        console.log('✅ Successfully joined family:', code);
+        
+        // Close modal
+        document.getElementById('join-family-modal').remove();
+        
+        // Switch to the new family
+        await switchToFamily(familyId);
+        
+    } catch (error) {
+        console.error('❌ Error joining family:', error);
+        hideLoading();
+        errorDiv.textContent = 'Error joining family: ' + error.message;
+        errorDiv.style.display = 'block';
+    }
+}
+
+/**
+ * Create empty family with defaults - QUICK START
+ */
+async function quickStartFamily() {
     if (!currentUser) return;
     
     try {
-        console.log('⚡ Creating empty family...');
+        console.log('⚡ Creating quick start family...');
         showLoading();
         
-        const familyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const familyCode = Math.random().toString(36).substring(2, 10).toUpperCase();
         const familyId = 'family_' + Date.now();
         
+        // Create family with one default child
         await db.collection('families').doc(familyId).set({
             familyCode: familyCode,
             createdBy: currentUser.uid,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            children: ['child1', 'child2']
+            members: [currentUser.uid],
+            children: ['child1']
         });
         
+        // Create default child with empty data
+        await db.collection('families').doc(familyId)
+            .collection('familyMembers').doc('child1')
+            .set({
+                name: 'Family Member',
+                photo: null,
+                colorPalette: 'purple',
+                pointsBalance: 0,
+                pointsSpent: 0,
+                schedule: [],
+                characterValues: [],
+                weeklyChores: [],
+                rewards: [],
+                trackers: [],
+                days: {}
+            });
+        
+        // Add family to user
         const userRef = db.collection('users').doc(currentUser.uid);
         const userDoc = await userRef.get();
         const existingFamilyIds = userDoc.exists && userDoc.data().familyIds ? userDoc.data().familyIds : [];
@@ -635,7 +930,7 @@ async function createEmptyFamily() {
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
         
-        console.log('✅ Empty family created:', familyCode);
+        console.log('✅ Quick start family created:', familyCode);
         await switchToFamily(familyId);
         
     } catch (error) {
@@ -646,7 +941,7 @@ async function createEmptyFamily() {
 }
 
 /**
- * Switch to a specific family
+ * Switch to a specific family - UPDATED with better data loading
  */
 async function switchToFamily(familyId) {
     if (!currentUser) return;
@@ -655,6 +950,7 @@ async function switchToFamily(familyId) {
         console.log('🔄 Switching to family:', familyId);
         showLoading();
         
+        // Update user's active family
         await db.collection('users').doc(currentUser.uid).update({
             lastActiveFamilyId: familyId,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -671,7 +967,7 @@ async function switchToFamily(familyId) {
         }
         
         const familyData = familyDoc.data();
-        window.StateManager.state.children = familyData.children || ['child1', 'child2'];
+        window.StateManager.state.children = familyData.children || [];
         window.StateManager.state.familyCode = familyData.familyCode;
         
         console.log('  Loading', window.StateManager.state.children.length, 'family members...');
@@ -681,66 +977,39 @@ async function switchToFamily(familyId) {
             window.StateManager.state.data = {};
         }
         
+        // Load each child's data
         for (const childId of window.StateManager.state.children) {
             const memberDoc = await familyRef.collection('familyMembers').doc(childId).get();
             
             if (memberDoc.exists) {
                 window.StateManager.state.data[childId] = memberDoc.data();
                 
-                // Verify critical arrays exist
+                // Verify and initialize missing arrays
                 const memberData = window.StateManager.state.data[childId];
-                if (!memberData.schedule) {
-                    console.warn(`⚠️  ${memberData.name} missing schedule array - initializing empty`);
-                    memberData.schedule = [];
-                }
-                if (!memberData.weeklyChores) {
-                    console.warn(`⚠️  ${memberData.name} missing weeklyChores array - initializing empty`);
-                    memberData.weeklyChores = [];
-                }
-                if (!memberData.characterValues) {
-                    console.warn(`⚠️  ${memberData.name} missing characterValues array - initializing empty`);
-                    memberData.characterValues = [];
-                }
-                if (!memberData.rewards) {
-                    console.warn(`⚠️  ${memberData.name} missing rewards array - initializing empty`);
-                    memberData.rewards = [];
-                }
+                if (!memberData.schedule) memberData.schedule = [];
+                if (!memberData.weeklyChores) memberData.weeklyChores = [];
+                if (!memberData.characterValues) memberData.characterValues = [];
+                if (!memberData.rewards) memberData.rewards = [];
+                if (!memberData.trackers) memberData.trackers = [];
+                if (!memberData.days) memberData.days = {};
                 
-                // Verify schedule items have tasks array
-                if (memberData.schedule && memberData.schedule.length > 0) {
-                    memberData.schedule.forEach((item, idx) => {
-                        if (!item.tasks || !Array.isArray(item.tasks)) {
-                            console.warn(`⚠️  Schedule item ${idx} missing tasks array, fixing...`, item);
-                            item.tasks = [item.name || item.text || 'Task'];
-                        }
-                    });
-                }
-                
-                if (!window.StateManager.state.data[childId].trackers) {
-                    window.StateManager.state.data[childId].trackers = [];
-                }
-                if (!window.StateManager.state.data[childId].days) {
-                    window.StateManager.state.data[childId].days = {};
-                }
-                
+                // Load days data
                 const daysSnapshot = await familyRef.collection('familyMembers').doc(childId)
                     .collection('days').get();
                 
                 daysSnapshot.forEach(doc => {
-                    window.StateManager.state.data[childId].days[doc.id] = doc.data();
+                    memberData.days[doc.id] = doc.data();
                 });
                 
-                console.log('  ✓ Loaded', window.StateManager.state.data[childId].name);
-                console.log(`    - ${memberData.schedule.length} schedule items, ${memberData.weeklyChores.length} chores, ${memberData.characterValues.length} goals`);
-                if (memberData.schedule.length > 0) {
-                    console.log(`    - Sample schedule:`, memberData.schedule[0]);
-                }
-            } else if (!window.StateManager.state.data[childId]) {
-                window.StateManager.createChild(childId);
+                console.log('  ✓ Loaded', memberData.name || childId);
+            } else {
+                // Create empty child if doesn't exist
+                window.StateManager.createChild(childId, false);
             }
         }
         
-        if (window.StateManager.state.children.length > 0) {
+        // Set current child if not set
+        if (window.StateManager.state.children.length > 0 && !window.StateManager.state.currentChild) {
             window.StateManager.state.currentChild = window.StateManager.state.children[0];
         }
         
@@ -755,34 +1024,17 @@ async function switchToFamily(familyId) {
 }
 
 /**
- * Add family switcher to dashboard header
+ * Add family switcher to sidebar (if multiple families)
  */
 function addFamilySwitcher() {
-    if (userFamilies.length <= 1) return;
+    if (userFamilies.length <= 1) {
+        const btn = document.getElementById('switch-family-btn');
+        if (btn) btn.style.display = 'none';
+        return;
+    }
     
-    const header = document.querySelector('h1');
-    if (!header || document.getElementById('family-switcher-btn')) return;
-    
-    const switcherBtn = document.createElement('button');
-    switcherBtn.id = 'family-switcher-btn';
-    switcherBtn.innerHTML = '🔄 Switch Family';
-    switcherBtn.style.cssText = `
-        float: right;
-        margin-right: 8px;
-        padding: 8px 16px;
-        background: rgba(255,255,255,0.2);
-        border: 1px solid rgba(255,255,255,0.4);
-        border-radius: 8px;
-        color: white;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.2s;
-    `;
-    switcherBtn.onmouseover = () => switcherBtn.style.background = 'rgba(255,255,255,0.3)';
-    switcherBtn.onmouseout = () => switcherBtn.style.background = 'rgba(255,255,255,0.2)';
-    switcherBtn.onclick = () => showFamilySelectionScreen(currentFamilyId);
-    
-    header.parentElement.insertBefore(switcherBtn, header);
+    const btn = document.getElementById('switch-family-btn');
+    if (btn) btn.style.display = 'flex';
 }
 
 // Export functions globally
@@ -791,10 +1043,13 @@ window.showFamilySelectionScreen = showFamilySelectionScreen;
 window.showFamilySetupChoice = showFamilySetupChoice;
 window.showCreateFamilyOptions = showCreateFamilyOptions;
 window.launchSetupWizard = launchSetupWizard;
-window.createEmptyFamily = createEmptyFamily;
+window.handleWizardCompletion = handleWizardCompletion;
+window.importWizardData = importWizardData;
+window.showJoinFamilyDialog = showJoinFamilyDialog;
+window.joinFamilyByCode = joinFamilyByCode;
+window.quickStartFamily = quickStartFamily;
 window.switchToFamily = switchToFamily;
 window.addFamilySwitcher = addFamilySwitcher;
-window.showJoinFamilyDialog = showJoinFamilyDialog;
 window.migrateOldUserData = migrateOldUserData;
 
-console.log('✅ Family Management System loaded (Professional Design)');
+console.log('✅ Family Management System loaded (with Join Family & Wizard support)');
