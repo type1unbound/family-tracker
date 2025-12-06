@@ -742,12 +742,24 @@ async function switchToFamily(familyId) {
             if (switchBtn) switchBtn.style.display = 'flex';
         }
         
-        // CRITICAL: Hide login overlay before initializing dashboard
+        // CRITICAL: Prepare UI for dashboard
+        // 1. Hide login overlay
         const loginOverlay = document.getElementById('login-overlay');
         if (loginOverlay) {
             loginOverlay.style.display = 'none';
         }
         
+        // 2. Ensure app container is visible
+        const appContainer = document.querySelector('.app-container');
+        if (appContainer) {
+            appContainer.style.display = 'flex';
+            appContainer.style.visibility = 'visible';
+        }
+        
+        // 3. Wait for DOM to settle before initializing dashboard
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // 4. Initialize dashboard
         await initializeDashboard();
         
     } catch (error) {
@@ -756,7 +768,6 @@ async function switchToFamily(familyId) {
         hideLoading();
     }
 }
-
     /**
      * Add family switcher to sidebar (if multiple families)
      */
