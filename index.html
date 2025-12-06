@@ -2591,8 +2591,9 @@
         }
     }
 
-   // STANDALONE Setup Wizard Functions
-// Updated to use the new add-member mode
+   
+// STANDALONE Setup Wizard Functions
+// Updated to verify family context before launching add-member wizard
 
 window.runSetupWizardForCurrentMember = function() {
     const currentChild = window.StateManager?.getCurrentChild();
@@ -2610,6 +2611,20 @@ window.runSetupWizardForCurrentMember = function() {
 window.addMemberWithSetupWizard = function() {
     console.log('Add member with setup wizard requested');
     
+    // CRITICAL: Verify we're in a family context
+    if (!window.FamilyManagement) {
+        alert('Family management system not loaded. Please refresh the page.');
+        return;
+    }
+    
+    const debugInfo = window.FamilyManagement.getDebugInfo();
+    console.log('🔍 Debug info:', debugInfo);
+    
+    if (!debugInfo.currentFamilyId && !debugInfo.stateManagerFamilyId) {
+        alert('No family currently active. Please select or create a family first.');
+        return;
+    }
+    
     // Close modals first
     if (window.FamilySettingsModule) {
         if (window.FamilySettingsModule.closeModal) window.FamilySettingsModule.closeModal();
@@ -2625,6 +2640,7 @@ window.addMemberWithSetupWizard = function() {
     if (window.FamilyManagement && typeof window.FamilyManagement.launchSetupWizard === 'function') {
         // Launch wizard in 'add-member' mode
         console.log('🎯 Launching wizard in add-member mode');
+        console.log('   Current family:', debugInfo.currentFamilyId || debugInfo.stateManagerFamilyId);
         window.FamilyManagement.launchSetupWizard('add-member');
     } else {
         alert('Setup Wizard is not currently available.\n\nPlease use Manual Setup to add a family member.');
@@ -2646,7 +2662,6 @@ setTimeout(() => {
     }
 }, 2000);
 </script>
-
 
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
