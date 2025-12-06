@@ -430,16 +430,23 @@ const FamilyManagement = (function() {
         
         if (event.data.type === 'WIZARD_COMPLETE') {
             console.log('✅ Wizard completed, received data:', event.data);
-            console.log('   Mode:', wizardMode);
+            console.log('   Wizard mode:', wizardMode);
+            console.log('   Current family ID:', currentFamilyId);
+            console.log('   Full event data:', JSON.stringify(event.data, null, 2));
             
             try {
                 showLoading();
                 
                 let familyId;
-                if (wizardMode === 'add-member') {
+                if (wizardMode === 'add-member' && currentFamilyId) {
+                    console.log('📝 Adding members to current family:', currentFamilyId);
                     // Add members to current family
                     familyId = await addMembersToCurrentFamily(event.data.familyData);
                 } else {
+                    if (wizardMode === 'add-member' && !currentFamilyId) {
+                        console.warn('⚠️ Wizard mode was add-member but no current family - creating new family instead');
+                    }
+                    console.log('🆕 Creating new family');
                     // Create new family
                     familyId = await importWizardData(event.data.familyData);
                 }
@@ -448,6 +455,7 @@ const FamilyManagement = (function() {
                 console.log('✅ Wizard import complete!');
             } catch (error) {
                 console.error('❌ Error importing wizard data:', error);
+                console.error('   Error stack:', error.stack);
                 alert('Error setting up family from wizard: ' + error.message);
                 hideLoading();
             }
@@ -513,9 +521,24 @@ const FamilyManagement = (function() {
      */
     async function addMembersToCurrentFamily(wizardData) {
         if (!currentUser) throw new Error('No user logged in');
-        if (!currentFamilyId) throw new Error('No family currently selected');
+        if (!currentFamilyId) throw new Error('No family currently selected - cannot add members');
         
         console.log('➕ Adding members to current family:', currentFamilyId);
+        console.log('   Wizard data received:', wizardData);
+        
+        // Validate wizard data structure
+        if (!wizardData) {
+            throw new Error('No wizard data received');
+        }
+        
+        if (!wizardData.children || !Array.isArray(wizardData.children)) {
+            console.error('❌ Invalid wizard data structure:', wizardData);
+            throw new Error('Invalid wizard data: missing or invalid children array');
+        }
+        
+        if (wizardData.children.length === 0) {
+            throw new Error('No children data in wizard response');
+        }
         
         const familyRef = db.collection('families').doc(currentFamilyId);
         const familyDoc = await familyRef.get();
@@ -528,6 +551,10 @@ const FamilyManagement = (function() {
         const existingChildren = familyData.children || [];
         const newChildIds = wizardData.children.map(c => c.id);
         
+        console.log(`   Adding ${newChildIds.length} new member(s) to family`);
+        console.log('   Existing children:', existingChildren);
+        console.log('   New children:', newChildIds);
+        
         // Add children to family document
         await familyRef.update({
             children: [...existingChildren, ...newChildIds],
@@ -536,9 +563,11 @@ const FamilyManagement = (function() {
         
         // Add each child member
         for (const child of wizardData.children) {
+            console.log(`   Adding ${child.name || child.id}...`);
+            
             await familyRef.collection('familyMembers').doc(child.id).set({
-                name: child.name,
-                age: child.age,
+                name: child.name || 'New Member',
+                age: child.age || null,
                 photo: child.photo || null,
                 colorPalette: child.colorPalette || 'purple',
                 pointsBalance: 0,
@@ -554,7 +583,7 @@ const FamilyManagement = (function() {
             console.log(`   ✓ Added ${child.name} to family`);
         }
         
-        console.log(`✅ Successfully added ${wizardData.children.length} member(s) to family`);
+        console.log(`✅ Successfully added ${wizardData.children.length} member(s) to family ${currentFamilyId}`);
         
         return currentFamilyId;
     }
@@ -870,7 +899,18 @@ const FamilyManagement = (function() {
         joinFamilyByCode: joinFamilyByCode,
         addFamilySwitcher: addFamilySwitcher,
         getUserFamilies: () => userFamilies,
-        getCurrentFamilyId: () => currentFamilyId
+        getCurrentFamilyId: () => {
+            console.log('📋 Current family ID:', currentFamilyId);
+            return currentFamilyId;
+        },
+        // Debug method
+        getDebugInfo: () => ({
+            currentFamilyId: currentFamilyId,
+            wizardMode: wizardMode,
+            userFamilies: userFamilies,
+            hasStateManager: !!window.StateManager,
+            stateManagerFamilyId: window.StateManager?.state?.familyId
+        })
     };
 })();
 
