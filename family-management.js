@@ -1,12 +1,13 @@
 // ========================================
 // FAMILY MANAGEMENT & SELECTION SYSTEM
-// FIXED: StateManager checks and no duplicates
+// UPDATED: Added support for wizard to add members to existing family
 // ========================================
 
 const FamilyManagement = (function() {
     // Private variables
     let userFamilies = [];
     let currentFamilyId = null;
+    let wizardMode = null; // 'new-family' or 'add-member'
 
     /**
      * Load user's families and show selection screen
@@ -314,7 +315,7 @@ const FamilyManagement = (function() {
                     <p style="font-size: 16px; color: #6b7280; margin: 0;">Let's get your family started</p>
                 </div>
                 
-                <div onclick="FamilyManagement.launchSetupWizard()" style="background: white; border: 3px solid #10b981; border-radius: 16px; padding: 28px; margin-bottom: 16px; cursor: pointer; text-align: center; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(16, 185, 129, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                <div onclick="FamilyManagement.launchSetupWizard('new-family')" style="background: white; border: 3px solid #10b981; border-radius: 16px; padding: 28px; margin-bottom: 16px; cursor: pointer; text-align: center; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(16, 185, 129, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                     <div style="width: 48px; height: 48px; background: #f0fdf4; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
                             <circle cx="12" cy="12" r="10"/>
@@ -370,7 +371,7 @@ const FamilyManagement = (function() {
                 <div class="modal-body">
                     <p style="color: #6b7280; margin-bottom: 20px;">Choose your setup method:</p>
                     
-                    <button onclick="this.closest('.modal').remove(); FamilyManagement.launchSetupWizard();" style="width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 12px; text-align: left; display: flex; align-items: center; gap: 12px; font-family: inherit;">
+                    <button onclick="this.closest('.modal').remove(); FamilyManagement.launchSetupWizard('new-family');" style="width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 12px; text-align: left; display: flex; align-items: center; gap: 12px; font-family: inherit;">
                         <div style="font-size: 28px;">🎯</div>
                         <div style="flex: 1;">
                             <div style="font-size: 16px; margin-bottom: 2px;">Guided Setup</div>
@@ -401,8 +402,11 @@ const FamilyManagement = (function() {
 
     /**
      * Launch the setup wizard
+     * UPDATED: Added mode parameter ('new-family' or 'add-member')
      */
-    function launchSetupWizard() {
+    function launchSetupWizard(mode = 'new-family') {
+        wizardMode = mode;
+        
         const wizardUrl = 'https://type1unbound.github.io/family-tracker/compass-wizard.html';
         const wizardWindow = window.open(wizardUrl, 'compassWizard', 'width=1200,height=900,menubar=no,toolbar=no,location=no,status=no');
         
@@ -411,12 +415,13 @@ const FamilyManagement = (function() {
             return;
         }
         
-        console.log('🧙‍♂️ Setup wizard opened - waiting for completion...');
+        console.log(`🧙‍♂️ Setup wizard opened in ${mode} mode - waiting for completion...`);
         window.addEventListener('message', handleWizardCompletion);
     }
 
     /**
      * Handle wizard completion
+     * UPDATED: Routes to appropriate import function based on mode
      */
     async function handleWizardCompletion(event) {
         if (!event.origin.includes('type1unbound.github.io') && !event.origin.includes('localhost')) {
@@ -425,10 +430,20 @@ const FamilyManagement = (function() {
         
         if (event.data.type === 'WIZARD_COMPLETE') {
             console.log('✅ Wizard completed, received data:', event.data);
+            console.log('   Mode:', wizardMode);
             
             try {
                 showLoading();
-                const familyId = await importWizardData(event.data.familyData);
+                
+                let familyId;
+                if (wizardMode === 'add-member') {
+                    // Add members to current family
+                    familyId = await addMembersToCurrentFamily(event.data.familyData);
+                } else {
+                    // Create new family
+                    familyId = await importWizardData(event.data.familyData);
+                }
+                
                 await switchToFamily(familyId);
                 console.log('✅ Wizard import complete!');
             } catch (error) {
@@ -438,11 +453,12 @@ const FamilyManagement = (function() {
             }
             
             window.removeEventListener('message', handleWizardCompletion);
+            wizardMode = null;
         }
     }
 
     /**
-     * Import wizard data into Firebase
+     * Import wizard data into Firebase (creates NEW family)
      */
     async function importWizardData(wizardData) {
         if (!currentUser) throw new Error('No user logged in');
@@ -490,6 +506,57 @@ const FamilyManagement = (function() {
         }, { merge: true });
         
         return familyId;
+    }
+
+    /**
+     * Add members to CURRENT family (NEW FUNCTION)
+     */
+    async function addMembersToCurrentFamily(wizardData) {
+        if (!currentUser) throw new Error('No user logged in');
+        if (!currentFamilyId) throw new Error('No family currently selected');
+        
+        console.log('➕ Adding members to current family:', currentFamilyId);
+        
+        const familyRef = db.collection('families').doc(currentFamilyId);
+        const familyDoc = await familyRef.get();
+        
+        if (!familyDoc.exists) {
+            throw new Error('Current family not found in database');
+        }
+        
+        const familyData = familyDoc.data();
+        const existingChildren = familyData.children || [];
+        const newChildIds = wizardData.children.map(c => c.id);
+        
+        // Add children to family document
+        await familyRef.update({
+            children: [...existingChildren, ...newChildIds],
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Add each child member
+        for (const child of wizardData.children) {
+            await familyRef.collection('familyMembers').doc(child.id).set({
+                name: child.name,
+                age: child.age,
+                photo: child.photo || null,
+                colorPalette: child.colorPalette || 'purple',
+                pointsBalance: 0,
+                pointsSpent: 0,
+                schedule: child.schedule || [],
+                characterValues: child.characterValues || [],
+                weeklyChores: child.weeklyChores || [],
+                rewards: child.rewards || [],
+                trackers: [],
+                days: {}
+            });
+            
+            console.log(`   ✓ Added ${child.name} to family`);
+        }
+        
+        console.log(`✅ Successfully added ${wizardData.children.length} member(s) to family`);
+        
+        return currentFamilyId;
     }
 
     /**
@@ -678,7 +745,6 @@ const FamilyManagement = (function() {
 
     /**
      * Switch to a specific family
-     * FIXED: Added StateManager existence check
      */
     async function switchToFamily(familyId) {
         if (!currentUser) return;
@@ -686,7 +752,6 @@ const FamilyManagement = (function() {
         try {
             showLoading();
             
-            // CRITICAL: Wait for StateManager to be available
             console.log('⏳ Waiting for StateManager...');
             let retries = 0;
             while (!window.StateManager && retries < 50) {
@@ -750,30 +815,24 @@ const FamilyManagement = (function() {
                 window.StateManager.state.currentChild = window.StateManager.state.children[0];
             }
             
-            // Show switch family button if multiple families
             if (userFamilies.length > 1) {
                 const switchBtn = document.getElementById('switch-family-btn');
                 if (switchBtn) switchBtn.style.display = 'flex';
             }
             
-            // CRITICAL: Prepare UI for dashboard
-            // 1. Hide login overlay
             const loginOverlay = document.getElementById('login-overlay');
             if (loginOverlay) {
                 loginOverlay.style.display = 'none';
             }
             
-            // 2. Ensure app container is visible
             const appContainer = document.querySelector('.app-container');
             if (appContainer) {
                 appContainer.style.display = 'flex';
                 appContainer.style.visibility = 'visible';
             }
             
-            // 3. Wait for DOM to settle before initializing dashboard
             await new Promise(resolve => setTimeout(resolve, 100));
             
-            // 4. Initialize dashboard
             await initializeDashboard();
             
         } catch (error) {
@@ -797,7 +856,7 @@ const FamilyManagement = (function() {
         if (btn) btn.style.display = 'flex';
     }
 
-    // Public API - exposed to window.FamilyManagement
+    // Public API
     return {
         loadUserFamilies: loadUserFamilies,
         showFamilySelection: showFamilySelectionScreen,
@@ -815,7 +874,6 @@ const FamilyManagement = (function() {
     };
 })();
 
-// Export to window
 window.FamilyManagement = FamilyManagement;
 
-console.log('✅ Family Management System loaded (Namespace pattern)');
+console.log('✅ Family Management System loaded (with add-member wizard support)');
