@@ -1,6 +1,6 @@
 // ========================================
 // FAMILY MANAGEMENT & SELECTION SYSTEM
-// Namespace pattern for firebase.js compatibility
+// FIXED: StateManager checks and no duplicates
 // ========================================
 
 const FamilyManagement = (function() {
@@ -676,98 +676,113 @@ const FamilyManagement = (function() {
         }
     }
 
+    /**
+     * Switch to a specific family
+     * FIXED: Added StateManager existence check
+     */
+    async function switchToFamily(familyId) {
+        if (!currentUser) return;
+        
+        try {
+            showLoading();
             
-/**
- * Switch to a specific family
- */
-async function switchToFamily(familyId) {
-    if (!currentUser) return;
-    
-    try {
-        showLoading();
-        
-        await db.collection('users').doc(currentUser.uid).update({
-            lastActiveFamilyId: familyId,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        currentFamilyId = familyId;
-        window.StateManager.state.familyId = familyId;
-        
-        const familyRef = db.collection('families').doc(familyId);
-        const familyDoc = await familyRef.get();
-        
-        if (!familyDoc.exists) throw new Error('Family not found');
-        
-        const familyData = familyDoc.data();
-        window.StateManager.state.children = familyData.children || [];
-        window.StateManager.state.familyCode = familyData.familyCode;
-        
-        if (!window.StateManager.state.data) {
-            window.StateManager.state.data = {};
-        }
-        
-        for (const childId of window.StateManager.state.children) {
-            const memberDoc = await familyRef.collection('familyMembers').doc(childId).get();
-            
-            if (memberDoc.exists) {
-                window.StateManager.state.data[childId] = memberDoc.data();
-                
-                const memberData = window.StateManager.state.data[childId];
-                if (!memberData.schedule) memberData.schedule = [];
-                if (!memberData.weeklyChores) memberData.weeklyChores = [];
-                if (!memberData.characterValues) memberData.characterValues = [];
-                if (!memberData.rewards) memberData.rewards = [];
-                if (!memberData.trackers) memberData.trackers = [];
-                if (!memberData.days) memberData.days = {};
-                
-                const daysSnapshot = await familyRef.collection('familyMembers').doc(childId)
-                    .collection('days').get();
-                
-                daysSnapshot.forEach(doc => {
-                    memberData.days[doc.id] = doc.data();
-                });
-            } else {
-                window.StateManager.createChild(childId, false);
+            // CRITICAL: Wait for StateManager to be available
+            console.log('⏳ Waiting for StateManager...');
+            let retries = 0;
+            while (!window.StateManager && retries < 50) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                retries++;
             }
+            
+            if (!window.StateManager) {
+                throw new Error('StateManager not loaded. Please refresh the page.');
+            }
+            
+            console.log('✅ StateManager available');
+            
+            await db.collection('users').doc(currentUser.uid).update({
+                lastActiveFamilyId: familyId,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            currentFamilyId = familyId;
+            window.StateManager.state.familyId = familyId;
+            
+            const familyRef = db.collection('families').doc(familyId);
+            const familyDoc = await familyRef.get();
+            
+            if (!familyDoc.exists) throw new Error('Family not found');
+            
+            const familyData = familyDoc.data();
+            window.StateManager.state.children = familyData.children || [];
+            window.StateManager.state.familyCode = familyData.familyCode;
+            
+            if (!window.StateManager.state.data) {
+                window.StateManager.state.data = {};
+            }
+            
+            for (const childId of window.StateManager.state.children) {
+                const memberDoc = await familyRef.collection('familyMembers').doc(childId).get();
+                
+                if (memberDoc.exists) {
+                    window.StateManager.state.data[childId] = memberDoc.data();
+                    
+                    const memberData = window.StateManager.state.data[childId];
+                    if (!memberData.schedule) memberData.schedule = [];
+                    if (!memberData.weeklyChores) memberData.weeklyChores = [];
+                    if (!memberData.characterValues) memberData.characterValues = [];
+                    if (!memberData.rewards) memberData.rewards = [];
+                    if (!memberData.trackers) memberData.trackers = [];
+                    if (!memberData.days) memberData.days = {};
+                    
+                    const daysSnapshot = await familyRef.collection('familyMembers').doc(childId)
+                        .collection('days').get();
+                    
+                    daysSnapshot.forEach(doc => {
+                        memberData.days[doc.id] = doc.data();
+                    });
+                } else {
+                    window.StateManager.createChild(childId, false);
+                }
+            }
+            
+            if (window.StateManager.state.children.length > 0 && !window.StateManager.state.currentChild) {
+                window.StateManager.state.currentChild = window.StateManager.state.children[0];
+            }
+            
+            // Show switch family button if multiple families
+            if (userFamilies.length > 1) {
+                const switchBtn = document.getElementById('switch-family-btn');
+                if (switchBtn) switchBtn.style.display = 'flex';
+            }
+            
+            // CRITICAL: Prepare UI for dashboard
+            // 1. Hide login overlay
+            const loginOverlay = document.getElementById('login-overlay');
+            if (loginOverlay) {
+                loginOverlay.style.display = 'none';
+            }
+            
+            // 2. Ensure app container is visible
+            const appContainer = document.querySelector('.app-container');
+            if (appContainer) {
+                appContainer.style.display = 'flex';
+                appContainer.style.visibility = 'visible';
+            }
+            
+            // 3. Wait for DOM to settle before initializing dashboard
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // 4. Initialize dashboard
+            await initializeDashboard();
+            
+        } catch (error) {
+            console.error('❌ Error switching family:', error);
+            alert('Error switching family: ' + error.message);
+            hideLoading();
         }
-        
-        if (window.StateManager.state.children.length > 0 && !window.StateManager.state.currentChild) {
-            window.StateManager.state.currentChild = window.StateManager.state.children[0];
-        }
-        
-        // Show switch family button if multiple families
-        if (userFamilies.length > 1) {
-            const switchBtn = document.getElementById('switch-family-btn');
-            if (switchBtn) switchBtn.style.display = 'flex';
-        }
-        
-        // CRITICAL: Prepare UI for dashboard
-        // 1. Hide login overlay
-        const loginOverlay = document.getElementById('login-overlay');
-        if (loginOverlay) {
-            loginOverlay.style.display = 'none';
-        }
-        
-        // 2. Ensure app container is visible
-        const appContainer = document.querySelector('.app-container');
-        if (appContainer) {
-            appContainer.style.display = 'flex';
-            appContainer.style.visibility = 'visible';
-        }
-        
-        // 3. Wait for DOM to settle before initializing dashboard
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // 4. Initialize dashboard
-        await initializeDashboard();
-        
-    } catch (error) {
-        console.error('❌ Error switching family:', error);
-        alert('Error switching family: ' + error.message);
-        hideLoading();
     }
-}
+
     /**
      * Add family switcher to sidebar (if multiple families)
      */
