@@ -1,6 +1,6 @@
 // ========================================
 // FAMILY MANAGEMENT & SELECTION SYSTEM
-// With Join Family Feature & Wizard Integration
+// Clean version for new login flow
 // ========================================
 
 // Track user's families
@@ -192,8 +192,6 @@ async function migrateOldUserData(userRef, userData) {
         });
         
         console.log('✅ Migration complete!');
-        console.log('   ℹ️  Original data in /users collection is preserved');
-        console.log('   ℹ️  New data is in /families collection');
         
     } catch (error) {
         console.error('❌ Migration error:', error);
@@ -202,200 +200,159 @@ async function migrateOldUserData(userRef, userData) {
 }
 
 /**
- * Show family selection screen - PROFESSIONAL DESIGN
+ * Show family selection screen - CLEAN VERSION
  */
 function showFamilySelectionScreen(defaultFamilyId) {
     const loginOverlay = document.getElementById('login-overlay');
     const loginContent = document.getElementById('login-content');
     const loadingContent = document.getElementById('loading-content');
     
-    if (loginOverlay) loginOverlay.style.display = 'flex';
+    if (!loginOverlay) return;
+    
+    loginOverlay.style.display = 'flex';
     if (loginContent) loginContent.style.display = 'none';
     if (loadingContent) loadingContent.style.display = 'none';
     
-    const selectionScreen = document.createElement('div');
-    selectionScreen.id = 'family-selection-screen';
-    selectionScreen.style.cssText = `
-        display: block;
-        text-align: center;
-        color: white;
-        padding: 48px 32px;
-        max-width: 560px;
-        margin: 0 auto;
-    `;
+    // Remove any existing selection screen
+    const existingScreen = document.getElementById('family-selection-screen');
+    if (existingScreen) existingScreen.remove();
     
-    selectionScreen.innerHTML = `
-        <div style="margin-bottom: 40px;">
-            <div style="font-size: 48px; margin-bottom: 16px;">👨‍👩‍👧‍👦</div>
-            <h1 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 600; letter-spacing: -0.5px;">Select Family</h1>
-            <p style="margin: 0; opacity: 0.85; font-size: 15px;">Choose which family to manage</p>
-        </div>
-        
-        <div id="family-cards-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
-            ${userFamilies.map(family => {
-                const memberCount = family.children ? family.children.length : 0;
-                const isDefault = family.id === defaultFamilyId;
-                
-                return `
-                    <button 
-                         onclick="switchToFamily('${family.id}')"
-                         style="
-                            background: ${isDefault ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.12)'};
-                            border: 1.5px solid ${isDefault ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)'};
-                            border-radius: 12px;
+    // Create clean selection screen
+    const selectionContainer = document.createElement('div');
+    selectionContainer.id = 'family-selection-screen';
+    selectionContainer.style.cssText = 'max-width: 480px; width: 100%;';
+    
+    selectionContainer.innerHTML = `
+        <div style="background: white; border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
+            <div style="text-align: center; margin-bottom: 28px;">
+                <h2 style="font-size: 28px; font-weight: 700; color: #1f2937; margin: 0 0 8px 0;">Welcome Back! 👋</h2>
+                <p style="font-size: 16px; color: #6b7280; margin: 0;">Which family would you like to work with?</p>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+                ${userFamilies.map(family => {
+                    const memberCount = family.children ? family.children.length : 0;
+                    const isDefault = family.id === defaultFamilyId;
+                    
+                    return `
+                        <div onclick="switchToFamily('${family.id}')" style="
+                            background: ${isDefault ? 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)' : 'white'};
+                            border: 2px solid ${isDefault ? '#10b981' : '#e5e7eb'};
+                            border-radius: 14px;
                             padding: 20px;
                             cursor: pointer;
-                            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                            text-align: left;
-                            position: relative;
-                            width: 100%;
-                            color: white;
-                            font-size: 15px;
-                         "
-                         onmouseover="this.style.background='rgba(255,255,255,0.25)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
-                         onmouseout="this.style.background='${isDefault ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.12)'}'; this.style.transform='translateY(0)'; this.style.boxShadow='none'"
-                    >
-                        ${isDefault ? '<div style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">ACTIVE</div>' : ''}
-                        
-                        <div style="display: flex; align-items: center; gap: 14px;">
-                            <div style="font-size: 32px; line-height: 1;">👨‍👩‍👧‍👦</div>
-                            <div style="flex: 1;">
-                                <div style="font-size: 17px; font-weight: 600; margin-bottom: 2px; letter-spacing: -0.2px;">
-                                    ${family.familyCode || 'Family'}
-                                </div>
-                                <div style="opacity: 0.75; font-size: 13px;">
-                                    ${memberCount} member${memberCount !== 1 ? 's' : ''}
-                                </div>
+                            transition: all 0.2s;
+                            display: flex;
+                            align-items: center;
+                            gap: 16px;
+                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(16, 185, 129, 0.2)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                            <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" stroke="white" fill="none" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                </svg>
                             </div>
-                            <div style="font-size: 18px; opacity: 0.6;">→</div>
+                            <div style="flex: 1;">
+                                <h3 style="font-size: 18px; font-weight: 600; color: #1f2937; margin: 0 0 4px 0;">${family.familyCode || 'Family'}</h3>
+                                <p style="font-size: 13px; color: #6b7280; margin: 0;">${memberCount} member${memberCount !== 1 ? 's' : ''}</p>
+                            </div>
+                            ${isDefault ? '<div style="color: #10b981; font-size: 20px;">→</div>' : ''}
                         </div>
-                    </button>
-                `;
-            }).join('')}
+                    `;
+                }).join('')}
+            </div>
+            
+            <div style="display: flex; gap: 12px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
+                <button onclick="showCreateFamilyOptions()" style="flex: 1; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">+ Create New</button>
+                <button onclick="showJoinFamilyDialog()" style="flex: 1; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: white; border: 2px solid #e5e7eb; color: #6b7280;">Join Family</button>
+            </div>
+            
+            <div style="text-align: center; margin-top: 16px;">
+                <button onclick="auth.signOut()" style="padding: 8px; background: transparent; border: none; color: #9ca3af; font-size: 14px; cursor: pointer;">Sign Out</button>
+            </div>
         </div>
-        
-        <button 
-            onclick="showCreateFamilyOptions()"
-            style="
-                width: 100%;
-                padding: 16px;
-                background: rgba(255,255,255,0.08);
-                border: 1.5px dashed rgba(255,255,255,0.3);
-                border-radius: 12px;
-                color: white;
-                font-size: 15px;
-                font-weight: 500;
-                cursor: pointer;
-                transition: all 0.2s;
-                margin-bottom: 16px;
-            "
-            onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.borderColor='rgba(255,255,255,0.4)'"
-            onmouseout="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='rgba(255,255,255,0.3)'"
-        >
-            <span style="margin-right: 6px;">+</span> Create New Family
-        </button>
-        
-        <button 
-            onclick="auth.signOut()"
-            style="
-                padding: 12px;
-                background: transparent;
-                border: none;
-                color: rgba(255,255,255,0.6);
-                font-size: 14px;
-                cursor: pointer;
-                transition: all 0.2s;
-                width: 100%;
-            "
-            onmouseover="this.style.color='rgba(255,255,255,0.9)'"
-            onmouseout="this.style.color='rgba(255,255,255,0.6)'"
-        >
-            Sign Out
-        </button>
     `;
     
-    if (loginOverlay) {
-        const existingSelection = document.getElementById('family-selection-screen');
-        if (existingSelection) existingSelection.remove();
-        loginOverlay.appendChild(selectionScreen);
-    }
+    loginOverlay.appendChild(selectionContainer);
 }
 
 /**
- * Show setup choice for new users - NEW SIMPLIFIED VERSION
+ * Show setup choice for new users - CLEAN VERSION
  */
 function showFamilySetupChoice() {
     const loginOverlay = document.getElementById('login-overlay');
     const loginContent = document.getElementById('login-content');
     const loadingContent = document.getElementById('loading-content');
     
-    if (loginOverlay) loginOverlay.style.display = 'flex';
+    if (!loginOverlay) return;
+    
+    loginOverlay.style.display = 'flex';
     if (loginContent) loginContent.style.display = 'none';
     if (loadingContent) loadingContent.style.display = 'none';
     
-    const setupScreen = document.createElement('div');
-    setupScreen.id = 'family-setup-screen';
-    setupScreen.style.cssText = `
-        display: block;
-        padding: 48px 32px;
-        max-width: 480px;
-        margin: 0 auto;
+    // Remove any existing setup screen
+    const existingScreen = document.getElementById('family-setup-screen');
+    if (existingScreen) existingScreen.remove();
+    
+    // Create clean setup screen
+    const setupContainer = document.createElement('div');
+    setupContainer.id = 'family-setup-screen';
+    setupContainer.style.cssText = 'max-width: 480px; width: 100%;';
+    
+    setupContainer.innerHTML = `
+        <div style="background: white; border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
+            <div style="text-align: center; margin-bottom: 32px;">
+                <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                    <svg viewBox="0 0 24 24" stroke="white" stroke-linecap="round" stroke-linejoin="round" fill="none" width="32" height="32">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="white"></polygon>
+                    </svg>
+                </div>
+                <h2 style="font-size: 28px; font-weight: 700; color: #1f2937; margin: 0 0 8px 0;">Welcome to Compass</h2>
+                <p style="font-size: 16px; color: #6b7280; margin: 0;">Let's get your family started</p>
+            </div>
+            
+            <div onclick="launchSetupWizard()" style="background: white; border: 3px solid #10b981; border-radius: 16px; padding: 28px; margin-bottom: 16px; cursor: pointer; text-align: center; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(16, 185, 129, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                <div style="width: 48px; height: 48px; background: #f0fdf4; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="6"/>
+                        <circle cx="12" cy="12" r="2"/>
+                    </svg>
+                </div>
+                <h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin: 0 0 8px 0;">Guided Setup Wizard</h3>
+                <p style="font-size: 15px; color: #6b7280; margin: 0 0 12px 0; line-height: 1.6;">We'll ask a few questions to create a personalized routine for your family</p>
+                <div style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">RECOMMENDED</div>
+            </div>
+            
+            <div onclick="quickStartFamily()" style="background: white; border: 2px solid #e5e7eb; border-radius: 16px; padding: 28px; margin-bottom: 24px; cursor: pointer; text-align: center; transition: all 0.2s;" onmouseover="this.style.borderColor='#10b981'" onmouseout="this.style.borderColor='#e5e7eb'">
+                <div style="width: 48px; height: 48px; background: #f9fafb; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                </div>
+                <h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin: 0 0 8px 0;">Quick Start</h3>
+                <p style="font-size: 15px; color: #6b7280; margin: 0; line-height: 1.6;">Start with smart defaults and customize everything later</p>
+            </div>
+            
+            <div style="text-align: center; position: relative; margin: 24px 0;">
+                <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #e5e7eb;"></div>
+                <span style="background: white; padding: 0 16px; color: #9ca3af; font-size: 13px; font-weight: 600; position: relative; z-index: 1;">OR</span>
+            </div>
+            
+            <button onclick="showJoinFamilyDialog()" style="width: 100%; padding: 16px; background: transparent; border: 2px solid #e5e7eb; border-radius: 12px; color: #6b7280; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit;" onmouseover="this.style.borderColor='#10b981'; this.style.color='#10b981'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.color='#6b7280'">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
+                Join an existing family instead
+            </button>
+        </div>
     `;
     
-    setupScreen.innerHTML = `
-        <div style="text-align: center; margin-bottom: 40px; color: white;">
-            <div style="width: 64px; height: 64px; margin: 0 auto 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
-                <svg viewBox="0 0 24 24" stroke="white" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-width="2.5" style="width: 32px; height: 32px;">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="white"></polygon>
-                </svg>
-            </div>
-            <h2 style="font-size: 28px; font-weight: 700; margin: 0 0 8px 0;">Welcome to Compass</h2>
-            <p style="font-size: 16px; opacity: 0.85; margin: 0;">Let's get your family started</p>
-        </div>
-        
-        <div onclick="launchSetupWizard()" style="background: white; border: 3px solid #10b981; border-radius: 16px; padding: 28px; margin-bottom: 16px; cursor: pointer; text-align: center; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(16, 185, 129, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-            <div style="width: 48px; height: 48px; background: #f0fdf4; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <circle cx="12" cy="12" r="6"/>
-                    <circle cx="12" cy="12" r="2"/>
-                </svg>
-            </div>
-            <h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin: 0 0 8px 0;">Guided Setup Wizard</h3>
-            <p style="font-size: 15px; color: #6b7280; margin: 0 0 12px 0; line-height: 1.6;">We'll ask a few questions to create a personalized routine for your family</p>
-            <div style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">RECOMMENDED</div>
-        </div>
-        
-        <div onclick="quickStartFamily()" style="background: white; border: 2px solid #e5e7eb; border-radius: 16px; padding: 28px; margin-bottom: 24px; cursor: pointer; text-align: center; transition: all 0.2s;" onmouseover="this.style.borderColor='#10b981'" onmouseout="this.style.borderColor='#e5e7eb'">
-            <div style="width: 48px; height: 48px; background: #f9fafb; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                </svg>
-            </div>
-            <h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin: 0 0 8px 0;">Quick Start</h3>
-            <p style="font-size: 15px; color: #6b7280; margin: 0; line-height: 1.6;">Start with smart defaults and customize everything later</p>
-        </div>
-        
-        <div style="text-align: center; position: relative; margin: 24px 0;">
-            <span style="background: transparent; padding: 0 16px; color: rgba(255,255,255,0.6); font-size: 13px; font-weight: 600; position: relative; z-index: 1;">OR</span>
-            <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.2);"></div>
-        </div>
-        
-        <button onclick="showJoinFamilyDialog()" style="width: 100%; padding: 16px; background: transparent; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.borderColor='rgba(255,255,255,0.5)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.3)'">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-            </svg>
-            Join an existing family instead
-        </button>
-    `;
-    
-    if (loginOverlay) {
-        const existingSetup = document.getElementById('family-setup-screen');
-        if (existingSetup) existingSetup.remove();
-        loginOverlay.appendChild(setupScreen);
-    }
+    loginOverlay.appendChild(setupContainer);
 }
 
 /**
@@ -405,99 +362,37 @@ function showCreateFamilyOptions() {
     const modal = document.createElement('div');
     modal.className = 'modal active';
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 520px; border-radius: 16px;">
-            <div class="modal-header" style="padding: 24px 24px 16px 24px; border-bottom: 1px solid #e5e7eb;">
-                <h2 style="margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.3px;">Create New Family</h2>
-                <button class="close-btn" onclick="this.closest('.modal').remove()" style="font-size: 24px; color: #9ca3af; background: none; border: none; cursor: pointer; padding: 0; width: 32px; height: 32px;">×</button>
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2>Create New Family</h2>
+                <button class="close-btn" onclick="this.closest('.modal').remove()">×</button>
             </div>
-            <div class="modal-body" style="padding: 24px;">
-                <p style="margin: 0 0 20px 0; color: #6b7280; font-size: 14px;">Choose your setup method:</p>
+            <div class="modal-body">
+                <p style="color: #6b7280; margin-bottom: 20px;">Choose your setup method:</p>
                 
-                <div style="display: grid; gap: 12px;">
-                    <button 
-                        onclick="this.closest('.modal').remove(); launchSetupWizard();"
-                        style="
-                            width: 100%;
-                            padding: 18px;
-                            background: linear-gradient(135deg, #93c593, #6ba86b);
-                            color: white;
-                            border: none;
-                            border-radius: 10px;
-                            font-size: 15px;
-                            font-weight: 600;
-                            cursor: pointer;
-                            text-align: left;
-                            transition: all 0.2s;
-                        "
-                        onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 4px 12px rgba(147, 197, 147, 0.3)'"
-                        onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'"
-                    >
-                        <div style="display: flex; align-items: center; gap: 14px;">
-                            <div style="font-size: 28px; line-height: 1;">🎯</div>
-                            <div style="flex: 1;">
-                                <div style="font-size: 16px; margin-bottom: 2px;">Guided Setup</div>
-                                <div style="font-size: 12px; opacity: 0.9;">Personalized (~20 min)</div>
-                            </div>
-                            <div style="font-size: 18px; opacity: 0.7;">→</div>
-                        </div>
-                    </button>
-                    
-                    <button 
-                        onclick="this.closest('.modal').remove(); quickStartFamily();"
-                        style="
-                            width: 100%;
-                            padding: 18px;
-                            background: white;
-                            color: #1f2937;
-                            border: 1.5px solid #e5e7eb;
-                            border-radius: 10px;
-                            font-size: 15px;
-                            font-weight: 600;
-                            cursor: pointer;
-                            text-align: left;
-                            transition: all 0.2s;
-                        "
-                        onmouseover="this.style.borderColor='#93c593'; this.style.transform='translateX(4px)'"
-                        onmouseout="this.style.borderColor='#e5e7eb'; this.style.transform='translateX(0)'"
-                    >
-                        <div style="display: flex; align-items: center; gap: 14px;">
-                            <div style="font-size: 28px; line-height: 1;">⚡</div>
-                            <div style="flex: 1;">
-                                <div style="font-size: 16px; margin-bottom: 2px;">Quick Start</div>
-                                <div style="font-size: 12px; color: #6b7280;">Default setup (~2 min)</div>
-                            </div>
-                            <div style="font-size: 18px; opacity: 0.4;">→</div>
-                        </div>
-                    </button>
-                    
-                    <button 
-                        onclick="this.closest('.modal').remove(); showJoinFamilyDialog();"
-                        style="
-                            width: 100%;
-                            padding: 18px;
-                            background: white;
-                            color: #1f2937;
-                            border: 1.5px solid #e5e7eb;
-                            border-radius: 10px;
-                            font-size: 15px;
-                            font-weight: 600;
-                            cursor: pointer;
-                            text-align: left;
-                            transition: all 0.2s;
-                        "
-                        onmouseover="this.style.borderColor='#93c593'; this.style.transform='translateX(4px)'"
-                        onmouseout="this.style.borderColor='#e5e7eb'; this.style.transform='translateX(0)'"
-                    >
-                        <div style="display: flex; align-items: center; gap: 14px;">
-                            <div style="font-size: 28px; line-height: 1;">🔗</div>
-                            <div style="flex: 1;">
-                                <div style="font-size: 16px; margin-bottom: 2px;">Join Existing</div>
-                                <div style="font-size: 12px; color: #6b7280;">Enter family code</div>
-                            </div>
-                            <div style="font-size: 18px; opacity: 0.4;">→</div>
-                        </div>
-                    </button>
-                </div>
+                <button onclick="this.closest('.modal').remove(); launchSetupWizard();" style="width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 12px; text-align: left; display: flex; align-items: center; gap: 12px; font-family: inherit;">
+                    <div style="font-size: 28px;">🎯</div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 16px; margin-bottom: 2px;">Guided Setup</div>
+                        <div style="font-size: 12px; opacity: 0.9;">Personalized (~20 min)</div>
+                    </div>
+                </button>
+                
+                <button onclick="this.closest('.modal').remove(); quickStartFamily();" style="width: 100%; padding: 16px; background: white; color: #374151; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 12px; text-align: left; display: flex; align-items: center; gap: 12px; font-family: inherit;">
+                    <div style="font-size: 28px;">⚡</div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 16px; margin-bottom: 2px; color: #374151;">Quick Start</div>
+                        <div style="font-size: 12px; color: #6b7280;">Default setup (~2 min)</div>
+                    </div>
+                </button>
+                
+                <button onclick="this.closest('.modal').remove(); showJoinFamilyDialog();" style="width: 100%; padding: 16px; background: white; color: #374151; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; font-family: inherit;">
+                    <div style="font-size: 28px;">🔗</div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 16px; margin-bottom: 2px; color: #374151;">Join Existing</div>
+                        <div style="font-size: 12px; color: #6b7280;">Enter family code</div>
+                    </div>
+                </button>
             </div>
         </div>
     `;
@@ -505,7 +400,7 @@ function showCreateFamilyOptions() {
 }
 
 /**
- * Launch the setup wizard - Opens wizard in new window
+ * Launch the setup wizard
  */
 function launchSetupWizard() {
     const wizardUrl = 'https://type1unbound.github.io/family-tracker/compass-wizard.html';
@@ -517,16 +412,13 @@ function launchSetupWizard() {
     }
     
     console.log('🧙‍♂️ Setup wizard opened - waiting for completion...');
-    
-    // Listen for wizard completion message
     window.addEventListener('message', handleWizardCompletion);
 }
 
 /**
- * Handle wizard completion - receives data from compass-wizard.html
+ * Handle wizard completion
  */
 async function handleWizardCompletion(event) {
-    // Verify origin for security
     if (!event.origin.includes('type1unbound.github.io') && !event.origin.includes('localhost')) {
         return;
     }
@@ -536,22 +428,15 @@ async function handleWizardCompletion(event) {
         
         try {
             showLoading();
-            
-            // Import wizard data into new family
             const familyId = await importWizardData(event.data.familyData);
-            
-            // Switch to the new family
             await switchToFamily(familyId);
-            
             console.log('✅ Wizard import complete!');
-            
         } catch (error) {
             console.error('❌ Error importing wizard data:', error);
             alert('Error setting up family from wizard: ' + error.message);
             hideLoading();
         }
         
-        // Remove event listener
         window.removeEventListener('message', handleWizardCompletion);
     }
 }
@@ -560,14 +445,11 @@ async function handleWizardCompletion(event) {
  * Import wizard data into Firebase
  */
 async function importWizardData(wizardData) {
-    if (!currentUser) {
-        throw new Error('No user logged in');
-    }
+    if (!currentUser) throw new Error('No user logged in');
     
     const familyId = 'family_' + Date.now();
     const familyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     
-    // Create family document
     await db.collection('families').doc(familyId).set({
         familyCode: familyCode,
         createdBy: currentUser.uid,
@@ -576,7 +458,6 @@ async function importWizardData(wizardData) {
         children: wizardData.children.map(c => c.id)
     });
     
-    // Create each child
     for (const child of wizardData.children) {
         await db.collection('families').doc(familyId)
             .collection('familyMembers').doc(child.id)
@@ -596,7 +477,6 @@ async function importWizardData(wizardData) {
             });
     }
     
-    // Add family to user's list
     const userRef = db.collection('users').doc(currentUser.uid);
     const userDoc = await userRef.get();
     const existingFamilyIds = userDoc.exists && userDoc.data().familyIds ? userDoc.data().familyIds : [];
@@ -613,7 +493,7 @@ async function importWizardData(wizardData) {
 }
 
 /**
- * Show join family dialog - allows user to join existing family by code
+ * Show join family dialog
  */
 function showJoinFamilyDialog() {
     const existingModal = document.getElementById('join-family-modal');
@@ -623,12 +503,12 @@ function showJoinFamilyDialog() {
     modal.id = 'join-family-modal';
     modal.className = 'modal active';
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 450px; border-radius: 16px;">
-            <div class="modal-header" style="padding: 24px; border-bottom: 1px solid #e5e7eb;">
-                <h2 style="margin: 0; font-size: 20px; font-weight: 600;">Join Existing Family</h2>
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2>Join Existing Family</h2>
                 <button class="close-btn" onclick="document.getElementById('join-family-modal').remove()">×</button>
             </div>
-            <div class="modal-body" style="padding: 24px;">
+            <div class="modal-body">
                 <p style="color: #6b7280; margin-bottom: 20px; font-size: 14px;">
                     Enter the family code shared with you to join and sync your data.
                 </p>
@@ -639,16 +519,7 @@ function showJoinFamilyDialog() {
                         type="text" 
                         id="join-family-code-input" 
                         placeholder="XXXXXX"
-                        style="
-                            width: 100%;
-                            padding: 12px;
-                            border: 2px solid #e5e7eb;
-                            border-radius: 8px;
-                            font-size: 16px;
-                            font-family: 'Courier New', monospace;
-                            text-transform: uppercase;
-                            letter-spacing: 2px;
-                        "
+                        style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; font-family: 'Courier New', monospace; text-transform: uppercase; letter-spacing: 2px;"
                         maxlength="6"
                     >
                 </div>
@@ -657,20 +528,7 @@ function showJoinFamilyDialog() {
                 
                 <button 
                     onclick="joinFamilyByCode()"
-                    style="
-                        width: 100%;
-                        padding: 14px;
-                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                        color: white;
-                        border: none;
-                        border-radius: 10px;
-                        font-size: 15px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: all 0.2s;
-                    "
-                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)'"
-                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+                    style="width: 100%; padding: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit;"
                 >
                     Join Family
                 </button>
@@ -679,15 +537,11 @@ function showJoinFamilyDialog() {
     `;
     
     document.body.appendChild(modal);
-    
-    // Focus the input
-    setTimeout(() => {
-        document.getElementById('join-family-code-input').focus();
-    }, 100);
+    setTimeout(() => document.getElementById('join-family-code-input').focus(), 100);
 }
 
 /**
- * Join family by code - adds user to existing family
+ * Join family by code
  */
 async function joinFamilyByCode() {
     const codeInput = document.getElementById('join-family-code-input');
@@ -710,9 +564,6 @@ async function joinFamilyByCode() {
         errorDiv.style.display = 'none';
         showLoading();
         
-        console.log('🔍 Looking for family with code:', code);
-        
-        // Search for family with this code
         const familiesSnapshot = await db.collection('families')
             .where('familyCode', '==', code)
             .limit(1)
@@ -729,9 +580,6 @@ async function joinFamilyByCode() {
         const familyId = familyDoc.id;
         const familyData = familyDoc.data();
         
-        console.log('✅ Found family:', familyId);
-        
-        // Check if user is already in this family
         const userRef = db.collection('users').doc(currentUser.uid);
         const userDoc = await userRef.get();
         const userData = userDoc.data() || {};
@@ -745,7 +593,6 @@ async function joinFamilyByCode() {
             return;
         }
         
-        // Add user to family members list
         const members = familyData.members || [];
         if (!members.includes(currentUser.uid)) {
             await db.collection('families').doc(familyId).update({
@@ -753,7 +600,6 @@ async function joinFamilyByCode() {
             });
         }
         
-        // Add family to user's familyIds
         await userRef.set({
             email: currentUser.email,
             displayName: currentUser.displayName,
@@ -762,12 +608,7 @@ async function joinFamilyByCode() {
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
         
-        console.log('✅ Successfully joined family:', code);
-        
-        // Close modal
         document.getElementById('join-family-modal').remove();
-        
-        // Switch to the new family
         await switchToFamily(familyId);
         
     } catch (error) {
@@ -779,19 +620,17 @@ async function joinFamilyByCode() {
 }
 
 /**
- * Create empty family with defaults - QUICK START
+ * Create empty family - QUICK START
  */
 async function quickStartFamily() {
     if (!currentUser) return;
     
     try {
-        console.log('⚡ Creating quick start family...');
         showLoading();
         
         const familyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
         const familyId = 'family_' + Date.now();
         
-        // Create family with one default child
         await db.collection('families').doc(familyId).set({
             familyCode: familyCode,
             createdBy: currentUser.uid,
@@ -800,7 +639,6 @@ async function quickStartFamily() {
             children: ['child1']
         });
         
-        // Create default child with empty data
         await db.collection('families').doc(familyId)
             .collection('familyMembers').doc('child1')
             .set({
@@ -817,7 +655,6 @@ async function quickStartFamily() {
                 days: {}
             });
         
-        // Add family to user
         const userRef = db.collection('users').doc(currentUser.uid);
         const userDoc = await userRef.get();
         const existingFamilyIds = userDoc.exists && userDoc.data().familyIds ? userDoc.data().familyIds : [];
@@ -830,7 +667,6 @@ async function quickStartFamily() {
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
         
-        console.log('✅ Quick start family created:', familyCode);
         await switchToFamily(familyId);
         
     } catch (error) {
@@ -841,16 +677,14 @@ async function quickStartFamily() {
 }
 
 /**
- * Switch to a specific family - UPDATED with better data loading
+ * Switch to a specific family
  */
 async function switchToFamily(familyId) {
     if (!currentUser) return;
     
     try {
-        console.log('🔄 Switching to family:', familyId);
         showLoading();
         
-        // Update user's active family
         await db.collection('users').doc(currentUser.uid).update({
             lastActiveFamilyId: familyId,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -862,29 +696,22 @@ async function switchToFamily(familyId) {
         const familyRef = db.collection('families').doc(familyId);
         const familyDoc = await familyRef.get();
         
-        if (!familyDoc.exists) {
-            throw new Error('Family not found');
-        }
+        if (!familyDoc.exists) throw new Error('Family not found');
         
         const familyData = familyDoc.data();
         window.StateManager.state.children = familyData.children || [];
         window.StateManager.state.familyCode = familyData.familyCode;
         
-        console.log('  Loading', window.StateManager.state.children.length, 'family members...');
-        
-        // Initialize data object if it doesn't exist
         if (!window.StateManager.state.data) {
             window.StateManager.state.data = {};
         }
         
-        // Load each child's data
         for (const childId of window.StateManager.state.children) {
             const memberDoc = await familyRef.collection('familyMembers').doc(childId).get();
             
             if (memberDoc.exists) {
                 window.StateManager.state.data[childId] = memberDoc.data();
                 
-                // Verify and initialize missing arrays
                 const memberData = window.StateManager.state.data[childId];
                 if (!memberData.schedule) memberData.schedule = [];
                 if (!memberData.weeklyChores) memberData.weeklyChores = [];
@@ -893,27 +720,20 @@ async function switchToFamily(familyId) {
                 if (!memberData.trackers) memberData.trackers = [];
                 if (!memberData.days) memberData.days = {};
                 
-                // Load days data
                 const daysSnapshot = await familyRef.collection('familyMembers').doc(childId)
                     .collection('days').get();
                 
                 daysSnapshot.forEach(doc => {
                     memberData.days[doc.id] = doc.data();
                 });
-                
-                console.log('  ✓ Loaded', memberData.name || childId);
             } else {
-                // Create empty child if doesn't exist
                 window.StateManager.createChild(childId, false);
             }
         }
         
-        // Set current child if not set
         if (window.StateManager.state.children.length > 0 && !window.StateManager.state.currentChild) {
             window.StateManager.state.currentChild = window.StateManager.state.children[0];
         }
-        
-        console.log('✅ Switched to family successfully');
         
         // Show switch family button if multiple families
         if (userFamilies.length > 1) {
@@ -959,4 +779,4 @@ window.switchToFamily = switchToFamily;
 window.addFamilySwitcher = addFamilySwitcher;
 window.migrateOldUserData = migrateOldUserData;
 
-console.log('✅ Family Management System loaded (with Join Family & Wizard support)');
+console.log('✅ Family Management System loaded (Clean version)');
