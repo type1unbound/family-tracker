@@ -1787,13 +1787,10 @@ const ProfileModule = {
 };
 
 // ========================================
-// UI CORE MODULE - COMPLETE IMPLEMENTATION
+// UI CORE MODULE - MINIMAL (matches firebase.js expectations)
 // ========================================
 
 const UICore = {
-    /**
-     * Main UI update function - refreshes all UI elements
-     */
     updateUI() {
         const child = StateManager.getCurrentChild();
         if (!child) {
@@ -1801,16 +1798,13 @@ const UICore = {
             return;
         }
 
-        console.log('🔄 Updating UI for:', child.name);
-
-        // ===== UPDATE HEADER =====
+        // Update header name
         const headerName = document.getElementById('header-member-name');
         if (headerName) {
             headerName.textContent = child.name || 'Family Member';
-        } else {
-            console.warn('⚠️ Element not found: header-member-name');
         }
 
+        // Update header avatar
         const headerAvatar = document.getElementById('header-member-avatar');
         if (headerAvatar) {
             if (child.photo) {
@@ -1818,32 +1812,22 @@ const UICore = {
             } else {
                 headerAvatar.textContent = (child.name || 'FM').charAt(0).toUpperCase();
             }
-        } else {
-            console.warn('⚠️ Element not found: header-member-avatar');
         }
 
-        // ===== UPDATE DATE PICKER =====
+        // Update date picker
         const datePicker = document.getElementById('date-picker');
         if (datePicker) {
             datePicker.value = StateManager.state.currentDate;
-        } else {
-            console.warn('⚠️ Element not found: date-picker');
         }
 
-        // ===== CALCULATE POINTS =====
-        const dailyPoints = PointsModule.calculatePoints(
-            StateManager.state.currentChild, 
-            StateManager.state.currentDate, 
-            false
-        );
+        // Calculate points
+        const dailyPoints = PointsModule.calculatePoints(StateManager.state.currentChild, StateManager.state.currentDate, false);
         const weeklyPoints = PointsModule.calculateWeeklyTotal();
 
-        // ===== UPDATE POINTS DISPLAYS =====
+        // Update points displays - WITH NULL CHECKS
         const basePointsEl = document.getElementById('base-points');
         if (basePointsEl) {
             basePointsEl.textContent = child.pointsBalance || 0;
-        } else {
-            console.warn('⚠️ Element not found: base-points');
         }
 
         const dailyPercentEl = document.getElementById('daily-percent');
@@ -1851,8 +1835,6 @@ const UICore = {
             const dailyGoal = PointsModule.getDailyGoal();
             const dailyPercent = dailyGoal > 0 ? Math.round((dailyPoints.dailyTotal / dailyGoal) * 100) : 0;
             dailyPercentEl.textContent = dailyPercent + '%';
-        } else {
-            console.warn('⚠️ Element not found: daily-percent');
         }
 
         const weeklyPercentEl = document.getElementById('weekly-percent');
@@ -1860,11 +1842,8 @@ const UICore = {
             const weeklyGoal = PointsModule.getWeeklyGoal();
             const weeklyPercent = weeklyGoal > 0 ? Math.round((weeklyPoints / weeklyGoal) * 100) : 0;
             weeklyPercentEl.textContent = weeklyPercent + '%';
-        } else {
-            console.warn('⚠️ Element not found: weekly-percent');
         }
 
-        // ===== UPDATE DAILY POINTS DETAIL =====
         const dailyPointsEl = document.getElementById('daily-points');
         if (dailyPointsEl) {
             dailyPointsEl.textContent = dailyPoints.dailyTotal;
@@ -1875,7 +1854,6 @@ const UICore = {
             dailyGoalEl.textContent = PointsModule.getDailyGoal();
         }
 
-        // ===== UPDATE WEEKLY POINTS DETAIL =====
         const weeklyPointsEl = document.getElementById('weekly-points');
         if (weeklyPointsEl) {
             weeklyPointsEl.textContent = weeklyPoints;
@@ -1886,13 +1864,12 @@ const UICore = {
             weeklyGoalEl.textContent = PointsModule.getWeeklyGoal();
         }
 
-        // ===== UPDATE STREAK =====
         const streakEl = document.getElementById('streak-count');
         if (streakEl) {
             streakEl.textContent = PointsModule.calculateStreak();
         }
 
-        // ===== RENDER MODULES =====
+        // Render modules
         if (window.ScheduleModule) {
             ScheduleModule.renderSchedule();
             ScheduleModule.renderFocusedScheduleItem();
@@ -1907,22 +1884,16 @@ const UICore = {
             RewardsModule.renderRewardsStore();
         }
 
-        // ===== UPDATE EDIT MODE BUTTONS =====
+        // Update edit mode UI
         this.updateEditModeUI();
-
-        console.log('✅ UI update complete');
     },
 
-    /**
-     * Select a child and update UI
-     */
     selectChild(childId) {
         if (!StateManager.state.children.includes(childId)) {
             console.error('❌ Invalid child ID:', childId);
             return;
         }
 
-        console.log('👤 Selecting child:', childId);
         StateManager.state.currentChild = childId;
         
         if (window.saveData) {
@@ -1931,13 +1902,13 @@ const UICore = {
 
         this.applyColorPalette();
         this.updateUI();
-
-        console.log('✅ Child selected:', childId);
     },
 
-    /**
-     * Apply color palette for current child
-     */
+    selectDate(date) {
+        StateManager.setCurrentDate(date);
+        this.updateUI();
+    },
+
     applyColorPalette() {
         const child = StateManager.getCurrentChild();
         if (!child) {
@@ -1948,27 +1919,15 @@ const UICore = {
         const palette = child.colorPalette || 'purple';
         const root = document.documentElement;
         
-        console.log('🎨 Applying color palette:', palette);
         applyTheme(palette, root);
-
-        console.log('✅ Color palette applied');
     },
 
-    /**
-     * Toggle edit mode
-     */
     toggleEditMode() {
         StateManager.state.editMode = !StateManager.state.editMode;
-        
         this.updateEditModeUI();
         this.updateUI();
-        
-        console.log('✏️ Edit mode:', StateManager.state.editMode ? 'ON' : 'OFF');
     },
 
-    /**
-     * Update edit mode button states
-     */
     updateEditModeUI() {
         const editBtn = document.getElementById('edit-mode-btn');
         if (editBtn) {
@@ -1980,29 +1939,8 @@ const UICore = {
                 editBtn.textContent = '✏️ Edit';
             }
         }
-    },
-
-    /**
-     * Change date
-     */
-    changeDate(date) {
-        StateManager.setCurrentDate(date);
-        this.updateUI();
-        console.log('📅 Date changed to:', date);
     }
 };
-
-// ========================================
-// PLACEHOLDER FUNCTIONS (Firebase overrides these)
-// ========================================
-function saveData() {
-    console.log('saveData() called - should be overridden by Firebase');
-}
-
-function loadData() {
-    console.log('loadData() called - should be overridden by Firebase');
-}
-
 // ========================================
 // PLACEHOLDER FUNCTIONS (Firebase overrides these)
 // ========================================
