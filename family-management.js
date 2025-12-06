@@ -120,7 +120,7 @@ async function migrateOldUserData(userRef, userData) {
         if (existingFamilyDoc.exists) {
             console.log('   ✓ Family document already exists in /families - skipping family creation');
         } else {
-            const familyCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+            const familyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
             
             console.log('   - Creating family document with code:', familyCode);
             
@@ -322,7 +322,7 @@ function showFamilySelectionScreen(defaultFamilyId) {
 }
 
 /**
- * Show setup choice for new users - PROFESSIONAL DESIGN
+ * Show setup choice for new users - NEW SIMPLIFIED VERSION
  */
 function showFamilySetupChoice() {
     const loginOverlay = document.getElementById('login-overlay');
@@ -338,154 +338,57 @@ function showFamilySetupChoice() {
     setupScreen.style.cssText = `
         display: block;
         padding: 48px 32px;
-        max-width: 840px;
+        max-width: 480px;
         margin: 0 auto;
     `;
     
     setupScreen.innerHTML = `
-        <div style="text-align: center; color: white; margin-bottom: 32px;">
-            <div style="width: 64px; height: 64px; margin: 0 auto 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);">
+        <div style="text-align: center; margin-bottom: 40px; color: white;">
+            <div style="width: 64px; height: 64px; margin: 0 auto 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
                 <svg viewBox="0 0 24 24" stroke="white" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-width="2.5" style="width: 32px; height: 32px;">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="white"></polygon>
                 </svg>
             </div>
-            <h1 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">Welcome to Compass</h1>
-            <p style="margin: 0; opacity: 0.85; font-size: 15px;">Choose how you'd like to get started</p>
+            <h2 style="font-size: 28px; font-weight: 700; margin: 0 0 8px 0;">Welcome to Compass</h2>
+            <p style="font-size: 16px; opacity: 0.85; margin: 0;">Let's get your family started</p>
         </div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-            <!-- Guided Setup -->
-            <button 
-                 onclick="launchSetupWizard()"
-                 style="
-                    background: white;
-                    border: 2px solid transparent;
-                    border-radius: 20px;
-                    padding: 40px 32px;
-                    cursor: pointer;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                    text-align: center;
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-                    font-family: inherit;
-                "
-                onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(16, 185, 129, 0.2)'; this.style.borderColor='#10b981';"
-                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(0, 0, 0, 0.1)'; this.style.borderColor='transparent';"
-            >
-                <div style="width: 80px; height: 80px; margin: 0 auto 24px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <circle cx="12" cy="12" r="6"></circle>
-                        <circle cx="12" cy="12" r="2"></circle>
-                    </svg>
-                </div>
-                
-                <h2 style="font-size: 24px; font-weight: 700; color: #0f172a; margin: 0 0 12px 0; letter-spacing: -0.5px;">Guided Setup</h2>
-                <p style="font-size: 15px; color: #64748b; line-height: 1.6; margin: 0 0 24px 0;">
-                    Personalized setup wizard that creates routines, goals, and rewards tailored to your family
-                </p>
-                
-                <div style="text-align: left; padding: 0; margin-bottom: 24px;">
-                    <div style="font-size: 14px; color: #475569; padding: 10px 0; display: flex; align-items: center; gap: 12px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>AI-powered recommendations</span>
-                    </div>
-                    <div style="font-size: 14px; color: #475569; padding: 10px 0; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Age-appropriate tasks</span>
-                    </div>
-                    <div style="font-size: 14px; color: #475569; padding: 10px 0; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Balanced point economy</span>
-                    </div>
-                </div>
-                
-                <div style="padding: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 10px; font-size: 13px; font-weight: 600;">
-                    ⭐ RECOMMENDED
-                </div>
-            </button>
-
-            <!-- Quick Start -->
-            <button 
-                 onclick="quickStartFamily()"
-                 style="
-                    background: white;
-                    border: 2px solid transparent;
-                    border-radius: 20px;
-                    padding: 40px 32px;
-                    cursor: pointer;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                    text-align: center;
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-                    font-family: inherit;
-                "
-                onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 40px rgba(16, 185, 129, 0.2)'; this.style.borderColor='#10b981';"
-                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(0, 0, 0, 0.1)'; this.style.borderColor='transparent';"
-            >
-                <div style="width: 80px; height: 80px; margin: 0 auto 24px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                    </svg>
-                </div>
-                
-                <h2 style="font-size: 24px; font-weight: 700; color: #0f172a; margin: 0 0 12px 0; letter-spacing: -0.5px;">Quick Start</h2>
-                <p style="font-size: 15px; color: #64748b; line-height: 1.6; margin: 0 0 24px 0;">
-                    Jump right in with basic templates and customize as you go
-                </p>
-                
-                <div style="text-align: left; padding: 0; margin-bottom: 24px;">
-                    <div style="font-size: 14px; color: #475569; padding: 10px 0; display: flex; align-items: center; gap: 12px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Default routines included</span>
-                    </div>
-                    <div style="font-size: 14px; color: #475569; padding: 10px 0; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Basic reward menu</span>
-                    </div>
-                    <div style="font-size: 14px; color: #475569; padding: 10px 0; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Start tracking immediately</span>
-                    </div>
-                </div>
-                
-                <div style="padding: 12px; background: #f3f4f6; border-radius: 10px; font-size: 13px; color: #6b7280; font-weight: 600;">
-                    ⚡ About 2 minutes
-                </div>
-            </button>
+        <div onclick="launchSetupWizard()" style="background: white; border: 3px solid #10b981; border-radius: 16px; padding: 28px; margin-bottom: 16px; cursor: pointer; text-align: center; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(16, 185, 129, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+            <div style="width: 48px; height: 48px; background: #f0fdf4; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="6"/>
+                    <circle cx="12" cy="12" r="2"/>
+                </svg>
+            </div>
+            <h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin: 0 0 8px 0;">Guided Setup Wizard</h3>
+            <p style="font-size: 15px; color: #6b7280; margin: 0 0 12px 0; line-height: 1.6;">We'll ask a few questions to create a personalized routine for your family</p>
+            <div style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">RECOMMENDED</div>
         </div>
         
-        <div style="text-align: center; margin-top: 24px;">
-            <button 
-                onclick="showJoinFamilyDialog()"
-                style="
-                    padding: 12px 24px;
-                    background: rgba(255,255,255,0.1);
-                    border: 1px solid rgba(255,255,255,0.3);
-                    border-radius: 10px;
-                    color: white;
-                    font-size: 14px;
-                    font-weight: 500;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                "
-                onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.borderColor='rgba(255,255,255,0.4)'"
-                onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.3)'"
-            >
-                🔗 Join Existing Family
-            </button>
+        <div onclick="quickStartFamily()" style="background: white; border: 2px solid #e5e7eb; border-radius: 16px; padding: 28px; margin-bottom: 24px; cursor: pointer; text-align: center; transition: all 0.2s;" onmouseover="this.style.borderColor='#10b981'" onmouseout="this.style.borderColor='#e5e7eb'">
+            <div style="width: 48px; height: 48px; background: #f9fafb; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+            </div>
+            <h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin: 0 0 8px 0;">Quick Start</h3>
+            <p style="font-size: 15px; color: #6b7280; margin: 0; line-height: 1.6;">Start with smart defaults and customize everything later</p>
         </div>
+        
+        <div style="text-align: center; position: relative; margin: 24px 0;">
+            <span style="background: transparent; padding: 0 16px; color: rgba(255,255,255,0.6); font-size: 13px; font-weight: 600; position: relative; z-index: 1;">OR</span>
+            <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.2);"></div>
+        </div>
+        
+        <button onclick="showJoinFamilyDialog()" style="width: 100%; padding: 16px; background: transparent; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.borderColor='rgba(255,255,255,0.5)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.3)'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+            Join an existing family instead
+        </button>
     `;
     
     if (loginOverlay) {
@@ -602,13 +505,10 @@ function showCreateFamilyOptions() {
 }
 
 /**
- * Launch the setup wizard - loads compass-wizard.html in new window
+ * Launch the setup wizard - Opens wizard in new window
  */
 function launchSetupWizard() {
-    // Point to the wizard URL
     const wizardUrl = 'https://type1unbound.github.io/family-tracker/compass-wizard.html';
-    
-    // Open in new window with specific dimensions
     const wizardWindow = window.open(wizardUrl, 'compassWizard', 'width=1200,height=900,menubar=no,toolbar=no,location=no,status=no');
     
     if (!wizardWindow) {
@@ -665,7 +565,7 @@ async function importWizardData(wizardData) {
     }
     
     const familyId = 'family_' + Date.now();
-    const familyCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const familyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     
     // Create family document
     await db.collection('families').doc(familyId).set({
@@ -738,7 +638,7 @@ function showJoinFamilyDialog() {
                     <input 
                         type="text" 
                         id="join-family-code-input" 
-                        placeholder="XXXX-XXXX"
+                        placeholder="XXXXXX"
                         style="
                             width: 100%;
                             padding: 12px;
@@ -749,7 +649,7 @@ function showJoinFamilyDialog() {
                             text-transform: uppercase;
                             letter-spacing: 2px;
                         "
-                        maxlength="20"
+                        maxlength="6"
                     >
                 </div>
                 
@@ -888,7 +788,7 @@ async function quickStartFamily() {
         console.log('⚡ Creating quick start family...');
         showLoading();
         
-        const familyCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+        const familyCode = Math.random().toString(36).substring(2, 8).toUpperCase();
         const familyId = 'family_' + Date.now();
         
         // Create family with one default child
@@ -1014,6 +914,13 @@ async function switchToFamily(familyId) {
         }
         
         console.log('✅ Switched to family successfully');
+        
+        // Show switch family button if multiple families
+        if (userFamilies.length > 1) {
+            const switchBtn = document.getElementById('switch-family-btn');
+            if (switchBtn) switchBtn.style.display = 'flex';
+        }
+        
         await initializeDashboard();
         
     } catch (error) {
