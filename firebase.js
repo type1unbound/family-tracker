@@ -290,78 +290,7 @@ function hideLoading() {
     if (loadingContent) loadingContent.style.display = 'none';
 }
 
-// ========================================
-// HEADER BUTTONS
-// ========================================
 
-function addSignOutButton() {
-    const utilityRight = document.querySelector('.utility-right');
-    if (!utilityRight || document.getElementById('signout-btn')) return;
-    
-    const signOutBtn = document.createElement('button');
-    signOutBtn.id = 'signout-btn';
-    signOutBtn.innerHTML = '🚪 Sign Out';
-    signOutBtn.style.cssText = `
-        margin-right: 8px;
-        padding: 8px 16px;
-        background: rgba(255,255,255,0.2);
-        border: 1px solid rgba(255,255,255,0.4);
-        border-radius: 8px;
-        color: #1a202c;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.2s;
-    `;
-    signOutBtn.onmouseover = () => signOutBtn.style.background = 'rgba(255,255,255,0.3)';
-    signOutBtn.onmouseout = () => signOutBtn.style.background = 'rgba(255,255,255,0.2)';
-    signOutBtn.onclick = () => {
-        if (confirm('Are you sure you want to sign out?')) {
-            auth.signOut();
-        }
-    };
-    
-    utilityRight.insertBefore(signOutBtn, utilityRight.firstChild);
-}
-
-function addFamilyCodeButton() {
-    const utilityRight = document.querySelector('.utility-right');
-    if (!utilityRight || document.getElementById('family-code-btn')) return;
-    
-    const familyCode = window.StateManager?.state?.familyCode;
-    if (!familyCode) return;
-    
-    const codeBtn = document.createElement('button');
-    codeBtn.id = 'family-code-btn';
-    codeBtn.innerHTML = `👨‍👩‍👧‍👦 Code: ${familyCode}`;
-    codeBtn.style.cssText = `
-        margin-right: 8px;
-        padding: 8px 16px;
-        background: rgba(255,255,255,0.2);
-        border: 1px solid rgba(255,255,255,0.4);
-        border-radius: 8px;
-        color: #1a202c;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.2s;
-    `;
-    codeBtn.onmouseover = () => codeBtn.style.background = 'rgba(255,255,255,0.3)';
-    codeBtn.onmouseout = () => codeBtn.style.background = 'rgba(255,255,255,0.2)';
-    codeBtn.onclick = () => showFamilyCodeModal();
-    
-    utilityRight.insertBefore(codeBtn, utilityRight.firstChild);
-}
-
-function updateSwitchFamilyButton() {
-    const switchBtn = document.getElementById('switch-family-btn');
-    if (!switchBtn) return;
-    
-    // Show button only if user has multiple families
-    if (window.userFamilies && window.userFamilies.length > 1) {
-        switchBtn.style.display = 'flex';
-    } else {
-        switchBtn.style.display = 'none';
-    }
-}
 
 // ========================================
 // FAMILY CODE MODAL
