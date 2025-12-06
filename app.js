@@ -1786,13 +1786,112 @@ const ProfileModule = {
     }
 };
 
+// ========================================
+// UI CORE - Complete object definition
+// ========================================
+
 const UICore = {
     updateUI() {
-        console.log('UICore.updateUI() - waiting for firebase.js to override');
+        const child = StateManager.getCurrentChild();
+        if (!child) {
+            console.warn('⚠️ No current child selected');
+            return;
+        }
+
+        // Update header
+        const headerName = document.getElementById('header-member-name');
+        if (headerName) {
+            headerName.textContent = child.name || 'Family Member';
+        }
+
+        const headerAvatar = document.getElementById('header-member-avatar');
+        if (headerAvatar) {
+            if (child.photo) {
+                headerAvatar.innerHTML = `<img src="${child.photo}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+            } else {
+                headerAvatar.textContent = (child.name || 'FM').charAt(0).toUpperCase();
+            }
+        }
+
+        // Update date display
+        const datePicker = document.getElementById('date-picker');
+        if (datePicker) {
+            datePicker.value = StateManager.state.currentDate;
+        }
+
+        // Calculate points
+        const dailyPoints = PointsModule.calculatePoints(StateManager.state.currentChild, StateManager.state.currentDate, false);
+        const weeklyPoints = PointsModule.calculateWeeklyTotal();
+
+        // Update points displays
+        const basePointsEl = document.getElementById('base-points');
+        if (basePointsEl) {
+            basePointsEl.textContent = child.pointsBalance || 0;
+        }
+
+        const dailyPercentEl = document.getElementById('daily-percent');
+        if (dailyPercentEl) {
+            const dailyGoal = PointsModule.getDailyGoal();
+            const dailyPercent = dailyGoal > 0 ? Math.round((dailyPoints.dailyTotal / dailyGoal) * 100) : 0;
+            dailyPercentEl.textContent = dailyPercent + '%';
+        }
+
+        const weeklyPercentEl = document.getElementById('weekly-percent');
+        if (weeklyPercentEl) {
+            const weeklyGoal = PointsModule.getWeeklyGoal();
+            const weeklyPercent = weeklyGoal > 0 ? Math.round((weeklyPoints / weeklyGoal) * 100) : 0;
+            weeklyPercentEl.textContent = weeklyPercent + '%';
+        }
+
+        // Render schedule and character sections
+        if (window.ScheduleModule) {
+            ScheduleModule.renderSchedule();
+            ScheduleModule.renderFocusedScheduleItem();
+        }
+
+        if (window.CharacterModule) {
+            CharacterModule.renderCharacterSections();
+            CharacterModule.renderWeeklyChores();
+        }
+
+        if (window.RewardsModule) {
+            RewardsModule.renderRewardsStore();
+        }
+
+        console.log('✅ UI updated successfully');
     },
-    
+
+    selectChild(childId) {
+        if (!StateManager.state.children.includes(childId)) {
+            console.error('❌ Invalid child ID:', childId);
+            return;
+        }
+
+        StateManager.state.currentChild = childId;
+        
+        if (window.saveData) {
+            saveData();
+        }
+
+        this.applyColorPalette();
+        this.updateUI();
+
+        console.log('✅ Selected child:', childId);
+    },
+
     applyColorPalette() {
-        console.log('UICore.applyColorPalette() - waiting for firebase.js to override');
+        const child = StateManager.getCurrentChild();
+        if (!child) {
+            console.warn('⚠️ No current child for color palette');
+            return;
+        }
+
+        const palette = child.colorPalette || 'purple';
+        const root = document.documentElement;
+        
+        applyTheme(palette, root);
+
+        console.log('✅ Applied color palette:', palette);
     }
 };
 
