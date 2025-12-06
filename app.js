@@ -1787,18 +1787,23 @@ const ProfileModule = {
 };
 
 const UICore = {
-
+    updateUI() {
+        console.log('UICore.updateUI() - waiting for firebase.js to override');
+    },
+    
+    applyColorPalette() {
+        console.log('UICore.applyColorPalette() - waiting for firebase.js to override');
+    }
+};
 
 // ========================================
 // PLACEHOLDER FUNCTIONS (Firebase overrides these)
 // ========================================
 function saveData() {
-    // Overridden by Firebase
     console.log('saveData() called - should be overridden by Firebase');
 }
 
 function loadData() {
-    // Overridden by Firebase
     console.log('loadData() called - should be overridden by Firebase');
 }
 
