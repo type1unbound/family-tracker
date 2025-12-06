@@ -2591,96 +2591,62 @@
         }
     }
 
-    // STANDALONE Setup Wizard Functions
-    // These are always available and don't depend on ProfileModule being defined
+   // STANDALONE Setup Wizard Functions
+// Updated to use the new add-member mode
+
+window.runSetupWizardForCurrentMember = function() {
+    const currentChild = window.StateManager?.getCurrentChild();
+    if (!currentChild) {
+        alert('Please select a family member first');
+        return;
+    }
     
-    window.runSetupWizardForCurrentMember = function() {
-        const currentChild = window.StateManager?.getCurrentChild();
-        if (!currentChild) {
-            alert('Please select a family member first');
-            return;
-        }
-        
-        console.log('Attempting to run setup wizard for:', currentChild.name);
-        
-        // Try to find and call the onboarding wizard
-        if (window.OnboardingWizard && typeof window.OnboardingWizard.start === 'function') {
-            // Close profile modal if it exists
-            if (window.ProfileModule && window.ProfileModule.closeModal) {
-                window.ProfileModule.closeModal();
-            } else {
-                const modal = document.getElementById('profile-modal');
-                if (modal) modal.style.display = 'none';
-            }
-            // Start wizard for current child
-            window.OnboardingWizard.start(currentChild.id, true); // true = edit mode
-        } else if (window.OnboardingModule) {
-            // If onboarding module exists
-            if (window.ProfileModule && window.ProfileModule.closeModal) {
-                window.ProfileModule.closeModal();
-            } else {
-                const modal = document.getElementById('profile-modal');
-                if (modal) modal.style.display = 'none';
-            }
-            if (window.OnboardingModule.editMember) {
-                window.OnboardingModule.editMember(currentChild.id);
-            } else {
-                alert('Setup Wizard edit function not found. You can manually edit using Edit mode.');
-            }
-        } else {
-            alert('Setup Wizard is not currently available in this version.\n\nYou can manually edit:\n• Schedule items (click any time slot in Edit mode)\n• Goals (click + in Weekly Responsibilities)\n• Character areas (click + in Personal Growth)');
-        }
-    };
+    console.log('Setup wizard requested for:', currentChild.name);
+    
+    // The wizard currently supports creating new members, not editing existing ones
+    alert('The Setup Wizard is currently only available for adding NEW family members.\n\nTo edit this member, you can:\n• Use Edit mode to modify schedule items\n• Click + buttons to add weekly responsibilities\n• Click + buttons to add growth areas\n• Edit profile info in the Profile modal');
+};
 
-    window.addMemberWithSetupWizard = function() {
-        console.log('Attempting to add member with setup wizard');
+window.addMemberWithSetupWizard = function() {
+    console.log('Add member with setup wizard requested');
+    
+    // Close modals first
+    if (window.FamilySettingsModule) {
+        if (window.FamilySettingsModule.closeModal) window.FamilySettingsModule.closeModal();
+        if (window.FamilySettingsModule.closeAddMemberChoice) window.FamilySettingsModule.closeAddMemberChoice();
+    } else {
+        const settingsModal = document.getElementById('family-settings-modal');
+        const choiceModal = document.getElementById('add-member-choice-modal');
+        if (settingsModal) settingsModal.style.display = 'none';
+        if (choiceModal) choiceModal.style.display = 'none';
+    }
+    
+    // Check if FamilyManagement is available
+    if (window.FamilyManagement && typeof window.FamilyManagement.launchSetupWizard === 'function') {
+        // Launch wizard in 'add-member' mode
+        console.log('🎯 Launching wizard in add-member mode');
+        window.FamilyManagement.launchSetupWizard('add-member');
+    } else {
+        alert('Setup Wizard is not currently available.\n\nPlease use Manual Setup to add a family member.');
         
-        // Try to find and call the onboarding wizard
-        if (window.OnboardingWizard && typeof window.OnboardingWizard.start === 'function') {
-            // Close modals
-            if (window.FamilySettingsModule) {
-                if (window.FamilySettingsModule.closeModal) window.FamilySettingsModule.closeModal();
-                if (window.FamilySettingsModule.closeAddMemberChoice) window.FamilySettingsModule.closeAddMemberChoice();
-            } else {
-                const settingsModal = document.getElementById('family-settings-modal');
-                const choiceModal = document.getElementById('add-member-choice-modal');
-                if (settingsModal) settingsModal.style.display = 'none';
-                if (choiceModal) choiceModal.style.display = 'none';
-            }
-            // Start wizard for new member
-            window.OnboardingWizard.start(null, false); // null = new member, false = not edit mode
-        } else if (window.OnboardingModule) {
-            // Close modals
-            if (window.FamilySettingsModule) {
-                if (window.FamilySettingsModule.closeModal) window.FamilySettingsModule.closeModal();
-                if (window.FamilySettingsModule.closeAddMemberChoice) window.FamilySettingsModule.closeAddMemberChoice();
-            } else {
-                const settingsModal = document.getElementById('family-settings-modal');
-                const choiceModal = document.getElementById('add-member-choice-modal');
-                if (settingsModal) settingsModal.style.display = 'none';
-                if (choiceModal) choiceModal.style.display = 'none';
-            }
-            if (window.OnboardingModule.addNewMember) {
-                window.OnboardingModule.addNewMember();
-            } else {
-                alert('Setup Wizard not found. Please use Manual Setup instead.');
-            }
-        } else {
-            alert('Setup Wizard is not currently available in this version.\n\nPlease use Manual Setup to add a family member.');
+        // Fallback to manual setup
+        if (window.FamilySettingsModule && window.FamilySettingsModule.addMemberManually) {
+            window.FamilySettingsModule.addMemberManually();
         }
-    };
+    }
+};
 
-    // Add these functions to ProfileModule and FamilySettingsModule when they load
-    // This makes the buttons work whether the modules define these functions or not
-    setTimeout(() => {
-        if (window.ProfileModule && !window.ProfileModule.runSetupWizard) {
-            window.ProfileModule.runSetupWizard = window.runSetupWizardForCurrentMember;
-        }
-        if (window.FamilySettingsModule && !window.FamilySettingsModule.addMemberWithWizard) {
-            window.FamilySettingsModule.addMemberWithWizard = window.addMemberWithSetupWizard;
-        }
-    }, 2000);
-    </script>
+// Add these functions to ProfileModule and FamilySettingsModule when they load
+setTimeout(() => {
+    if (window.ProfileModule && !window.ProfileModule.runSetupWizard) {
+        window.ProfileModule.runSetupWizard = window.runSetupWizardForCurrentMember;
+    }
+    if (window.FamilySettingsModule && !window.FamilySettingsModule.addMemberWithWizard) {
+        window.FamilySettingsModule.addMemberWithWizard = window.addMemberWithSetupWizard;
+    }
+}, 2000);
+</script>
+
 
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
